@@ -1,0 +1,13 @@
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+}
+
+rootProject.name = 'tsurugi-jdbc'
+
+include 'tsurugi-jdbc'
+include 'tsurugi-jdbc-examples'
+
+rootProject.children.each { project ->
+    project.projectDir = new File(settingsDir, "modules/${project.name}")
+    assert project.projectDir.isDirectory()
+}

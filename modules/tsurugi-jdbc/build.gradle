@@ -1,0 +1,21 @@
+plugins {
+    id 'tsurugi-jdbc.libs-conventions'
+}
+
+dependencies {
+    api "com.tsurugidb.tsubakuro:tsubakuro-session:${tsubakuroVersion}"
+    api "com.tsurugidb.tsubakuro:tsubakuro-connector:${tsubakuroVersion}"
+
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+
+    testImplementation "ch.qos.logback:logback-classic:1.2.3"
+}
+
+spotbugs {
+    excludeFilter = file("$projectDir/config/spotbugs/spotbugsExclude.xml")
+}
+
+javadoc {
+    title "Tsurugi JDBC ${project.version}"
+    options.overview = 'src/main/javadoc/overview.html'
+}

@@ -1,0 +1,20 @@
+plugins {
+    id 'tsurugi-jdbc.libs-conventions'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+shadowJar {
+    archiveBaseName = 'tsurugi-jdbc'
+    archiveClassifier = 'all'
+    mergeServiceFiles()
+}
+
+components.java.withVariantsFromConfiguration(configurations.apiElements) {
+    skip()
+}
+components.java.withVariantsFromConfiguration(configurations.runtimeElements) {
+    skip()
+}
+components.java.withVariantsFromConfiguration(configurations.sourcesElements) {
+    skip()
+}

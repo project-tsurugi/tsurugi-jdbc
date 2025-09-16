@@ -1,0 +1,43 @@
+plugins {
+    id 'java-library'
+    id 'com.vanniktech.maven.publish'
+
+    id 'tsurugi-jdbc.java-conventions'
+}
+
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+
+mavenPublishing {
+    configure(new JavaLibrary(new JavadocJar.None(), true))
+    publishToMavenCentral()
+
+    if (isReleaseVersion && isSignEnabled) {
+        signAllPublications()
+    }
+
+    pom {
+        name = 'Tsurugi JDBC'
+        description = 'JDBC library for Tsurugi'
+        url = 'https://github.com/project-tsurugi/tsurugi-jdbc'
+        licenses {
+            license {
+                name = 'The Apache License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            }
+        }
+        developers {
+            developer {
+                id = 'project-tsurugi'
+            }
+        }
+        scm {
+            connection = 'scm:git:https://github.com/project-tsurugi/tsurugi-jdbc.git'
+            developerConnection = 'scm:git:https://github.com/project-tsurugi/tsurugi-jdbc.git'
+            url = 'https://github.com/project-tsurugi/tsurugi-jdbc'
+        }
+    }
+}
+
+checkstyleMain.enabled = true
+spotbugsMain.enabled = true

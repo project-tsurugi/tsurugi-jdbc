@@ -1,0 +1,156 @@
+/*
+ * Copyright 2025 Project Tsurugi.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.tsurugidb.jdbc.transaction;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
+import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
+import com.tsurugidb.tsubakuro.exception.ServerException;
+import com.tsurugidb.tsubakuro.sql.Transaction;
+
+@TsurugiJdbcInternal
+public class TsurugiJdbcTransaction implements AutoCloseable {
+
+    private TsurugiJdbcFactory factory;
+    private final Transaction lowTransaction;
+    private final boolean autoCommit;
+    private final TsurugiJdbcConnectionProperties propertes;
+
+    private final AtomicBoolean executed = new AtomicBoolean(false);
+    private boolean closed = false;
+
+    public TsurugiJdbcTransaction(TsurugiJdbcFactory factory, Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionProperties propertes) {
+        this.factory = factory;
+        this.lowTransaction = lowTransaction;
+        this.autoCommit = autoCommit;
+        this.propertes = propertes;
+    }
+
+    public Transaction getLowTransaction() {
+        return this.lowTransaction;
+    }
+
+    public boolean isAutoCommit() {
+        return this.autoCommit;
+    }
+
+    protected void checkExecuted() throws SQLException {
+        boolean alreadyExecuted = this.executed.getAndSet(true);
+
+        if (autoCommit && alreadyExecuted) {
+            throw new SQLException("already executed"); // TODO TsurugiSQLExceptionHandler
+        }
+    }
+
+    public <R> R executeOnly(TsurugiJdbcTransactionFunction<R> action) throws SQLException {
+        checkExecuted();
+
+        return execute(action);
+    }
+
+    public <R> R executeAndAutoCommit(TsurugiJdbcTransactionFunction<R> action) throws SQLException {
+        checkExecuted();
+
+        R result;
+        try {
+            result = execute(action);
+        } catch (Throwable e) {
+            try {
+                rollback();
+            } catch (Throwable t) {
+                e.addSuppressed(t);
+            }
+            throw e;
+        }
+
+        if (autoCommit) {
+            commit();
+        }
+
+        return result;
+    }
+
+    protected <R> R execute(TsurugiJdbcTransactionFunction<R> action) throws SQLException {
+        try {
+            R result = action.execute(lowTransaction);
+            return result;
+        } catch (IOException | InterruptedException | ServerException | TimeoutException e) {
+            throw factory.getExceptionHandler().sqlException("Transaction execute error", e);
+        }
+    }
+
+    public void commit() throws SQLException {
+        try {
+            // TODO CommitOption
+            int timeout = propertes.getCommitTimeout();
+            try {
+                lowTransaction.commit().await(timeout, TimeUnit.SECONDS);
+            } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
+                throw factory.getExceptionHandler().sqlException("Transaction commit error", e);
+            }
+        } catch (Throwable e) {
+            try {
+                rollback();
+            } catch (Throwable t) {
+                e.addSuppressed(t);
+            }
+            throw e;
+        }
+
+        close();
+    }
+
+    public void rollback() throws SQLException {
+        try {
+            int timeout = propertes.getRollbackTimeout();
+            try {
+                lowTransaction.rollback().await(timeout, TimeUnit.SECONDS);
+            } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
+                throw factory.getExceptionHandler().sqlException("Transaction rollback error", e);
+            }
+        } catch (Throwable e) {
+            try {
+                close();
+            } catch (Throwable t) {
+                e.addSuppressed(t);
+            }
+            throw e;
+        }
+
+        close();
+    }
+
+    @Override
+    public void close() throws SQLException {
+        this.closed = true;
+
+        try {
+            lowTransaction.close();
+        } catch (ServerException | IOException | InterruptedException e) {
+            throw factory.getExceptionHandler().sqlException("Transaction close error", e);
+        }
+    }
+
+    public boolean isClosed() {
+        return this.closed;
+    }
+}

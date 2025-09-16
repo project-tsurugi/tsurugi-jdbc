@@ -1,0 +1,9 @@
+plugins {
+    id 'tsurugi-jdbc.java-conventions'
+}
+
+dependencies {
+    implementation project(':tsurugi-jdbc')
+    implementation 'org.slf4j:jul-to-slf4j:2.0.17'
+    implementation "ch.qos.logback:logback-classic:1.5.18"
+}
