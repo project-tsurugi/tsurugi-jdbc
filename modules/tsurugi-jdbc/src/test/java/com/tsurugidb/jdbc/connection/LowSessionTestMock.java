@@ -21,7 +21,9 @@ import java.util.Map;
 
 import com.tsurugidb.tsubakuro.channel.common.connection.wire.Wire;
 import com.tsurugidb.tsubakuro.common.Session;
+import com.tsurugidb.tsubakuro.common.ShutdownType;
 import com.tsurugidb.tsubakuro.exception.ServerException;
+import com.tsurugidb.tsubakuro.util.FutureResponse;
 import com.tsurugidb.tsubakuro.util.ServerResource;
 import com.tsurugidb.tsubakuro.util.Timeout;
 
@@ -58,6 +60,11 @@ public class LowSessionTestMock implements Session {
     @Override
     public void remove(ServerResource resource) {
         resourceSet.remove(resource);
+    }
+
+    @Override
+    public FutureResponse<Void> shutdown(ShutdownType type) throws IOException {
+        return FutureResponse.returns(null);
     }
 
     @Override
