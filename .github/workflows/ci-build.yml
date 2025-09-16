@@ -1,0 +1,62 @@
+name: Tsurugi-JDBC-CI
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  Build:
+    # runs-on: ubuntu-22.04
+    runs-on: [self-hosted, docker]
+    permissions:
+      checks: write
+      contents: read
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/project-tsurugi/tsurugi-ci:ubuntu-22.04
+      volumes:
+        - ${{ vars.gradle_cache_dir }}:/root/.gradle
+    defaults:
+      run:
+        shell: bash
+    env:
+      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
+
+    steps:
+      - name: Setup_Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble
+        run: |
+          ./gradlew -i tsurugi-jdbc:showTsubakuroManifest clean assemble --warning-mode all
+
+      - name: Check
+        run: |
+          ./gradlew -i check --continue --warning-mode all
+
+      - name: Verify
+        uses: project-tsurugi/tsurugi-annotations-action@v1
+        if: always()
+        with:
+          junit_input: '**/build/test-results/**/TEST-*.xml'
+          spotbugs_input: '**/build/reports/spotbugs/main/*.xml'
+          checkstyle_input: '**/build/reports/checkstyle/main.xml'
+
+  # Publish:
+  #   uses: ./.github/workflows/ci-publish.yml
+  #   if: github.repository_owner == 'project-tsurugi' && (contains(github.ref, '/tags/') || contains(github.ref, '/heads/master'))
+  #   needs: Build
+  #   secrets: inherit
+
+  # GHPages:
+  #   uses: ./.github/workflows/ci-javadoc.yml
+  #   if: github.repository_owner == 'project-tsurugi' && (contains(github.ref, '/tags/'))
+  #   needs: Build
+  #   secrets: inherit
+  #   permissions:
+  #     pages: write
+  #     id-token: write
