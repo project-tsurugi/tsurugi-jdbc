@@ -22,7 +22,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.tsurugidb.jdbc.TsurugiDriver;
 
-public class TsurugiDriverExample {
+public class TsurugiJdbcExample99Driver {
 
     static {
         SLF4JBridgeHandler.removeHandlersForRootLogger();

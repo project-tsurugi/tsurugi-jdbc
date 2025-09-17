@@ -34,9 +34,9 @@ public class TsurugiJdbcBlobReference implements Blob {
     private final TsurugiJdbcResultSet ownerResultSet;
     private final BlobReference lowBlob;
 
-    public TsurugiJdbcBlobReference(TsurugiJdbcResultSet owner, BlobReference blob) {
-        this.ownerResultSet = owner;
-        this.lowBlob = blob;
+    public TsurugiJdbcBlobReference(TsurugiJdbcResultSet ownerResultSet, BlobReference lowBlob) {
+        this.ownerResultSet = ownerResultSet;
+        this.lowBlob = lowBlob;
     }
 
     public InputStream openInputStream(long timeout, TimeUnit unit) throws SQLException {

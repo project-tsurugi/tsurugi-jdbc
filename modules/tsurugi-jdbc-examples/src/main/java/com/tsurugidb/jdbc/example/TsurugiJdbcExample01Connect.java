@@ -25,8 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-public class TsurugiJdbcConnectExample {
-    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcConnectExample.class);
+public class TsurugiJdbcExample01Connect {
+    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample01Connect.class);
 
     private static final String JDBC_URL = "jdbc:tsurugi:tcp://localhost:12345";
 

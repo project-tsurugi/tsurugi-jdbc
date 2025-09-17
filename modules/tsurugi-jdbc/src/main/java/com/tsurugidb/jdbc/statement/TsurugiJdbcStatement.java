@@ -32,9 +32,9 @@ import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 
 public class TsurugiJdbcStatement implements Statement, HasFactory {
 
-    private TsurugiJdbcFactory factory;
-    private final TsurugiJdbcConnection connection;
-    private final TsurugiJdbcStatementProperties properties;
+    protected TsurugiJdbcFactory factory;
+    protected final TsurugiJdbcConnection connection;
+    protected final TsurugiJdbcStatementProperties properties;
 
     private TsurugiJdbcResultSet executingResultSet = null;
 
@@ -80,7 +80,8 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
             var future = lowTransaction.executeQuery(sql);
             return factory.createResultSet(this, transaction, future, properties);
         });
-        this.executingResultSet = rs;
+
+        setExecutingResultSet(rs);
         return rs;
     }
 
@@ -111,6 +112,10 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
                 rs.close();
             }
         }
+    }
+
+    protected void setExecutingResultSet(TsurugiJdbcResultSet rs) {
+        this.executingResultSet = rs;
     }
 
     @Override

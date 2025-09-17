@@ -18,6 +18,7 @@ package com.tsurugidb.jdbc.exception;
 import java.io.IOException;
 import java.sql.ClientInfoStatus;
 import java.sql.SQLClientInfoException;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.SQLInvalidAuthorizationSpecException;
 import java.sql.SQLNonTransientConnectionException;
@@ -116,6 +117,23 @@ public class TsurugiJdbcExceptionHandler {
         // TODO convert ServerException to SQLException
 
         return new SQLException(message, null, vendorCode, e);
+    }
+
+    // Data
+
+    public SQLException dataException(String baseMessage, Exception e) {
+        String message = message(baseMessage, e);
+        return new SQLDataException(message, SqlState.S22005_ERRPR_IN_ASSIGNMENT.code(), e);
+    }
+
+    public SQLException dataNullValueNoIndicatorParameterException(String baseMessage) {
+        String message = baseMessage;
+        return new SQLDataException(message, SqlState.S22002_NULL_VALUE_NO_INDICATOR_PARAMETER.code());
+    }
+
+    public SQLException dataTypeMismatchException(String baseMessage, Class<?> type) {
+        String message = MessageFormat.format("{0}. fromType={1}", baseMessage, type.getSimpleName());
+        return new SQLDataException(message, SqlState.S2200G_TYPE_MISMATCH.code());
     }
 
     // Common

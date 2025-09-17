@@ -17,8 +17,6 @@ package com.tsurugidb.jdbc.factory;
 
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
-
 import com.tsurugidb.jdbc.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
@@ -26,9 +24,12 @@ import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetConverter;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetProperties;
+import com.tsurugidb.jdbc.statement.TsurugiJdbcParameterGenerator;
+import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementProperties;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
+import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.Transaction;
@@ -37,7 +38,6 @@ import com.tsurugidb.tsubakuro.util.FutureResponse;
 public class TsurugiJdbcFactory {
 
     private TsurugiJdbcExceptionHandler exceptionHandler = new TsurugiJdbcExceptionHandler();
-    private TsurugiJdbcResultSetConverter resultSetConverter = new TsurugiJdbcResultSetConverter();
 
     public void setExceptionHandler(TsurugiJdbcExceptionHandler exceptionHandler) {
         this.exceptionHandler = Objects.requireNonNull(exceptionHandler);
@@ -65,6 +65,19 @@ public class TsurugiJdbcFactory {
         return new TsurugiJdbcStatement(this, connection, properties);
     }
 
+    public TsurugiJdbcPreparedStatement createPreparedStatement(TsurugiJdbcConnection connection, TsurugiJdbcConnectionProperties fromProperties, String sql) {
+        var properties = TsurugiJdbcStatementProperties.of(fromProperties);
+        return createPreparedStatement(connection, properties, sql);
+    }
+
+    public TsurugiJdbcPreparedStatement createPreparedStatement(TsurugiJdbcConnection connection, TsurugiJdbcStatementProperties properties, String sql) {
+        return new TsurugiJdbcPreparedStatement(this, connection, properties, sql);
+    }
+
+    public TsurugiJdbcParameterGenerator createParameterGenerator(TsurugiJdbcPreparedStatement preparedStatement) {
+        return new TsurugiJdbcParameterGenerator(preparedStatement);
+    }
+
     public TsurugiJdbcTransaction createTransaction(Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionProperties properties) {
         return new TsurugiJdbcTransaction(this, lowTransaction, autoCommit, properties);
     }
@@ -75,14 +88,14 @@ public class TsurugiJdbcFactory {
     }
 
     public TsurugiJdbcResultSet createResultSet(TsurugiJdbcStatement statement, TsurugiJdbcTransaction transaction, FutureResponse<ResultSet> future, TsurugiJdbcResultSetProperties properties) {
-        return new TsurugiJdbcResultSet(this, statement, transaction, future, properties);
+        return new TsurugiJdbcResultSet(statement, transaction, future, properties);
     }
 
-    public void setResultSetConverter(@Nonnull TsurugiJdbcResultSetConverter converter) {
-        this.resultSetConverter = Objects.requireNonNull(converter);
+    public TsurugiJdbcResultSetConverter createResultSetConverter(TsurugiJdbcResultSet resultSet) {
+        return new TsurugiJdbcResultSetConverter(resultSet);
     }
 
-    public TsurugiJdbcResultSetConverter getResultSetConverter() {
-        return this.resultSetConverter;
+    public TsurugiJdbcConvertUtil createConvertUtil(HasFactory hasFactory) {
+        return new TsurugiJdbcConvertUtil(hasFactory);
     }
 }

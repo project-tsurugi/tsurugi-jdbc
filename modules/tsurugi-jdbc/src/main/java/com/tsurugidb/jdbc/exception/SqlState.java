@@ -19,6 +19,13 @@ public enum SqlState {
     /** 08001: SQL-client unable to establish SQL-connection */
     S08001_UNABLE_TO_CONNECTION("08001", "SQL-client unable to establish SQL-connection"),
 
+    /** 22002: null value, no indicator parameter */
+    S22002_NULL_VALUE_NO_INDICATOR_PARAMETER("22002", "null value, no indicator parameter"),
+    /** 22005: error in assignment */
+    S22005_ERRPR_IN_ASSIGNMENT("22005", "error in assignment"),
+    /** 2200G: most specific type mismatch */
+    S2200G_TYPE_MISMATCH("2200G", "most specific type mismatch"),
+
     /** 25000: invalid transaction state */
     S25000_INVALID_TRANSACTION_STATE("25000", "invalid transaction state"),
     /** 25001: active SQL-transaction */

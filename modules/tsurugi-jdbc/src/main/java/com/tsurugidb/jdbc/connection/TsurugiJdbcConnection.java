@@ -106,8 +106,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return factory.createPreparedStatement(this, properties, sql);
     }
 
     @Override

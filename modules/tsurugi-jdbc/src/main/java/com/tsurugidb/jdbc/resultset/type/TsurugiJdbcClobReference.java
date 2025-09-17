@@ -36,9 +36,9 @@ public class TsurugiJdbcClobReference implements Clob {
     private final TsurugiJdbcResultSet ownerResultSet;
     private final ClobReference lowClob;
 
-    public TsurugiJdbcClobReference(TsurugiJdbcResultSet owner, ClobReference clob) {
-        this.ownerResultSet = owner;
-        this.lowClob = clob;
+    public TsurugiJdbcClobReference(TsurugiJdbcResultSet ownerResultSet, ClobReference lowClob) {
+        this.ownerResultSet = ownerResultSet;
+        this.lowClob = lowClob;
     }
 
     public Reader openReader(long timeout, TimeUnit unit) throws SQLException {

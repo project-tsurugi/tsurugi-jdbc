@@ -32,19 +32,19 @@ public class TsurugiJdbcResultSetGetter {
     private static final Map<AtomType, TsurugiJdbcResultSetGetter> ATOM_TYPE_GETTER_MAP;
     static {
         var map = new EnumMap<AtomType, TsurugiJdbcResultSetGetter>(AtomType.class);
-        put(map, AtomType.BOOLEAN, (c, rs) -> rs.fetchBooleanValue());
-        put(map, AtomType.INT4, (c, rs) -> rs.fetchInt4Value());
-        put(map, AtomType.INT8, (c, rs) -> rs.fetchInt8Value());
-        put(map, AtomType.FLOAT4, (c, rs) -> rs.fetchFloat4Value());
-        put(map, AtomType.FLOAT8, (c, rs) -> rs.fetchFloat8Value());
-        put(map, AtomType.DECIMAL, (c, rs) -> rs.fetchDecimalValue());
-        put(map, AtomType.CHARACTER, (c, rs) -> rs.fetchCharacterValue());
-        put(map, AtomType.OCTET, (c, rs) -> rs.fetchOctetValue());
-        put(map, AtomType.DATE, (c, rs) -> rs.fetchDateValue());
-        put(map, AtomType.TIME_OF_DAY, (c, rs) -> rs.fetchTimeOfDayValue());
-        put(map, AtomType.TIME_POINT, (c, rs) -> rs.fetchTimePointValue());
-        put(map, AtomType.TIME_OF_DAY_WITH_TIME_ZONE, (c, rs) -> rs.fetchTimeOfDayWithTimeZoneValue());
-        put(map, AtomType.TIME_POINT_WITH_TIME_ZONE, (c, rs) -> rs.fetchTimePointWithTimeZoneValue());
+        put(map, AtomType.BOOLEAN, (o, rs) -> rs.fetchBooleanValue());
+        put(map, AtomType.INT4, (o, rs) -> rs.fetchInt4Value());
+        put(map, AtomType.INT8, (o, rs) -> rs.fetchInt8Value());
+        put(map, AtomType.FLOAT4, (o, rs) -> rs.fetchFloat4Value());
+        put(map, AtomType.FLOAT8, (o, rs) -> rs.fetchFloat8Value());
+        put(map, AtomType.DECIMAL, (o, rs) -> rs.fetchDecimalValue());
+        put(map, AtomType.CHARACTER, (o, rs) -> rs.fetchCharacterValue());
+        put(map, AtomType.OCTET, (o, rs) -> rs.fetchOctetValue());
+        put(map, AtomType.DATE, (o, rs) -> rs.fetchDateValue());
+        put(map, AtomType.TIME_OF_DAY, (o, rs) -> rs.fetchTimeOfDayValue());
+        put(map, AtomType.TIME_POINT, (o, rs) -> rs.fetchTimePointValue());
+        put(map, AtomType.TIME_OF_DAY_WITH_TIME_ZONE, (o, rs) -> rs.fetchTimeOfDayWithTimeZoneValue());
+        put(map, AtomType.TIME_POINT_WITH_TIME_ZONE, (o, rs) -> rs.fetchTimePointWithTimeZoneValue());
         put(map, AtomType.BLOB, TsurugiJdbcResultSetGetter::fetchBlob);
         put(map, AtomType.CLOB, TsurugiJdbcResultSetGetter::fetchClob);
         ATOM_TYPE_GETTER_MAP = map;
@@ -54,14 +54,14 @@ public class TsurugiJdbcResultSetGetter {
         map.put(atomType, new TsurugiJdbcResultSetGetter(getter));
     }
 
-    private static TsurugiJdbcBlobReference fetchBlob(TsurugiJdbcResultSet owner, ResultSet rs) throws IOException, InterruptedException, ServerException {
-        var reference = rs.fetchBlob();
-        return new TsurugiJdbcBlobReference(owner, reference);
+    static TsurugiJdbcBlobReference fetchBlob(TsurugiJdbcResultSet ownerResultSet, ResultSet lowRs) throws IOException, InterruptedException, ServerException {
+        var lowBlob = lowRs.fetchBlob();
+        return new TsurugiJdbcBlobReference(ownerResultSet, lowBlob);
     }
 
-    private static TsurugiJdbcClobReference fetchClob(TsurugiJdbcResultSet owner, ResultSet rs) throws IOException, InterruptedException, ServerException {
-        var reference = rs.fetchClob();
-        return new TsurugiJdbcClobReference(owner, reference);
+    static TsurugiJdbcClobReference fetchClob(TsurugiJdbcResultSet ownerResultSet, ResultSet lowRs) throws IOException, InterruptedException, ServerException {
+        var lowClob = lowRs.fetchClob();
+        return new TsurugiJdbcClobReference(ownerResultSet, lowClob);
     }
 
     public static TsurugiJdbcResultSetGetter of(Column column) {
@@ -75,7 +75,7 @@ public class TsurugiJdbcResultSetGetter {
 
     @FunctionalInterface
     private interface Getter {
-        public Object fetchValue(TsurugiJdbcResultSet owner, ResultSet rs) throws IOException, InterruptedException, ServerException;
+        public Object fetchValue(TsurugiJdbcResultSet ownerResultSet, ResultSet lowRs) throws IOException, InterruptedException, ServerException;
     }
 
     private final Getter getter;
@@ -84,11 +84,11 @@ public class TsurugiJdbcResultSetGetter {
         this.getter = getter;
     }
 
-    public Object fetchValue(TsurugiJdbcResultSet owner, ResultSet rs) throws IOException, InterruptedException, ServerException {
-        if (rs.isNull()) {
+    public Object fetchValue(TsurugiJdbcResultSet ownerResultSet, ResultSet lowRs) throws IOException, InterruptedException, ServerException {
+        if (lowRs.isNull()) {
             return null;
         }
 
-        return getter.fetchValue(owner, rs);
+        return getter.fetchValue(ownerResultSet, lowRs);
     }
 }

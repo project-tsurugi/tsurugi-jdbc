@@ -15,543 +15,272 @@
  */
 package com.tsurugidb.jdbc.resultset;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.StringReader;
-import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
+import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
+import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.resultset.type.TsurugiJdbcBlobReference;
 import com.tsurugidb.jdbc.resultset.type.TsurugiJdbcClobReference;
+import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 
 /**
  * Convert Tsubakuro value to specified value.
  */
 public class TsurugiJdbcResultSetConverter {
 
-    public String convertToString(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    private final TsurugiJdbcResultSet ownerResultSet;
+    private TsurugiJdbcConvertUtil convertUtil;
+
+    public TsurugiJdbcResultSetConverter(TsurugiJdbcResultSet ownerResultSet) {
+        this.ownerResultSet = ownerResultSet;
+        var factory = ownerResultSet.getFactory();
+        this.convertUtil = factory.createConvertUtil(ownerResultSet);
+    }
+
+    public void setConvertUtil(@Nonnull TsurugiJdbcConvertUtil convertUtil) {
+        this.convertUtil = Objects.requireNonNull(convertUtil);
+    }
+
+    protected TsurugiJdbcFactory getFactory() {
+        return ownerResultSet.getFactory();
+    }
+
+    protected TsurugiJdbcExceptionHandler getExceptionHandler() {
+        return getFactory().getExceptionHandler();
+    }
+
+    public String convertToString(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
 
-        try {
-            var result = convertToString(value);
-            if (result != null) {
-                return result;
-            }
-        } catch (SQLException e) {
-            throw e;
-        } catch (Exception e) {
-            var factory = owner.getFactory();
-            throw factory.getExceptionHandler().sqlException("convertToString error", e); // TODO DataException
-        }
-
-        throw new SQLException(); // TODO TsurugiJdbcExceptionHandler
+        return convertUtil.convertToString(value);
     }
 
-    protected String convertToString(@Nonnull Object value) throws SQLException {
-        if (value instanceof String) {
-            return (String) value;
-        }
-
-        if (value instanceof BigDecimal) {
-            return ((BigDecimal) value).toPlainString();
-        }
-
-        if (value instanceof java.sql.Clob) {
-            var reader = ((java.sql.Clob) value).getCharacterStream();
-            try (var br = new BufferedReader(reader)) {
-                var sb = new StringBuilder();
-                var buffer = new char[1024];
-                for (;;) {
-                    int length = br.read(buffer);
-                    if (length < 0) {
-                        break;
-                    }
-                    sb.append(buffer, 0, length);
-                }
-                return sb.toString();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e.getMessage(), e);
-            }
-        }
-
-        if (value instanceof java.sql.Blob) {
-            return null;
-        }
-
-        return value.toString();
-    }
-
-    public Reader convertToReader(TsurugiJdbcResultSet owner, Object value) throws SQLException {
-        if (value == null) {
-            return null;
-        }
-
-        try {
-            var result = convertToReader(value);
-            if (result != null) {
-                return result;
-            }
-        } catch (SQLException e) {
-            throw e;
-        } catch (Exception e) {
-            var factory = owner.getFactory();
-            throw factory.getExceptionHandler().sqlException("convertToString error", e); // TODO DataException
-        }
-
-        throw new SQLException(); // TODO TsurugiJdbcExceptionHandler
-    }
-
-    protected Reader convertToReader(@Nonnull Object value) throws SQLException {
-        if (value instanceof java.sql.Clob) {
-            return ((java.sql.Clob) value).getCharacterStream();
-        }
-
-        String s = convertToString(value);
-        if (s != null) {
-            return new StringReader(s);
-        }
-
-        return null;
-    }
-
-    public boolean convertToBoolean(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public boolean convertToBoolean(Object value) throws SQLException {
         if (value == null) {
             return false;
         }
-        if (value instanceof Boolean) {
-            return (Boolean) value;
-        }
-        if (value instanceof String) {
-            return !((String) value).equals("0"); // TODO "1" ?
-        }
-        if (value instanceof Number) {
-            return ((Number) value).intValue() != 0; // TODO 1 ?
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToBoolean(value);
     }
 
-    public byte convertToByte(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public byte convertToByte(Object value) throws SQLException {
         if (value == null) {
             return 0;
         }
-        if (value instanceof Byte) {
-            return (Byte) value;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).byteValue();
-        }
-        if (value instanceof String) {
-            try {
-                return Byte.parseByte((String) value);
-            } catch (NumberFormatException e) {
-                throw new SQLException(e); // TODO TsurugiSQLExceptionHandler
-            }
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToByte(value);
     }
 
-    public short convertToShort(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public short convertToShort(Object value) throws SQLException {
         if (value == null) {
             return 0;
         }
-        if (value instanceof Short) {
-            return (Short) value;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).shortValue();
-        }
-        if (value instanceof String) {
-            try {
-                return Short.parseShort((String) value);
-            } catch (NumberFormatException e) {
-                throw new SQLException(e); // TODO TsurugiSQLExceptionHandler
-            }
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToShort(value);
     }
 
-    public int convertToInt(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public int convertToInt(Object value) throws SQLException {
         if (value == null) {
             return 0;
         }
-        if (value instanceof Integer) {
-            return (Integer) value;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-        if (value instanceof String) {
-            try {
-                return Integer.parseInt((String) value);
-            } catch (NumberFormatException e) {
-                throw new SQLException(e); // TODO TsurugiSQLExceptionHandler
-            }
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToInt(value);
     }
 
-    public long convertToLong(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public long convertToLong(Object value) throws SQLException {
         if (value == null) {
             return 0;
         }
-        if (value instanceof Long) {
-            return (Long) value;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).longValue();
-        }
-        if (value instanceof String) {
-            try {
-                return Long.parseLong((String) value);
-            } catch (NumberFormatException e) {
-                throw new SQLException(e); // TODO TsurugiSQLExceptionHandler
-            }
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToLong(value);
     }
 
-    public float convertToFloat(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public float convertToFloat(Object value) throws SQLException {
         if (value == null) {
             return 0;
         }
-        if (value instanceof Float) {
-            return (Float) value;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).floatValue();
-        }
-        if (value instanceof String) {
-            try {
-                return Float.parseFloat((String) value);
-            } catch (NumberFormatException e) {
-                throw new SQLException(e); // TODO TsurugiSQLExceptionHandler
-            }
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToFloat(value);
     }
 
-    public double convertToDouble(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public double convertToDouble(Object value) throws SQLException {
         if (value == null) {
             return 0;
         }
-        if (value instanceof Double) {
-            return (Double) value;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).doubleValue();
-        }
-        if (value instanceof String) {
-            try {
-                return Double.parseDouble((String) value);
-            } catch (NumberFormatException e) {
-                throw new SQLException(e); // TODO TsurugiSQLExceptionHandler
-            }
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToDouble(value);
     }
 
-    public BigDecimal convertToDecimal(TsurugiJdbcResultSet owner, Object value, int scale) throws SQLException {
-        BigDecimal result = convertToDecimal(owner, value);
+    public BigDecimal convertToDecimal(Object value, int scale) throws SQLException {
+        BigDecimal result = convertToDecimal(value);
         return result.setScale(scale);
     }
 
-    public BigDecimal convertToDecimal(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public BigDecimal convertToDecimal(Object value) throws SQLException {
         if (value == null) {
             return BigDecimal.ZERO;
         }
-        if (value instanceof BigDecimal) {
-            return (BigDecimal) value;
-        }
-        if (value instanceof Integer) {
-            return BigDecimal.valueOf((Integer) value);
-        }
-        if (value instanceof Long) {
-            return BigDecimal.valueOf((Long) value);
-        }
-        if (value instanceof Float) {
-            return BigDecimal.valueOf((Float) value);
-        }
-        if (value instanceof Double) {
-            return BigDecimal.valueOf((Double) value);
-        }
-        if (value instanceof Number) {
-            return BigDecimal.valueOf(((Number) value).longValue());
-        }
-        if (value instanceof String) {
-            try {
-                return new BigDecimal((String) value);
-            } catch (NumberFormatException e) {
-                throw new SQLException(e); // TODO TsurugiSQLExceptionHandler
-            }
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToDecimal(value);
     }
 
-    public byte[] convertToBytes(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public byte[] convertToBytes(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
 
-        try {
-            var result = convertToBytes(value);
-            if (result != null) {
-                return result;
-            }
-        } catch (SQLException e) {
-            throw e;
-        } catch (Exception e) {
-            var factory = owner.getFactory();
-            throw factory.getExceptionHandler().sqlException("convertToString error", e); // TODO DataException
-        }
-
-        throw new SQLException(); // TODO TsurugiJdbcExceptionHandler
+        return convertUtil.convertToBytes(value);
     }
 
-    protected byte[] convertToBytes(@Nonnull Object value) throws SQLException {
-        if (value instanceof byte[]) {
-            return (byte[]) value;
-        }
-
-        if (value instanceof java.sql.Blob) {
-            try (var is = ((java.sql.Blob) value).getBinaryStream()) {
-                return is.readAllBytes();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e.getMessage(), e);
-            }
-        }
-
-        return null;
-    }
-
-    public InputStream convertToInputStream(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public java.sql.Date convertToDate(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
 
-        try {
-            var result = convertToInputStream(value);
-            if (result != null) {
-                return result;
-            }
-        } catch (SQLException e) {
-            throw e;
-        } catch (Exception e) {
-            var factory = owner.getFactory();
-            throw factory.getExceptionHandler().sqlException("convertToString error", e); // TODO DataException
-        }
-
-        throw new SQLException(); // TODO TsurugiJdbcExceptionHandler
+        return convertUtil.convertToDate(value);
     }
 
-    protected InputStream convertToInputStream(@Nonnull Object value) throws SQLException {
-        if (value instanceof java.sql.Blob) {
-            return ((java.sql.Blob) value).getBinaryStream();
-        }
-
-        if (value instanceof byte[]) {
-            return new ByteArrayInputStream((byte[]) value);
-        }
-
-        return null;
-    }
-
-    public java.sql.Blob convertToBlob(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public java.sql.Time convertToTime(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof java.sql.Blob) {
-            return (java.sql.Blob) value;
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToTime(value);
     }
 
-    public java.sql.Clob convertToClob(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public java.sql.Timestamp convertToTimestamp(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof java.sql.Clob) {
-            return (java.sql.Clob) value;
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToTimestamp(value);
     }
 
-    public java.sql.Date convertToDate(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public LocalDate convertToLocalDate(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof LocalDate) {
-            return java.sql.Date.valueOf((LocalDate) value);
-        }
-        if (value instanceof LocalDateTime) {
-            var timestamp = java.sql.Timestamp.valueOf((LocalDateTime) value);
-            return new java.sql.Date(timestamp.getTime());
-        }
-        if (value instanceof OffsetDateTime) {
-            var instant = ((OffsetDateTime) value).toInstant();
-            var timestamp = java.sql.Timestamp.from(instant);
-            return new java.sql.Date(timestamp.getTime());
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToLocalDate(value);
     }
 
-    public java.sql.Time convertToTime(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public LocalTime convertToLocalTime(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof LocalTime) {
-            return java.sql.Time.valueOf((LocalTime) value);
-        }
-        if (value instanceof OffsetTime) {
-            var localTime = ((OffsetTime) value).toLocalTime();
-            return java.sql.Time.valueOf(localTime);
-        }
-        if (value instanceof LocalDateTime) {
-            var localTime = ((LocalDateTime) value).toLocalTime();
-            return java.sql.Time.valueOf(localTime);
-        }
-        if (value instanceof OffsetDateTime) {
-            var localTime = ((OffsetDateTime) value).toLocalTime();
-            return java.sql.Time.valueOf(localTime);
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToLocalTime(value);
     }
 
-    public java.sql.Timestamp convertToTimestamp(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public LocalDateTime convertToLocalDateTime(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof LocalDateTime) {
-            return java.sql.Timestamp.valueOf((LocalDateTime) value);
-        }
-        if (value instanceof OffsetDateTime) {
-            var instant = ((OffsetDateTime) value).toInstant();
-            return java.sql.Timestamp.from(instant);
-        }
-        if (value instanceof LocalDate) {
-            var localDateTime = ((LocalDate) value).atStartOfDay();
-            return java.sql.Timestamp.valueOf(localDateTime);
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToLocalDateTime(value);
     }
 
-    public LocalDate convertToLocalDate(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public OffsetTime convertToOffsetTime(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof LocalDate) {
-            return (LocalDate) value;
-        }
-        if (value instanceof LocalDateTime) {
-            return ((LocalDateTime) value).toLocalDate();
-        }
-        if (value instanceof OffsetDateTime) {
-            return ((OffsetDateTime) value).toLocalDate();
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToOffsetTime(value);
     }
 
-    public LocalTime convertToLocalTime(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public OffsetDateTime convertToOffsetDateTime(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof LocalTime) {
-            return (LocalTime) value;
-        }
-        if (value instanceof OffsetTime) {
-            return ((OffsetTime) value).toLocalTime();
-        }
-        if (value instanceof LocalDateTime) {
-            return ((LocalDateTime) value).toLocalTime();
-        }
-        if (value instanceof OffsetDateTime) {
-            return ((OffsetDateTime) value).toLocalTime();
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToOffsetDateTime(value);
     }
 
-    public LocalDateTime convertToLocalDateTime(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public Reader convertToCharacterStream(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof LocalDateTime) {
-            return (LocalDateTime) value;
-        }
-        if (value instanceof LocalDate) {
-            return LocalDateTime.of((LocalDate) value, LocalTime.MIN);
-        }
-        if (value instanceof OffsetDateTime) {
-            return ((OffsetDateTime) value).toLocalDateTime();
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        return convertUtil.convertToReader(value);
     }
 
-    public OffsetTime convertToOffsetTime(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public InputStream convertToAsciiStream(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof OffsetTime) {
-            return (OffsetTime) value;
-        }
-        if (value instanceof OffsetDateTime) {
-            return ((OffsetDateTime) value).toOffsetTime();
-        }
-        if (value instanceof LocalTime) {
-            return OffsetTime.of((LocalTime) value, ZoneOffset.UTC);
-        }
-        if (value instanceof LocalDateTime) {
-            var localTime = ((LocalDateTime) value).toLocalTime();
-            return OffsetTime.of(localTime, ZoneOffset.UTC);
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        String s = convertToString(value);
+        byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+        return new ByteArrayInputStream(bytes);
     }
 
-    public OffsetDateTime convertToOffsetDateTime(TsurugiJdbcResultSet owner, Object value) throws SQLException {
+    public InputStream convertToUnicodeStream(Object value) throws SQLException {
         if (value == null) {
             return null;
         }
-        if (value instanceof OffsetDateTime) {
-            return (OffsetDateTime) value;
-        }
-        if (value instanceof LocalDateTime) {
-            return OffsetDateTime.of((LocalDateTime) value, ZoneOffset.UTC);
-        }
-        if (value instanceof LocalDate) {
-            var localDateTime = LocalDateTime.of((LocalDate) value, LocalTime.MIN);
-            return OffsetDateTime.of(localDateTime, ZoneOffset.UTC);
-        }
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+
+        String s = convertToString(value);
+        byte[] bytes = s.getBytes(StandardCharsets.UTF_16);
+        return new ByteArrayInputStream(bytes);
     }
 
-    public <T> T convertToType(TsurugiJdbcResultSet owner, Object value, Class<T> type) throws SQLException {
-        var converter = findConveter(type);
-        var object = converter.convert(this, owner, value);
-        return cast(object);
+    public InputStream convertToBinaryStream(Object value) throws SQLException {
+        if (value == null) {
+            return null;
+        }
+
+        return convertUtil.convertToInputStream(value);
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> T cast(Object value) {
-        return (T) value;
+    public java.sql.Blob convertToBlob(Object value) throws SQLException {
+        if (value == null) {
+            return null;
+        }
+
+        return convertUtil.convertToBlob(value);
+    }
+
+    public java.sql.Clob convertToClob(Object value) throws SQLException {
+        if (value == null) {
+            return null;
+        }
+
+        return convertUtil.convertToClob(value);
+    }
+
+    public <T> T convertToType(Object value, Class<T> type) throws SQLException {
+        var converter = findConveter(type); // First, check the type
+        assert converter != null;
+
+        if (value == null) {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        T result = (T) converter.convert(this, value);
+        return result;
     }
 
     @FunctionalInterface
     private interface Converter {
-        public Object convert(TsurugiJdbcResultSetConverter converter, TsurugiJdbcResultSet owner, Object value) throws SQLException;
+        public Object convert(TsurugiJdbcResultSetConverter converter, Object value) throws SQLException;
     }
 
     private static final Map<Class<?>, Converter> CONVERTER_MAP;
@@ -572,12 +301,10 @@ public class TsurugiJdbcResultSetConverter {
         map.put(Float.class, TsurugiJdbcResultSetConverter::convertToFloat);
         map.put(Double.class, TsurugiJdbcResultSetConverter::convertToDouble);
         map.put(BigDecimal.class, TsurugiJdbcResultSetConverter::convertToDecimal);
+
         map.put(String.class, TsurugiJdbcResultSetConverter::convertToString);
         map.put(byte[].class, TsurugiJdbcResultSetConverter::convertToBytes);
-        map.put(java.sql.Blob.class, TsurugiJdbcResultSetConverter::convertToBlob);
-        map.put(java.sql.Clob.class, TsurugiJdbcResultSetConverter::convertToClob);
-        map.put(TsurugiJdbcBlobReference.class, TsurugiJdbcResultSetConverter::convertToBlob);
-        map.put(TsurugiJdbcClobReference.class, TsurugiJdbcResultSetConverter::convertToClob);
+
         map.put(java.sql.Date.class, TsurugiJdbcResultSetConverter::convertToDate);
         map.put(java.sql.Time.class, TsurugiJdbcResultSetConverter::convertToTime);
         map.put(java.sql.Timestamp.class, TsurugiJdbcResultSetConverter::convertToTimestamp);
@@ -586,6 +313,11 @@ public class TsurugiJdbcResultSetConverter {
         map.put(LocalDateTime.class, TsurugiJdbcResultSetConverter::convertToLocalDateTime);
         map.put(OffsetTime.class, TsurugiJdbcResultSetConverter::convertToOffsetTime);
         map.put(OffsetDateTime.class, TsurugiJdbcResultSetConverter::convertToOffsetDateTime);
+
+        map.put(java.sql.Blob.class, TsurugiJdbcResultSetConverter::convertToBlob);
+        map.put(java.sql.Clob.class, TsurugiJdbcResultSetConverter::convertToClob);
+        map.put(TsurugiJdbcBlobReference.class, TsurugiJdbcResultSetConverter::convertToBlob);
+        map.put(TsurugiJdbcClobReference.class, TsurugiJdbcResultSetConverter::convertToClob);
         CONVERTER_MAP = map;
     }
 
@@ -601,6 +333,6 @@ public class TsurugiJdbcResultSetConverter {
             }
         }
 
-        throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+        throw getExceptionHandler().dataTypeMismatchException("Unsupported type", type);
     }
 }

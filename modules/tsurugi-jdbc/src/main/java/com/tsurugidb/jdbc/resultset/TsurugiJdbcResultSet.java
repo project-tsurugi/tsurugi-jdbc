@@ -15,13 +15,11 @@
  */
 package com.tsurugidb.jdbc.resultset;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -43,7 +41,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
@@ -53,6 +51,7 @@ import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.SqlCloser;
+import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 import com.tsurugidb.tsubakuro.util.FutureResponse;
@@ -64,6 +63,8 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     private final TsurugiJdbcStatement ownerStatement;
     private final TsurugiJdbcTransaction transaction;
     private final TsurugiJdbcResultSetProperties properties;
+    private final TsurugiJdbcResultSetConverter resultSetConverter;
+
     private FutureResponse<com.tsurugidb.tsubakuro.sql.ResultSet> resultSetFuture;
     private com.tsurugidb.tsubakuro.sql.ResultSet lowResultSet = null;
 
@@ -71,20 +72,29 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     private Object[] values;
     private Map<String, Integer> columnNameIndexMap;
     private boolean wasNull;
-    private TsurugiJdbcResultSetConverter resultSetConverter = null;
 
     private int currentRowNumber = 0;
     private boolean isAfterLast = false;
     private boolean finished = false;
     private boolean closed = false;
 
-    public TsurugiJdbcResultSet(TsurugiJdbcFactory factory, TsurugiJdbcStatement statement, TsurugiJdbcTransaction transaction, FutureResponse<com.tsurugidb.tsubakuro.sql.ResultSet> resultSetFuture,
+    public TsurugiJdbcResultSet(TsurugiJdbcStatement statement, TsurugiJdbcTransaction transaction, FutureResponse<com.tsurugidb.tsubakuro.sql.ResultSet> resultSetFuture,
             TsurugiJdbcResultSetProperties properties) {
-        this.factory = factory;
         this.ownerStatement = statement;
         this.transaction = transaction;
         this.resultSetFuture = resultSetFuture;
         this.properties = properties;
+
+        var factory = ownerStatement.getFactory();
+        this.resultSetConverter = factory.createResultSetConverter(this);
+    }
+
+    protected TsurugiJdbcResultSetConverter getConverter() {
+        return this.resultSetConverter;
+    }
+
+    public void setConvertUtil(@Nonnull TsurugiJdbcConvertUtil convertUtil) {
+        resultSetConverter.setConvertUtil(convertUtil);
     }
 
     @Override
@@ -94,7 +104,11 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
 
     @Override
     public TsurugiJdbcFactory getFactory() {
-        return this.factory;
+        var f = this.factory;
+        if (f != null) {
+            return f;
+        }
+        return ownerStatement.getFactory();
     }
 
     @Override
@@ -141,14 +155,14 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
 
     @Override
     public boolean next() throws SQLException {
-        var rs = getLowResultSet();
-        if (nextLowRow(rs)) {
+        var lowRs = getLowResultSet();
+        if (nextLowRow(lowRs)) {
             this.currentRowNumber++;
 
-            initializeBuffer(rs);
-            for (int i = 0; nextLowColumn(rs); i++) {
+            initializeBuffer(lowRs);
+            for (int i = 0; nextLowColumn(lowRs); i++) {
                 var getter = getters[i];
-                values[i] = fetchLowValue(rs, getter);
+                values[i] = fetchLowValue(lowRs, getter);
             }
             return true;
         } else {
@@ -161,17 +175,17 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
         }
     }
 
-    private boolean nextLowRow(com.tsurugidb.tsubakuro.sql.ResultSet rs) throws SQLException {
+    private boolean nextLowRow(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
         try {
-            return rs.nextRow();
+            return lowRs.nextRow();
         } catch (IOException | InterruptedException | ServerException e) {
             throw factory.getExceptionHandler().sqlException("ResultSet nextRow error", e);
         }
     }
 
-    private void initializeBuffer(com.tsurugidb.tsubakuro.sql.ResultSet rs) throws SQLException {
+    private void initializeBuffer(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
         if (this.values == null) {
-            var metadata = getLowResultSetMetadata(rs);
+            var metadata = getLowResultSetMetadata(lowRs);
             var columnList = metadata.getColumns();
 
             var getters = new TsurugiJdbcResultSetGetter[columnList.size()];
@@ -185,17 +199,17 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
         }
     }
 
-    private boolean nextLowColumn(com.tsurugidb.tsubakuro.sql.ResultSet rs) throws SQLException {
+    private boolean nextLowColumn(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
         try {
-            return rs.nextColumn();
+            return lowRs.nextColumn();
         } catch (IOException | InterruptedException | ServerException e) {
             throw factory.getExceptionHandler().sqlException("ResultSet nextColumn error", e);
         }
     }
 
-    private Object fetchLowValue(com.tsurugidb.tsubakuro.sql.ResultSet rs, TsurugiJdbcResultSetGetter getter) throws SQLException {
+    private Object fetchLowValue(com.tsurugidb.tsubakuro.sql.ResultSet lowRs, TsurugiJdbcResultSetGetter getter) throws SQLException {
         try {
-            return getter.fetchValue(this, rs);
+            return getter.fetchValue(this, lowRs);
         } catch (IOException | InterruptedException | ServerException e) {
             throw factory.getExceptionHandler().sqlException("ResultSet fetchValue error", e);
         }
@@ -206,133 +220,116 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
         return this.wasNull;
     }
 
-    public void setConverter(@Nullable TsurugiJdbcResultSetConverter converter) {
-        this.resultSetConverter = converter;
-    }
-
-    protected TsurugiJdbcResultSetConverter getConverter() {
-        if (this.resultSetConverter != null) {
-            return this.resultSetConverter;
-        }
-        return factory.getResultSetConverter();
-    }
-
     @Override
     public String getString(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToString(this, value);
+        return converter.convertToString(value);
     }
 
     @Override
     public boolean getBoolean(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToBoolean(this, value);
+        return converter.convertToBoolean(value);
     }
 
     @Override
     public byte getByte(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToByte(this, value);
+        return converter.convertToByte(value);
     }
 
     @Override
     public short getShort(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToShort(this, value);
+        return converter.convertToShort(value);
     }
 
     @Override
     public int getInt(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToInt(this, value);
+        return converter.convertToInt(value);
     }
 
     @Override
     public long getLong(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToLong(this, value);
+        return converter.convertToLong(value);
     }
 
     @Override
     public float getFloat(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToFloat(this, value);
+        return converter.convertToFloat(value);
     }
 
     @Override
     public double getDouble(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToDouble(this, value);
+        return converter.convertToDouble(value);
     }
 
     @Override
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToDecimal(this, value, scale);
+        return converter.convertToDecimal(value, scale);
     }
 
     @Override
     public byte[] getBytes(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToBytes(this, value);
+        return converter.convertToBytes(value);
     }
 
     @Override
     public Date getDate(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToDate(this, value);
+        return converter.convertToDate(value);
     }
 
     @Override
     public Time getTime(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToTime(this, value);
+        return converter.convertToTime(value);
     }
 
     @Override
     public Timestamp getTimestamp(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToTimestamp(this, value);
+        return converter.convertToTimestamp(value);
     }
 
     @Override
     public InputStream getAsciiStream(int columnIndex) throws SQLException {
-        String value = getString(columnIndex); // TODO getAsciiStream
-        if (value == null) {
-            return null;
-        }
-        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
-        return new ByteArrayInputStream(bytes);
+        Object value = getObject(columnIndex);
+        var converter = getConverter();
+        return converter.convertToAsciiStream(value);
     }
 
     @Override
     public InputStream getUnicodeStream(int columnIndex) throws SQLException {
-        String value = getString(columnIndex); // TODO getUnicodeStream
-        if (value == null) {
-            return null;
-        }
-        byte[] bytes = value.getBytes(StandardCharsets.UTF_16);
-        return new ByteArrayInputStream(bytes);
+        Object value = getObject(columnIndex);
+        var converter = getConverter();
+        return converter.convertToUnicodeStream(value);
     }
 
     @Override
     public InputStream getBinaryStream(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToInputStream(this, value);
+        return converter.convertToBinaryStream(value);
     }
 
     @Override
@@ -502,7 +499,7 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     public Reader getCharacterStream(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToReader(this, value);
+        return converter.convertToCharacterStream(value);
     }
 
     @Override
@@ -515,7 +512,7 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToDecimal(this, value);
+        return converter.convertToDecimal(value);
     }
 
     @Override
@@ -942,14 +939,14 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     public Blob getBlob(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToBlob(this, value);
+        return converter.convertToBlob(value);
     }
 
     @Override
     public Clob getClob(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToClob(this, value);
+        return converter.convertToClob(value);
     }
 
     @Override
@@ -990,38 +987,44 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
 
     @Override
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        // FIXME calendar
+        Object value = getObject(columnIndex);
+        var converter = getConverter();
+        return converter.convertToDate(value);
     }
 
     @Override
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        int columnIndex = findColumn(columnLabel);
+        return getDate(columnIndex, cal);
     }
 
     @Override
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        // FIXME calendar
+        Object value = getObject(columnIndex);
+        var converter = getConverter();
+        return converter.convertToTime(value);
     }
 
     @Override
     public Time getTime(String columnLabel, Calendar cal) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        int columnIndex = findColumn(columnLabel);
+        return getTime(columnIndex, cal);
     }
 
     @Override
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        // FIXME calendar
+        Object value = getObject(columnIndex);
+        var converter = getConverter();
+        return converter.convertToTimestamp(value);
     }
 
     @Override
     public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        int columnIndex = findColumn(columnLabel);
+        return getTimestamp(columnIndex, cal);
     }
 
     @Override
@@ -1369,7 +1372,7 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
-        return converter.convertToType(this, value, type);
+        return converter.convertToType(value, type);
     }
 
     @Override
