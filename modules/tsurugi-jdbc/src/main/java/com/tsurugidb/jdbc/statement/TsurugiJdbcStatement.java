@@ -17,18 +17,24 @@ package com.tsurugidb.jdbc.statement;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
+import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
+import com.tsurugidb.jdbc.util.SqlCloser;
 import com.tsurugidb.tsubakuro.sql.ExecuteResult;
+import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 
 public class TsurugiJdbcStatement implements Statement, HasFactory {
 
@@ -37,6 +43,10 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     protected final TsurugiJdbcStatementProperties properties;
 
     private TsurugiJdbcResultSet executingResultSet = null;
+    private ExecuteResult lowUpdateResult = null;
+
+    private boolean poolable = false;
+    private boolean closeOnCompletion = false;
 
     private boolean closed = false;
 
@@ -92,18 +102,16 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         int timeout = properties.getExecuteTimeout();
 
         var transaction = connection.getTransaction();
-        ExecuteResult result = transaction.executeAndAutoCommit(lowTransaction -> {
+        ExecuteResult lowResult = transaction.executeAndAutoCommit(lowTransaction -> {
             return lowTransaction.executeStatement(sql).await(timeout, TimeUnit.SECONDS);
         });
 
-        long count = 0;
-        for (long c : result.getCounters().values()) {
-            count += c;
-        }
-        return (int) count;
+        return getUpdateCount(lowResult);
     }
 
     protected void closeExecutingResultSet() throws SQLException {
+        this.lowUpdateResult = null;
+
         var rs = this.executingResultSet;
         if (rs != null) {
             this.executingResultSet = null;
@@ -116,6 +124,10 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     protected void setExecutingResultSet(TsurugiJdbcResultSet rs) {
         this.executingResultSet = rs;
+    }
+
+    protected void setLowUpdateResult(ExecuteResult result) {
+        this.lowUpdateResult = result;
     }
 
     @Override
@@ -159,9 +171,9 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public void cancel() throws SQLException {
-        // TODO Auto-generated method stub
-
+        throw new SQLFeatureNotSupportedException("cancel not supported");
     }
 
     @Override
@@ -177,32 +189,88 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public void setCursorName(String name) throws SQLException {
-        // TODO Auto-generated method stub
-
+        throw new SQLFeatureNotSupportedException("setCursorName not supported");
     }
 
     @Override
     public boolean execute(String sql) throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        closeExecutingResultSet();
+
+        PreparedStatement lowPs;
+        {
+            var sqlClient = connection.getLowSqlClient();
+            try {
+                int timeout = properties.getDefaultTimeout();
+                lowPs = sqlClient.prepare(sql, List.of()).await(timeout, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                throw factory.getExceptionHandler().sqlException("LowPreparedStatement create error", e);
+            }
+        }
+
+        boolean[] needClose = { true };
+        SqlCloser psCloser = () -> {
+            if (needClose[0]) {
+                try {
+                    lowPs.close();
+                } catch (Exception e) {
+                    throw factory.getExceptionHandler().sqlException("LowPreparedStatement close error", e);
+                }
+            }
+        };
+
+        try (psCloser) {
+            var transaction = connection.getTransaction();
+
+            if (lowPs.hasResultRecords()) {
+                var rs = transaction.executeOnly(lowTransaction -> {
+                    var future = lowTransaction.executeQuery(lowPs, List.of());
+                    return factory.createResultSet(this, transaction, future, properties);
+                });
+
+                rs.setLowPreparedStatement(lowPs);
+                needClose[0] = false;
+
+                setExecutingResultSet(rs);
+                return true;
+            } else {
+                int timeout = properties.getExecuteTimeout();
+                ExecuteResult lowResult = transaction.executeAndAutoCommit(lowTransaction -> {
+                    return lowTransaction.executeStatement(lowPs, List.of()).await(timeout, TimeUnit.SECONDS);
+                });
+
+                setLowUpdateResult(lowResult);
+                return false;
+            }
+        }
     }
 
     @Override
     public ResultSet getResultSet() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return this.executingResultSet;
     }
 
     @Override
     public int getUpdateCount() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        var lowResult = this.lowUpdateResult;
+        if (lowResult == null) {
+            return -1;
+        }
+
+        return getUpdateCount(lowResult);
+    }
+
+    protected int getUpdateCount(@Nonnull ExecuteResult lowResult) {
+        long count = 0;
+        for (long c : lowResult.getCounters().values()) {
+            count += c;
+        }
+        return (int) count;
     }
 
     @Override
     public boolean getMoreResults() throws SQLException {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -232,14 +300,12 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     @Override
     public int getResultSetConcurrency() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        return ResultSet.CONCUR_READ_ONLY;
     }
 
     @Override
     public int getResultSetType() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        return ResultSet.TYPE_FORWARD_ONLY;
     }
 
     @Override
@@ -266,81 +332,76 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public boolean getMoreResults(int current) throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        throw new SQLFeatureNotSupportedException("getMoreResults not supported");
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public ResultSet getGeneratedKeys() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new SQLFeatureNotSupportedException("executeUpdate not supported");
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new SQLFeatureNotSupportedException("executeUpdate not supported");
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new SQLFeatureNotSupportedException("executeUpdate not supported");
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public int executeUpdate(String sql, String[] columnNames) throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new SQLFeatureNotSupportedException("executeUpdate not supported");
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        throw new SQLFeatureNotSupportedException("execute not supported");
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public boolean execute(String sql, int[] columnIndexes) throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        throw new SQLFeatureNotSupportedException("execute not supported");
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public boolean execute(String sql, String[] columnNames) throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        throw new SQLFeatureNotSupportedException("execute not supported");
     }
 
     @Override
     public int getResultSetHoldability() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        return ResultSet.CLOSE_CURSORS_AT_COMMIT;
     }
 
     @Override
     public void setPoolable(boolean poolable) throws SQLException {
-        // TODO Auto-generated method stub
-
+        this.poolable = poolable;
     }
 
     @Override
     public boolean isPoolable() throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        return this.poolable;
     }
 
     @Override
     public void closeOnCompletion() throws SQLException {
-        // TODO Auto-generated method stub
-
+        this.closeOnCompletion = true;
     }
 
     @Override
     public boolean isCloseOnCompletion() throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        return this.closeOnCompletion;
     }
 
     @Override

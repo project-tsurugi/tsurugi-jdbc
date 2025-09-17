@@ -53,6 +53,7 @@ import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.SqlCloser;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 import com.tsurugidb.tsubakuro.exception.ServerException;
+import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 import com.tsurugidb.tsubakuro.util.FutureResponse;
 
@@ -64,6 +65,7 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     private final TsurugiJdbcTransaction transaction;
     private final TsurugiJdbcResultSetProperties properties;
     private final TsurugiJdbcResultSetConverter resultSetConverter;
+    private PreparedStatement lowPreparedStatement = null; // close on ResultSet.close()
 
     private FutureResponse<com.tsurugidb.tsubakuro.sql.ResultSet> resultSetFuture;
     private com.tsurugidb.tsubakuro.sql.ResultSet lowResultSet = null;
@@ -123,6 +125,10 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return iface.isInstance(this);
+    }
+
+    public void setLowPreparedStatement(PreparedStatement lowPs) {
+        this.lowPreparedStatement = lowPs;
     }
 
     @TsurugiJdbcInternal
@@ -443,7 +449,7 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     @Override
     @TsurugiJdbcNotSupported
     public String getCursorName() throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException("getCursorName not supported");
     }
 
     @Override
@@ -1385,10 +1391,15 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     public void close() throws SQLException {
         this.closed = true;
 
+        SqlCloser statement = () -> {
+            if (ownerStatement.isCloseOnCompletion()) {
+                ownerStatement.close();
+            }
+        };
         SqlCloser commit = this::finish; // commit when AutoCommit
 
         // The lowResultSet must be closed before commit.
-        try (commit; var f = resultSetFuture; var rs = lowResultSet) {
+        try (statement; var ps = lowPreparedStatement; commit; var f = resultSetFuture; var rs = lowResultSet) {
             // close only
         } catch (IOException | InterruptedException | ServerException e) {
             throw factory.getExceptionHandler().sqlException("ResultSet close error", e);

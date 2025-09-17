@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -84,7 +83,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
             try {
                 int timeout = properties.getDefaultTimeout();
                 this.lowPreparedStatement = sqlClient.prepare(sql, lowPlaceholderList).await(timeout, TimeUnit.SECONDS);
-            } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
+            } catch (Exception e) {
                 throw factory.getExceptionHandler().sqlException("LowPreparedStatement create error", e);
             }
         }

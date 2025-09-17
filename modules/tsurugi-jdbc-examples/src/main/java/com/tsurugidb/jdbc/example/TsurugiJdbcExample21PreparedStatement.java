@@ -18,6 +18,7 @@ package com.tsurugidb.jdbc.example;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -26,10 +27,10 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
- * Tsurugi JDBC Statement executeUpdate(), executeQuery() example.
+ * Tsurugi JDBC PreparedStatement executeUpdate(), executeQuery() example.
  */
-public class TsurugiJdbcExample11Statement {
-    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample11Statement.class);
+public class TsurugiJdbcExample21PreparedStatement {
+    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample21PreparedStatement.class);
 
     private static final String JDBC_URL = "jdbc:tsurugi:tcp://localhost:12345";
 
@@ -57,9 +58,9 @@ public class TsurugiJdbcExample11Statement {
         LOG.info("dropTable() start");
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        try (var statement = connection.createStatement()) {
-            String sql = "drop table if exists test";
-            int r = statement.executeUpdate(sql);
+        String sql = "drop table if exists test";
+        try (var ps = connection.prepareStatement(sql)) {
+            int r = ps.executeUpdate();
             LOG.info("dropTable().count={}", r);
         }
 
@@ -70,13 +71,13 @@ public class TsurugiJdbcExample11Statement {
         LOG.info("createTable() start");
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        try (var statement = connection.createStatement()) {
-            String sql = "create table test (" //
-                    + " foo int primary key," //
-                    + " bar bigint," //
-                    + " zzz varchar(10)" //
-                    + ")";
-            int r = statement.executeUpdate(sql);
+        String sql = "create table test (" //
+                + " foo int primary key," //
+                + " bar bigint," //
+                + " zzz varchar(10)" //
+                + ")";
+        try (var ps = connection.prepareStatement(sql)) {
+            int r = ps.executeUpdate();
             LOG.info("createTable().count={}", r);
         }
 
@@ -89,27 +90,32 @@ public class TsurugiJdbcExample11Statement {
         connection.setAutoCommit(false);
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        try (var statement = connection.createStatement()) {
+        String sql = "insert into test values(?, ?, ?)";
+        try (var ps = connection.prepareStatement(sql)) {
             for (int i = 0; i < 6; i++) {
-                String sql;
+                ps.setInt(1, i);
                 if (i < 3) {
-                    sql = String.format("insert into test values(%d, %d, '%d')", i, i + 10, i);
+                    ps.setLong(2, i + 10);
+                    ps.setString(3, Integer.toString(i));
                 } else {
                     switch (i % 3) {
                     case 0:
-                        sql = String.format("insert into test values(%d, null, null)", i);
+                        ps.setNull(2, Types.BIGINT);
+                        ps.setNull(3, Types.VARCHAR);
                         break;
                     case 1:
-                        sql = String.format("insert into test values(%d, null, '%d')", i, i);
+                        ps.setNull(2, Types.BIGINT);
+                        ps.setString(3, Integer.toString(i));
                         break;
                     case 2:
-                        sql = String.format("insert into test values(%d, %d, null)", i, i + 10);
+                        ps.setLong(2, i + 10);
+                        ps.setNull(3, Types.VARCHAR);
                         break;
                     default:
                         throw new InternalError();
                     }
                 }
-                int r = statement.executeUpdate(sql);
+                int r = ps.executeUpdate();
                 LOG.info("insert.count={}", r);
             }
         }
@@ -125,29 +131,33 @@ public class TsurugiJdbcExample11Statement {
         connection.setAutoCommit(true);
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        try (var statement = connection.createStatement()) {
-            String sql = "select * from test order by foo";
-            try (var rs = statement.executeQuery(sql)) {
-                while (rs.next()) {
-                    var result = new ArrayList<Object>();
+        String sql = "select * from test where foo=?";
+        try (var ps = connection.prepareStatement(sql)) {
+            for (int i = 0; i < 6; i++) {
+                ps.setInt(1, i);
 
-                    int foo = rs.getInt(1);
-                    assert rs.wasNull() == false;
-                    result.add(foo);
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        var result = new ArrayList<Object>();
 
-                    long bar = rs.getLong(2);
-                    if (rs.wasNull()) {
-                        assert bar == 0L;
-                        result.add(null);
-                    } else {
-                        result.add(bar);
+                        int foo = rs.getInt(1);
+                        assert rs.wasNull() == false;
+                        result.add(foo);
+
+                        long bar = rs.getLong(2);
+                        if (rs.wasNull()) {
+                            assert bar == 0L;
+                            result.add(null);
+                        } else {
+                            result.add(bar);
+                        }
+
+                        String zzz = rs.getString(3);
+                        assert rs.wasNull() == (zzz == null);
+                        result.add(zzz);
+
+                        System.out.println(result);
                     }
-
-                    String zzz = rs.getString(3);
-                    assert rs.wasNull() == (zzz == null);
-                    result.add(zzz);
-
-                    System.out.println(result);
                 }
             }
         }
@@ -161,29 +171,33 @@ public class TsurugiJdbcExample11Statement {
         connection.setAutoCommit(true);
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        try (var statement = connection.createStatement()) {
-            String sql = "select * from test order by foo";
-            try (var rs = statement.executeQuery(sql)) {
-                while (rs.next()) {
-                    var result = new ArrayList<Object>();
+        String sql = "select * from test where foo=?";
+        try (var ps = connection.prepareStatement(sql)) {
+            for (int i = 0; i < 6; i++) {
+                ps.setInt(1, i);
 
-                    int foo = rs.getInt("foo");
-                    assert rs.wasNull() == false;
-                    result.add(foo);
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        var result = new ArrayList<Object>();
 
-                    long bar = rs.getLong("bar");
-                    if (rs.wasNull()) {
-                        assert bar == 0L;
-                        result.add(null);
-                    } else {
-                        result.add(bar);
+                        int foo = rs.getInt("foo");
+                        assert rs.wasNull() == false;
+                        result.add(foo);
+
+                        long bar = rs.getLong("bar");
+                        if (rs.wasNull()) {
+                            assert bar == 0L;
+                            result.add(null);
+                        } else {
+                            result.add(bar);
+                        }
+
+                        String zzz = rs.getString("zzz");
+                        assert rs.wasNull() == (zzz == null);
+                        result.add(zzz);
+
+                        System.out.println(result);
                     }
-
-                    String zzz = rs.getString("zzz");
-                    assert rs.wasNull() == (zzz == null);
-                    result.add(zzz);
-
-                    System.out.println(result);
                 }
             }
         }
