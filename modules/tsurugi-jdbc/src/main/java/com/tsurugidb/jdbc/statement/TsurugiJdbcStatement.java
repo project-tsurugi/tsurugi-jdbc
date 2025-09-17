@@ -409,8 +409,13 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     public void close() throws SQLException {
         this.closed = true;
 
-        try (var rs = executingResultSet) {
-            // close only
+        try {
+            var rs = this.executingResultSet;
+            if (rs != null && !rs.isClosed()) {
+                rs.close();
+            }
+        } catch (Exception e) {
+            throw factory.getExceptionHandler().sqlException("Statement close error", e);
         }
     }
 

@@ -314,8 +314,29 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     @Override
     public boolean execute() throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        closeExecutingResultSet();
+
+        var lowPs = getLowPreparedStatement();
+
+        var transaction = connection.getTransaction();
+
+        if (lowPs.hasResultRecords()) {
+            var rs = transaction.executeOnly(lowTransaction -> {
+                var future = lowTransaction.executeQuery(lowPs, lowParameterList);
+                return factory.createResultSet(this, transaction, future, properties);
+            });
+
+            setExecutingResultSet(rs);
+            return true;
+        } else {
+            int timeout = properties.getExecuteTimeout();
+            ExecuteResult lowResult = transaction.executeAndAutoCommit(lowTransaction -> {
+                return lowTransaction.executeStatement(lowPs, lowParameterList).await(timeout, TimeUnit.SECONDS);
+            });
+
+            setLowUpdateResult(lowResult);
+            return false;
+        }
     }
 
     @Override

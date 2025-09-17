@@ -35,7 +35,9 @@ import com.tsurugidb.tsubakuro.sql.exception.CcException;
 public class TsurugiJdbcExceptionHandler {
 
     public SQLException sqlException(String baseMessage, Exception e) {
-
+        if (e instanceof SQLException) {
+            return sqlException(baseMessage, (SQLException) e);
+        }
         if (e instanceof IOException) {
             return sqlException(baseMessage, (IOException) e);
         }
@@ -59,6 +61,11 @@ public class TsurugiJdbcExceptionHandler {
             baseMessage += " (" + causeMessage + ")";
         }
         return baseMessage;
+    }
+
+    public SQLException sqlException(String baseMessage, SQLException e) {
+        String message = message(baseMessage, e);
+        return new SQLException(message, e.getSQLState(), e.getErrorCode(), e);
     }
 
     public SQLException sqlException(String baseMessage, IOException e) {
