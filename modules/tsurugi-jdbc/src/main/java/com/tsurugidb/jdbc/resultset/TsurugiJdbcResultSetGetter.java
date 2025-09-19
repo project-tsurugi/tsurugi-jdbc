@@ -64,8 +64,8 @@ public class TsurugiJdbcResultSetGetter {
         return new TsurugiJdbcClobReference(ownerResultSet, lowClob);
     }
 
-    public static TsurugiJdbcResultSetGetter of(Column column) {
-        var atomType = column.getAtomType();
+    public static TsurugiJdbcResultSetGetter of(Column lowColumn) {
+        var atomType = lowColumn.getAtomType();
         var getter = ATOM_TYPE_GETTER_MAP.get(atomType);
         if (getter == null) {
             throw new UnsupportedOperationException(MessageFormat.format("AtomType.{0} is not supported", atomType));

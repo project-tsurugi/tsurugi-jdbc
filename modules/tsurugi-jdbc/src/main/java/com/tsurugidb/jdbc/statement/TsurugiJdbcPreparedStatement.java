@@ -49,6 +49,7 @@ import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.SqlCloser;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
+import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 import com.tsurugidb.sql.proto.SqlRequest.Parameter;
 import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
@@ -75,6 +76,10 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     public void setConvertUtil(@Nonnull TsurugiJdbcConvertUtil convertUtil) {
         parameterGenerator.setConvertUtil(convertUtil);
+    }
+
+    protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
+        return getFactory().getSqlTypeUtil();
     }
 
     protected com.tsurugidb.tsubakuro.sql.PreparedStatement getLowPreparedStatement() throws SQLException {
@@ -182,7 +187,8 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     @Override
     public void setNull(int parameterIndex, int sqlType) throws SQLException {
         if (this.lowPreparedStatement == null) {
-            var atomType = TsurugiJdbcSqlType.toLowAtomType(sqlType);
+            var util = getSqlTypeUtil();
+            var atomType = util.toLowAtomType(sqlType);
             setNull(parameterIndex, atomType);
         } else {
             String name = placeholderName(parameterIndex);
@@ -298,7 +304,8 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     @Override
     public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
-        var atomType = TsurugiJdbcSqlType.toLowAtomType(targetSqlType);
+        var util = getSqlTypeUtil();
+        var atomType = util.toLowAtomType(targetSqlType);
         setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x, atomType));
     }
 

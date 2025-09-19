@@ -27,7 +27,6 @@ import java.sql.Date;
 import java.sql.NClob;
 import java.sql.Ref;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -69,6 +68,7 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
 
     private FutureResponse<com.tsurugidb.tsubakuro.sql.ResultSet> resultSetFuture;
     private com.tsurugidb.tsubakuro.sql.ResultSet lowResultSet = null;
+    private TsurugiJdbcResultSetMetaData resultSetMetaData = null;
 
     private TsurugiJdbcResultSetGetter[] getters;
     private Object[] values;
@@ -151,10 +151,10 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
         return this.lowResultSet;
     }
 
-    protected ResultSetMetadata getLowResultSetMetadata(com.tsurugidb.tsubakuro.sql.ResultSet rs) throws SQLException {
+    protected ResultSetMetadata getLowResultSetMetadata(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
         try {
-            return rs.getMetadata();
-        } catch (IOException | InterruptedException | ServerException e) {
+            return lowRs.getMetadata();
+        } catch (Exception e) {
             throw factory.getExceptionHandler().sqlException("ResultSet getMetadata error", e);
         }
     }
@@ -191,17 +191,17 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
 
     private void initializeBuffer(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
         if (this.values == null) {
-            var metadata = getLowResultSetMetadata(lowRs);
-            var columnList = metadata.getColumns();
+            var lowMetadata = getLowResultSetMetadata(lowRs);
+            var lowColumnList = lowMetadata.getColumns();
 
-            var getters = new TsurugiJdbcResultSetGetter[columnList.size()];
-            for (int i = 0; i < columnList.size(); i++) {
-                var column = columnList.get(i);
-                getters[i] = TsurugiJdbcResultSetGetter.of(column);
+            var getters = new TsurugiJdbcResultSetGetter[lowColumnList.size()];
+            for (int i = 0; i < lowColumnList.size(); i++) {
+                var lowColumn = lowColumnList.get(i);
+                getters[i] = TsurugiJdbcResultSetGetter.of(lowColumn);
             }
             this.getters = getters;
 
-            this.values = new Object[columnList.size()];
+            this.values = new Object[lowColumnList.size()];
         }
     }
 
@@ -453,9 +453,13 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     }
 
     @Override
-    public ResultSetMetaData getMetaData() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+    public TsurugiJdbcResultSetMetaData getMetaData() throws SQLException {
+        if (this.resultSetMetaData == null) {
+            var lowRs = getLowResultSet();
+            var lowRsMetadata = getLowResultSetMetadata(lowRs);
+            this.resultSetMetaData = new TsurugiJdbcResultSetMetaData(this, lowRsMetadata);
+        }
+        return this.resultSetMetaData;
     }
 
     @Override
@@ -480,8 +484,8 @@ public class TsurugiJdbcResultSet implements ResultSet, HasFactory {
     public int findColumn(String columnLabel) throws SQLException {
         if (this.columnNameIndexMap == null) {
             var rs = getLowResultSet();
-            var metadata = getLowResultSetMetadata(rs);
-            var columnList = metadata.getColumns();
+            var lowMetadata = getLowResultSetMetadata(rs);
+            var columnList = lowMetadata.getColumns();
 
             var map = new HashMap<String, Integer>(columnList.size());
             for (int i = 0; i < columnList.size(); i++) {

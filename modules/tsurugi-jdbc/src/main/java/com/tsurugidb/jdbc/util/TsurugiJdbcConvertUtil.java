@@ -29,6 +29,7 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
+import java.util.Locale;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
@@ -68,13 +69,37 @@ public class TsurugiJdbcConvertUtil {
             return (Boolean) value;
         }
         if (value instanceof String) {
-            return !((String) value).equals("0"); // TODO "1" ?
+            return convertToBooleanFromString((String) value);
         }
         if (value instanceof Number) {
-            return ((Number) value).intValue() != 0; // TODO 1 ?
+            return convertToBooleanFromNumber((Number) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToBoolean unsupported type", value.getClass());
+    }
+
+    protected boolean convertToBooleanFromString(@Nonnull String value) throws SQLException {
+        String v = value.toUpperCase(Locale.ENGLISH);
+        switch (v) {
+        case "TRUE":
+            return true;
+        case "FALSE":
+            return false;
+        default:
+            throw getExceptionHandler().dataException("Cannot cast to boolean", null);
+        }
+    }
+
+    protected boolean convertToBooleanFromNumber(@Nonnull Number value) throws SQLException {
+        double v = value.doubleValue();
+        if (v == 1d) {
+            return true;
+        }
+        if (v == 0d) {
+            return false;
+        }
+
+        throw getExceptionHandler().dataException("Cannot cast to boolean", null);
     }
 
     public byte convertToByte(@Nonnull Object value) throws SQLException {

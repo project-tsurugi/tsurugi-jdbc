@@ -56,9 +56,11 @@ public class TsurugiJdbcExceptionHandler {
     }
 
     protected String message(String baseMessage, Exception e) {
-        String causeMessage = e.getMessage();
-        if (causeMessage != null && !causeMessage.isEmpty()) {
-            baseMessage += " (" + causeMessage + ")";
+        if (e != null) {
+            String causeMessage = e.getMessage();
+            if (causeMessage != null && !causeMessage.isEmpty()) {
+                return baseMessage + " (" + causeMessage + ")";
+            }
         }
         return baseMessage;
     }

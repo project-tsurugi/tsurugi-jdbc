@@ -17,6 +17,8 @@ package com.tsurugidb.jdbc.factory;
 
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
+
 import com.tsurugidb.jdbc.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
@@ -30,6 +32,7 @@ import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementProperties;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
+import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.Transaction;
@@ -38,13 +41,22 @@ import com.tsurugidb.tsubakuro.util.FutureResponse;
 public class TsurugiJdbcFactory {
 
     private TsurugiJdbcExceptionHandler exceptionHandler = new TsurugiJdbcExceptionHandler();
+    private TsurugiJdbcSqlTypeUtil sqlTypeUtil = new TsurugiJdbcSqlTypeUtil();
 
-    public void setExceptionHandler(TsurugiJdbcExceptionHandler exceptionHandler) {
+    public void setExceptionHandler(@Nonnull TsurugiJdbcExceptionHandler exceptionHandler) {
         this.exceptionHandler = Objects.requireNonNull(exceptionHandler);
     }
 
     public TsurugiJdbcExceptionHandler getExceptionHandler() {
         return this.exceptionHandler;
+    }
+
+    public void setSqlTypeUtil(@Nonnull TsurugiJdbcSqlTypeUtil sqlTypeUtil) {
+        this.sqlTypeUtil = Objects.requireNonNull(sqlTypeUtil);
+    }
+
+    public TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
+        return this.sqlTypeUtil;
     }
 
     public TsurugiJdbcConnection createConnection(Session lowSession, TsurugiJdbcProperties fromProperties) {
