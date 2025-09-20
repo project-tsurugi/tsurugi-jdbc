@@ -22,7 +22,6 @@ import java.sql.CallableStatement;
 import java.sql.ClientInfoStatus;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -63,15 +62,19 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     private TsurugiJdbcFactory factory;
     private final Session lowSession;
     private final SqlClient lowSqlClient;
+    private final String endpoint;
     private final TsurugiJdbcConnectionProperties properties;
+
+    private TsurugiJdbcDatabaseMetaData metaData = null;
 
     private TsurugiJdbcTransaction transaction = null;
 
     @TsurugiJdbcInternal
-    public TsurugiJdbcConnection(TsurugiJdbcFactory factory, Session lowSession, TsurugiJdbcConnectionProperties properties) {
+    public TsurugiJdbcConnection(TsurugiJdbcFactory factory, Session lowSession, String endpoint, TsurugiJdbcConnectionProperties properties) {
         this.factory = factory;
         this.lowSession = Objects.requireNonNull(lowSession);
         this.lowSqlClient = SqlClient.attach(lowSession);
+        this.endpoint = endpoint;
         this.properties = properties;
     }
 
@@ -83,6 +86,14 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     @Override
     public TsurugiJdbcFactory getFactory() {
         return this.factory;
+    }
+
+    protected String getEndpoint() {
+        return this.endpoint;
+    }
+
+    protected TsurugiJdbcConnectionProperties getProperties() {
+        return this.properties;
     }
 
     @Override
@@ -118,6 +129,11 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     @Override
     public String nativeSQL(String sql) throws SQLException {
         return sql;
+    }
+
+    @TsurugiJdbcInternal
+    public Session getLowSession() {
+        return this.lowSession;
     }
 
     @TsurugiJdbcInternal
@@ -217,9 +233,11 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     @Override
-    public DatabaseMetaData getMetaData() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+    public TsurugiJdbcDatabaseMetaData getMetaData() throws SQLException {
+        if (this.metaData == null) {
+            this.metaData = new TsurugiJdbcDatabaseMetaData(this);
+        }
+        return this.metaData;
     }
 
     @Override

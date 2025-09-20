@@ -60,12 +60,13 @@ public class TsurugiJdbcFactory {
     }
 
     public TsurugiJdbcConnection createConnection(Session lowSession, TsurugiJdbcProperties fromProperties) {
+        String endpoint = fromProperties.getEndpoint();
         var properties = TsurugiJdbcConnectionProperties.of(fromProperties);
-        return createConnection(lowSession, properties);
+        return createConnection(lowSession, endpoint, properties);
     }
 
-    public TsurugiJdbcConnection createConnection(Session lowSession, TsurugiJdbcConnectionProperties properties) {
-        return new TsurugiJdbcConnection(this, lowSession, properties);
+    public TsurugiJdbcConnection createConnection(Session lowSession, String endpoint, TsurugiJdbcConnectionProperties properties) {
+        return new TsurugiJdbcConnection(this, lowSession, endpoint, properties);
     }
 
     public TsurugiJdbcStatement createStatement(TsurugiJdbcConnection connection, TsurugiJdbcConnectionProperties fromProperties) {
@@ -103,7 +104,7 @@ public class TsurugiJdbcFactory {
         return new TsurugiJdbcResultSet(statement, transaction, future, properties);
     }
 
-    public TsurugiJdbcResultSetConverter createResultSetConverter(TsurugiJdbcResultSet resultSet) {
+    public TsurugiJdbcResultSetConverter createResultSetConverter(HasFactory resultSet) {
         return new TsurugiJdbcResultSetConverter(resultSet);
     }
 

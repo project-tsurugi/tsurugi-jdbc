@@ -40,7 +40,17 @@ public class TsurugiDriver implements Driver, HasFactory {
     private static final Logger PARENT_LOGGER = Logger.getLogger(TsurugiDriver.class.getPackageName());
     private static final Logger LOG = Logger.getLogger(TsurugiDriver.class.getName());
 
-    private static final String VERSION = "0.1.0";
+    public static final String DRIVER_NAME = "Tsurugi JDBC Driver";
+    public static final String DRIVER_VERSION = "0.1.0";
+    public static final String TSURUGI_VERSION = "1.6.0"; // FIXME tsurugidbのバージョンが取れるようになるまでの暫定用
+
+    public static final int DRIVER_VERSION_MAJOR;
+    public static final int DRIVER_VERSION_MINAR;
+    static {
+        String[] ss = DRIVER_VERSION.split(Pattern.quote("."));
+        DRIVER_VERSION_MAJOR = Integer.parseInt(ss[0]);
+        DRIVER_VERSION_MINAR = Integer.parseInt(ss[1]);
+    }
 
     static {
         var driver = new TsurugiDriver();
@@ -126,14 +136,12 @@ public class TsurugiDriver implements Driver, HasFactory {
 
     @Override
     public int getMajorVersion() {
-        String[] ss = VERSION.split(Pattern.quote("."));
-        return Integer.parseInt(ss[0]);
+        return DRIVER_VERSION_MAJOR;
     }
 
     @Override
     public int getMinorVersion() {
-        String[] ss = VERSION.split(Pattern.quote("."));
-        return Integer.parseInt(ss[1]);
+        return DRIVER_VERSION_MINAR;
     }
 
     @Override

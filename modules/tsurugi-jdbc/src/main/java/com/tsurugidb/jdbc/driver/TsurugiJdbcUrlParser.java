@@ -78,4 +78,8 @@ public class TsurugiJdbcUrlParser {
     private static String decode(String s) {
         return URLDecoder.decode(s, StandardCharsets.UTF_8);
     }
+
+    public static String getJdbcUrl(String endpoint) {
+        return URL_PREFIX + endpoint;
+    }
 }

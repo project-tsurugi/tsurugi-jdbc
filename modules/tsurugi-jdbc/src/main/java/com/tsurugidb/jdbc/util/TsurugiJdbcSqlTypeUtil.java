@@ -16,6 +16,7 @@
 package com.tsurugidb.jdbc.util;
 
 import java.math.BigDecimal;
+import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -25,7 +26,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.sql.proto.SqlCommon;
@@ -401,5 +406,45 @@ public class TsurugiJdbcSqlTypeUtil {
         default:
             return Optional.empty();
         }
+    }
+
+    public static final List<Object[]> TYPE_INFO_VALUES_LIST;
+    static {
+        var list = new ArrayList<TsurugiJdbcTypeInfo>();
+        list.add(TsurugiJdbcTypeInfo.of("BOOLEAN", JDBCType.BOOLEAN));
+
+        list.add(TsurugiJdbcTypeInfo.of("INT", JDBCType.INTEGER).unsignedAttribute(false));
+        list.add(TsurugiJdbcTypeInfo.of("BIGINT", JDBCType.BIGINT).unsignedAttribute(false).autoIncrement(true));
+
+        var f = TsurugiJdbcTypeInfo.of("REAL", JDBCType.REAL).unsignedAttribute(false);
+        list.add(f);
+        list.add(f.clone("FLOAT", JDBCType.FLOAT));
+        list.add(TsurugiJdbcTypeInfo.of("DOUBLE", JDBCType.DOUBLE).unsignedAttribute(false));
+
+        var d = TsurugiJdbcTypeInfo.of("DECIMAL", JDBCType.DECIMAL).unsignedAttribute(false);
+        list.add(d);
+        list.add(d.clone("NUMERIC", JDBCType.NUMERIC));
+
+        var c = TsurugiJdbcTypeInfo.of("CHAR", JDBCType.CHAR).literalPrefix("'", "'").searchable(DatabaseMetaData.typeSearchable);
+        list.add(c);
+        list.add(c.clone("VARCHAR", JDBCType.VARCHAR));
+
+        var b = TsurugiJdbcTypeInfo.of("BINARY", JDBCType.BINARY).literalPrefix("X'", "'");
+        list.add(b);
+        list.add(b.clone("VARBINARY", JDBCType.VARBINARY));
+
+        list.add(TsurugiJdbcTypeInfo.of("DATE", JDBCType.DATE).literalPrefix("DATE'", "'"));
+        list.add(TsurugiJdbcTypeInfo.of("TIME", JDBCType.TIME).literalPrefix("TIME'", "'"));
+        list.add(TsurugiJdbcTypeInfo.of("TIMESTAMP", JDBCType.TIMESTAMP).literalPrefix("TIMESTAMP'", "'"));
+        list.add(TsurugiJdbcTypeInfo.of("TIME WITH TIME ZONE", JDBCType.TIME_WITH_TIMEZONE).literalPrefix("TIME WITH TIME ZONE'", "'"));
+        list.add(TsurugiJdbcTypeInfo.of("TIMESTAMP WITH TIME ZONE", JDBCType.TIMESTAMP_WITH_TIMEZONE).literalPrefix("TIMESTAMP WITH TIME ZONE'", "'"));
+
+        list.add(TsurugiJdbcTypeInfo.of("BLOB", JDBCType.BLOB).literalPrefix("X'", "'"));
+        list.add(TsurugiJdbcTypeInfo.of("CLOB", JDBCType.CLOB).literalPrefix("'", "'"));
+
+        TYPE_INFO_VALUES_LIST = list.stream() //
+                .sorted(Comparator.comparing(TsurugiJdbcTypeInfo::getSqlType)) //
+                .map(TsurugiJdbcTypeInfo::toValues) //
+                .collect(Collectors.toList());
     }
 }
