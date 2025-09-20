@@ -20,10 +20,22 @@ import java.util.function.Consumer;
 public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
 
     private String value;
+    private String defaultValue;
     private Consumer<String> eventHandler;
 
     public TsurugiJdbcPropertyString(String name) {
         super(name);
+    }
+
+    @Override
+    public TsurugiJdbcPropertyString description(String description) {
+        super.description(description);
+        return this;
+    }
+
+    public TsurugiJdbcPropertyString defaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+        return this;
     }
 
     public TsurugiJdbcPropertyString withEventHandler(Consumer<String> handler) {
@@ -40,23 +52,35 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
     }
 
     @Override
-    public void setFrom(TsurugiJdbcProperty property) {
-        var from = (TsurugiJdbcPropertyString) property;
-        setStringValue(from.value());
+    public void setFrom(TsurugiJdbcProperty fromProperty) {
+        super.setFrom(fromProperty);
+
+        var from = (TsurugiJdbcPropertyString) fromProperty;
+        this.value = from.value;
+        this.defaultValue = from.defaultValue;
     }
 
     public String value() {
+        if (this.value == null) {
+            return this.defaultValue;
+        }
         return this.value;
     }
 
     @Override
     public String getStringValue() {
-        return this.value;
+        return value();
     }
 
     public void ifPresent(Consumer<String> consumer) {
-        if (this.value != null) {
-            consumer.accept(value);
+        String v = value();
+        if (v != null) {
+            consumer.accept(v);
         }
+    }
+
+    @Override
+    public String getStringDefaultValue() {
+        return this.defaultValue;
     }
 }

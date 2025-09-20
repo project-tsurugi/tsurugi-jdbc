@@ -17,9 +17,12 @@ package com.tsurugidb.jdbc.property;
 
 import java.sql.SQLException;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 public abstract class TsurugiJdbcProperty {
 
     private final String name;
+    private String description;
 
     public TsurugiJdbcProperty(String name) {
         this.name = name;
@@ -29,9 +32,23 @@ public abstract class TsurugiJdbcProperty {
         return this.name;
     }
 
+    public TsurugiJdbcProperty description(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public String description() {
+        return this.description;
+    }
+
     public abstract void setStringValue(String value) throws SQLException;
 
-    public abstract void setFrom(TsurugiJdbcProperty property);
+    @OverridingMethodsMustInvokeSuper
+    public void setFrom(TsurugiJdbcProperty fromProperty) {
+        this.description = fromProperty.description;
+    }
 
     public abstract String getStringValue();
+
+    public abstract String getStringDefaultValue();
 }

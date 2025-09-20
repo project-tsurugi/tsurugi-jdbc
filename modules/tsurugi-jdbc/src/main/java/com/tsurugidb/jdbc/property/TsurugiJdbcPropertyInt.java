@@ -21,9 +21,21 @@ import java.util.OptionalInt;
 public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
 
     private OptionalInt value = OptionalInt.empty();
+    private OptionalInt defaultValue = OptionalInt.empty();
 
     public TsurugiJdbcPropertyInt(String name) {
         super(name);
+    }
+
+    @Override
+    public TsurugiJdbcPropertyInt description(String description) {
+        super.description(description);
+        return this;
+    }
+
+    public TsurugiJdbcPropertyInt defaultValue(int defaultValue) {
+        this.defaultValue = OptionalInt.of(defaultValue);
+        return this;
     }
 
     public void setValue(int value) {
@@ -45,20 +57,35 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
     }
 
     @Override
-    public void setFrom(TsurugiJdbcProperty property) {
-        var from = (TsurugiJdbcPropertyInt) property;
-        this.value = from.value();
+    public void setFrom(TsurugiJdbcProperty fromProperty) {
+        super.setFrom(fromProperty);
+
+        var from = (TsurugiJdbcPropertyInt) fromProperty;
+        this.value = from.value;
+        this.defaultValue = from.defaultValue;
     }
 
     public OptionalInt value() {
+        if (this.value.isEmpty()) {
+            return this.defaultValue;
+        }
         return this.value;
     }
 
     @Override
     public String getStringValue() {
-        if (value.isPresent()) {
-            return Integer.toString(value.getAsInt());
+        OptionalInt v = value();
+        if (v.isEmpty()) {
+            return null;
         }
-        return null;
+        return Integer.toString(v.getAsInt());
+    }
+
+    @Override
+    public String getStringDefaultValue() {
+        if (this.defaultValue.isEmpty()) {
+            return null;
+        }
+        return Integer.toString(defaultValue.getAsInt());
     }
 }

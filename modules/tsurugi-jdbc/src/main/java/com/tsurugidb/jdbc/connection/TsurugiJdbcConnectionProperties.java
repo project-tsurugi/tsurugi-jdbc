@@ -117,7 +117,7 @@ public class TsurugiJdbcConnectionProperties {
     }
 
     public boolean getAutoCommit() {
-        return autoCommit.value(true);
+        return autoCommit.value();
     }
 
     public int getBeginTimeout() {

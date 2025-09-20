@@ -18,9 +18,21 @@ package com.tsurugidb.jdbc.property;
 public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
 
     private Boolean value;
+    private boolean defaultValue;
 
     public TsurugiJdbcPropertyBoolean(String name) {
         super(name);
+    }
+
+    public TsurugiJdbcPropertyBoolean defaultValue(boolean defaultValue) {
+        this.defaultValue = defaultValue;
+        return this;
+    }
+
+    @Override
+    public TsurugiJdbcPropertyBoolean description(String description) {
+        super.description(description);
+        return this;
     }
 
     public void setValue(boolean value) {
@@ -38,23 +50,29 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
     }
 
     @Override
-    public void setFrom(TsurugiJdbcProperty property) {
-        var from = (TsurugiJdbcPropertyBoolean) property;
+    public void setFrom(TsurugiJdbcProperty fromProperty) {
+        super.setFrom(fromProperty);
+
+        var from = (TsurugiJdbcPropertyBoolean) fromProperty;
         this.value = from.value;
+        this.defaultValue = from.defaultValue;
     }
 
-    public boolean value(boolean defaultValue) {
+    public boolean value() {
         if (this.value == null) {
-            return defaultValue;
+            return this.defaultValue;
         }
         return this.value;
     }
 
     @Override
     public String getStringValue() {
-        if (this.value == null) {
-            return null;
-        }
-        return Boolean.toString(this.value);
+        boolean v = value();
+        return Boolean.toString(v);
+    }
+
+    @Override
+    public String getStringDefaultValue() {
+        return Boolean.toString(this.defaultValue);
     }
 }

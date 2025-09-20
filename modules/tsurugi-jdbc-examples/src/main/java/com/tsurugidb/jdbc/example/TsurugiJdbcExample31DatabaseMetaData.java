@@ -76,9 +76,11 @@ public class TsurugiJdbcExample31DatabaseMetaData {
 
         try (var statement = connection.createStatement()) {
             String sql = "create table test (" //
-                    + " foo int primary key," //
-                    + " bar bigint," //
-                    + " zzz varchar(10)" //
+                    + " foo1 int," //
+                    + " foo2 int," //
+                    + " bar bigint not null," //
+                    + " zzz varchar(10)," //
+                    + " primary key(foo1, foo2)" //
                     + ")";
             int r = statement.executeUpdate(sql);
             LOG.info("createTable().count={}", r);
@@ -95,6 +97,7 @@ public class TsurugiJdbcExample31DatabaseMetaData {
             while (rs.next()) {
                 String type = rs.getString("TABLE_TYPE");
                 String tableName = rs.getString("TABLE_NAME");
+
                 System.out.printf("%s\t%s%n", type, tableName);
             }
         }
@@ -107,11 +110,13 @@ public class TsurugiJdbcExample31DatabaseMetaData {
 
         try (var rs = metadata.getColumns("", "", "test", "%")) {
             while (rs.next()) {
+                int position = rs.getInt("ORDINAL_POSITION");
                 String tableName = rs.getString("TABLE_NAME");
                 String columnName = rs.getString("COLUMN_NAME");
                 String type = rs.getString("TYPE_NAME");
-                int position = rs.getInt("ORDINAL_POSITION");
-                System.out.printf("%d. %s.%s\t%s%n", position, tableName, columnName, type);
+                String isNullable = rs.getString("IS_NULLABLE");
+
+                System.out.printf("%d. %s.%s\t%s nullable=%s%n", position, tableName, columnName, type, isNullable);
             }
         }
 
@@ -140,6 +145,7 @@ public class TsurugiJdbcExample31DatabaseMetaData {
             while (rs.next()) {
                 String typeName = rs.getString("TYPE_NAME");
                 int dataType = rs.getInt("DATA_TYPE");
+
                 System.out.printf("%s\t%d%n", typeName, dataType);
             }
         }
@@ -153,7 +159,10 @@ public class TsurugiJdbcExample31DatabaseMetaData {
         try (var rs = metadata.getClientInfoProperties()) {
             while (rs.next()) {
                 String name = rs.getString("NAME");
-                System.out.printf("%s%n", name);
+                String defaultValue = rs.getString("DEFAULT_VALUE");
+                String description = rs.getString("DESCRIPTION");
+
+                System.out.printf("%s\t%s\t%s%n", name, defaultValue, description);
             }
         }
 

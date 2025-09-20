@@ -63,30 +63,31 @@ public class TsurugiJdbcProperties {
     // Common
     public static final String DEFAULT_TIMEOUT = "defaultTimeout";
 
-    private final TsurugiJdbcPropertyString endpoint = new TsurugiJdbcPropertyString(ENDPOINT);
-    private final TsurugiJdbcPropertyString user = new TsurugiJdbcPropertyString(USER);
-    private final TsurugiJdbcPropertyString password = new TsurugiJdbcPropertyString(PASSWORD);
-    private final TsurugiJdbcPropertyString authToken = new TsurugiJdbcPropertyString(AUTH_TOKEN);
-    private final TsurugiJdbcPropertyString credentials = new TsurugiJdbcPropertyString(CREDENTIALS);
-    private final TsurugiJdbcPropertyString applicationName = new TsurugiJdbcPropertyString(APPLICATION_NAME);
-    private final TsurugiJdbcPropertyString sessionLabel = new TsurugiJdbcPropertyString(SESSION_LABEL);
-    private final TsurugiJdbcPropertyBoolean keepAlive = new TsurugiJdbcPropertyBoolean(KEEP_ALIVE);
-    private final TsurugiJdbcPropertyInt connectTimeout = new TsurugiJdbcPropertyInt(CONNECT_TIMEOUT);
-    private final TsurugiJdbcPropertyEnum<TsurugiJdbcShutdownType> shutdownType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcShutdownType.class, SHUTDOWN_TYPE);
-    private final TsurugiJdbcPropertyInt shutdownTimeout = new TsurugiJdbcPropertyInt(SHUTDOWN_TIMEOUT);
+    private final TsurugiJdbcPropertyString endpoint = new TsurugiJdbcPropertyString(ENDPOINT).description("endpoint url");
+    private final TsurugiJdbcPropertyString user = new TsurugiJdbcPropertyString(USER).description("user");
+    private final TsurugiJdbcPropertyString password = new TsurugiJdbcPropertyString(PASSWORD).description("password");
+    private final TsurugiJdbcPropertyString authToken = new TsurugiJdbcPropertyString(AUTH_TOKEN).description("auth token");
+    private final TsurugiJdbcPropertyString credentials = new TsurugiJdbcPropertyString(CREDENTIALS).description("credential file path");
+    private final TsurugiJdbcPropertyString applicationName = new TsurugiJdbcPropertyString(APPLICATION_NAME).description("application name");
+    private final TsurugiJdbcPropertyString sessionLabel = new TsurugiJdbcPropertyString(SESSION_LABEL).description("session label");
+    private final TsurugiJdbcPropertyBoolean keepAlive = new TsurugiJdbcPropertyBoolean(KEEP_ALIVE).defaultValue(true).description("session keep alive");
+    private final TsurugiJdbcPropertyInt connectTimeout = new TsurugiJdbcPropertyInt(CONNECT_TIMEOUT).description("connect timeout [seconds]");
+    private final TsurugiJdbcPropertyEnum<TsurugiJdbcShutdownType> shutdownType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcShutdownType.class, SHUTDOWN_TYPE).description("session shutdown type");
+    private final TsurugiJdbcPropertyInt shutdownTimeout = new TsurugiJdbcPropertyInt(SHUTDOWN_TIMEOUT).description("session shutdown timeout [seconds]");
 
-    private final TsurugiJdbcPropertyEnum<TsurugiJdbcTransactionType> transactionType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcTransactionType.class, TRANSACTION_TYPE);
-    private final TsurugiJdbcPropertyString transactionLabel = new TsurugiJdbcPropertyString(TRANSACTION_LABEL);
-    private final TsurugiJdbcPropertyBoolean autoCommit = new TsurugiJdbcPropertyBoolean(AUTO_COMMIT);
-    private final TsurugiJdbcPropertyInt beginTimeout = new TsurugiJdbcPropertyInt(BEGIN_TIMEOUT);
-    private final TsurugiJdbcPropertyInt commitTimeout = new TsurugiJdbcPropertyInt(COMMIT_TIMEOUT);
-    private final TsurugiJdbcPropertyInt rollbackTimeout = new TsurugiJdbcPropertyInt(ROLLBACK_TIMEOUT);
+    private final TsurugiJdbcPropertyEnum<TsurugiJdbcTransactionType> transactionType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcTransactionType.class, TRANSACTION_TYPE)
+            .defaultValue(TsurugiJdbcTransactionType.OCC).description("transaction type");
+    private final TsurugiJdbcPropertyString transactionLabel = new TsurugiJdbcPropertyString(TRANSACTION_LABEL).description("transaction label");
+    private final TsurugiJdbcPropertyBoolean autoCommit = new TsurugiJdbcPropertyBoolean(AUTO_COMMIT).defaultValue(true).description("auto commit");
+    private final TsurugiJdbcPropertyInt beginTimeout = new TsurugiJdbcPropertyInt(BEGIN_TIMEOUT).description("transaction begin timeout [seconds]");
+    private final TsurugiJdbcPropertyInt commitTimeout = new TsurugiJdbcPropertyInt(COMMIT_TIMEOUT).description("transaction commit timeout [seconds]");
+    private final TsurugiJdbcPropertyInt rollbackTimeout = new TsurugiJdbcPropertyInt(ROLLBACK_TIMEOUT).description("transaction rollback timeout [seconds]");
 
-    private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT);
+    private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT).description("transaction execute timeout [seconds]");
 
-    private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
+    private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT).description("SELECT timeout [seconds]");
 
-    private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
+    private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT).description("default timeout [seconds]");
 
     private final TsurugiJdbcInternalProperties properties = TsurugiJdbcInternalProperties.of( //
             endpoint, //
@@ -171,7 +172,7 @@ public class TsurugiJdbcProperties {
     }
 
     public boolean getKeepAlive() {
-        return keepAlive.value(true);
+        return keepAlive.value();
     }
 
     public int getConnectTimeout(int defaultTimeout) {

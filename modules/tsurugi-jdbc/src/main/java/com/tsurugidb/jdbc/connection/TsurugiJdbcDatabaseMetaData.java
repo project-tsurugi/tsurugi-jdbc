@@ -822,7 +822,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, HasFactory
 
                 var lowMetadata = lowSqlClient.getTableMetadata(tableName).await(timeout, TimeUnit.SECONDS);
                 var lowColumnList = lowMetadata.getColumns();
-                int ordinal = 1;
+                int position = 1;
                 for (var lowColumn : lowColumnList) {
                     String columnName = lowColumn.getName();
                     JDBCType jdbcType = util.toJdbcType(lowColumn);
@@ -862,7 +862,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, HasFactory
                                 null, // SQL_DATA_TYPE
                                 null, // SQL_DATETIME_SUB
                                 length, // CHAR_OCTET_LENGTH
-                                ordinal, // ORDINAL_POSITION
+                                position, // ORDINAL_POSITION
                                 isNullable, // IS_NULLABLE
                                 null, // SCOPE_CATALOG
                                 null, // SCOPE_SCHEMA
@@ -873,7 +873,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, HasFactory
                         };
                         valuesList.add(values);
                     }
-                    ordinal++;
+                    position++;
                 }
             }
         } catch (Exception e) {
@@ -1187,17 +1187,16 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, HasFactory
 
     @Override
     public ResultSet getClientInfoProperties() throws SQLException {
-        // FIXME getClientInfoProperties(): DEFAULT_VALUE, DESCRIPTION
         var entries = ownerConnection.getProperties().getInternalProperties().getProperties();
         var valuesList = new ArrayList<Object[]>(entries.size());
         for (var entry : entries) {
             String name = entry.getKey();
-//          var property = entry.getValue();
+            var property = entry.getValue();
             Object[] values = { //
                     name, // NAME
                     0, // MAX_LEN
-                    null, // DEFAULT_VALUE
-                    null, // DESCRIPTION
+                    property.getStringDefaultValue(), // DEFAULT_VALUE
+                    property.description(), // DESCRIPTION
             };
             valuesList.add(values);
         }

@@ -22,11 +22,23 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
 
     private final Class<E> type;
     private E value;
+    private E defaultValue;
     private Consumer<E> eventHandler;
 
     public TsurugiJdbcPropertyEnum(Class<E> type, String name) {
         super(name);
         this.type = type;
+    }
+
+    @Override
+    public TsurugiJdbcPropertyEnum<E> description(String description) {
+        super.description(description);
+        return this;
+    }
+
+    public TsurugiJdbcPropertyEnum<E> defaultValue(E defaultValue) {
+        this.defaultValue = defaultValue;
+        return this;
     }
 
     public TsurugiJdbcPropertyEnum<E> withEventHandler(Consumer<E> handler) {
@@ -59,27 +71,43 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
     }
 
     @Override
-    public void setFrom(TsurugiJdbcProperty property) {
+    public void setFrom(TsurugiJdbcProperty fromProperty) {
+        super.setFrom(fromProperty);
+
         @SuppressWarnings("unchecked")
-        var from = (TsurugiJdbcPropertyEnum<E>) property;
-        this.value = from.value();
+        var from = (TsurugiJdbcPropertyEnum<E>) fromProperty;
+        this.value = from.value;
+        this.defaultValue = from.defaultValue;
     }
 
     public E value() {
+        if (this.value == null) {
+            return this.defaultValue;
+        }
         return this.value;
     }
 
     @Override
     public String getStringValue() {
-        if (this.value == null) {
+        E v = value();
+        if (v == null) {
             return null;
         }
-        return value.name();
+        return v.name();
     }
 
     public void ifPresent(Consumer<E> consumer) {
-        if (this.value != null) {
-            consumer.accept(value);
+        E v = value();
+        if (v != null) {
+            consumer.accept(v);
         }
+    }
+
+    @Override
+    public String getStringDefaultValue() {
+        if (this.defaultValue == null) {
+            return null;
+        }
+        return this.defaultValue.name();
     }
 }
