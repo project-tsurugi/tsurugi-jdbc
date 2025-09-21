@@ -43,11 +43,12 @@ import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 public class TsurugiJdbcConnectionProperties {
 
     public static TsurugiJdbcConnectionProperties of(TsurugiJdbcProperties from) {
-        var properties = new TsurugiJdbcConnectionProperties();
+        var properties = new TsurugiJdbcConnectionProperties(from.getEndpoint());
         properties.properties.copyFrom(from.getInternalProperties());
         return properties;
     }
 
+    private final String endpoint;
     private TransactionOption.Builder transactionOptionBuilder = null;
 
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcTransactionType> transactionType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcTransactionType.class, TRANSACTION_TYPE)
@@ -73,6 +74,14 @@ public class TsurugiJdbcConnectionProperties {
             queryTimeout, //
             shutdownType, shutdownTimeout, //
             defaultTimeout);
+
+    public TsurugiJdbcConnectionProperties(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public String getEndpoint() {
+        return this.endpoint;
+    }
 
     public void put(String key, String value, Map<String, ClientInfoStatus> failedProperties) throws SQLException {
         properties.putForClient(key, value, failedProperties);

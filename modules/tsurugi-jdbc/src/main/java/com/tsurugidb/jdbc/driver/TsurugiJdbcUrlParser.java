@@ -57,6 +57,7 @@ public class TsurugiJdbcUrlParser {
         }
 
         var result = new TsurugiJdbcProperties();
+        result.setEndpoint(endpointUrl);
 
         if (queryString != null) {
             String[] pairs = queryString.split("&");
@@ -69,8 +70,6 @@ public class TsurugiJdbcUrlParser {
                 result.put(factory, key, value);
             }
         }
-
-        result.setEndpoint(endpointUrl);
 
         return result;
     }

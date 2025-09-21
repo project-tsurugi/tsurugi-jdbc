@@ -38,7 +38,6 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
 
 public class TsurugiJdbcProperties {
     // Session
-    public static final String ENDPOINT = "endpoint";
     public static final String USER = "user";
     public static final String PASSWORD = "password";
     public static final String AUTH_TOKEN = "authToken";
@@ -63,7 +62,8 @@ public class TsurugiJdbcProperties {
     // Common
     public static final String DEFAULT_TIMEOUT = "defaultTimeout";
 
-    private final TsurugiJdbcPropertyString endpoint = new TsurugiJdbcPropertyString(ENDPOINT).description("endpoint url");
+    private String endpoint;
+
     private final TsurugiJdbcPropertyString user = new TsurugiJdbcPropertyString(USER).description("user");
     private final TsurugiJdbcPropertyString password = new TsurugiJdbcPropertyString(PASSWORD).description("password");
     private final TsurugiJdbcPropertyString authToken = new TsurugiJdbcPropertyString(AUTH_TOKEN).description("auth token");
@@ -90,7 +90,6 @@ public class TsurugiJdbcProperties {
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT).description("default timeout [seconds]");
 
     private final TsurugiJdbcInternalProperties properties = TsurugiJdbcInternalProperties.of( //
-            endpoint, //
             user, password, authToken, credentials, //
             applicationName, sessionLabel, keepAlive, connectTimeout, //
             shutdownType, shutdownTimeout, //
@@ -116,11 +115,11 @@ public class TsurugiJdbcProperties {
     // Session
 
     public void setEndpoint(String endpoint) {
-        this.endpoint.setStringValue(endpoint);
+        this.endpoint = endpoint;
     }
 
     public String getEndpoint() {
-        return endpoint.value();
+        return endpoint;
     }
 
     public String getUser() {

@@ -62,7 +62,6 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     private TsurugiJdbcFactory factory;
     private final Session lowSession;
     private final SqlClient lowSqlClient;
-    private final String endpoint;
     private final TsurugiJdbcConnectionProperties properties;
 
     private TsurugiJdbcDatabaseMetaData metaData = null;
@@ -70,11 +69,10 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     private TsurugiJdbcTransaction transaction = null;
 
     @TsurugiJdbcInternal
-    public TsurugiJdbcConnection(TsurugiJdbcFactory factory, Session lowSession, String endpoint, TsurugiJdbcConnectionProperties properties) {
+    public TsurugiJdbcConnection(TsurugiJdbcFactory factory, Session lowSession, TsurugiJdbcConnectionProperties properties) {
         this.factory = factory;
         this.lowSession = Objects.requireNonNull(lowSession);
         this.lowSqlClient = SqlClient.attach(lowSession);
-        this.endpoint = endpoint;
         this.properties = properties;
     }
 
@@ -86,10 +84,6 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     @Override
     public TsurugiJdbcFactory getFactory() {
         return this.factory;
-    }
-
-    protected String getEndpoint() {
-        return this.endpoint;
     }
 
     protected TsurugiJdbcConnectionProperties getProperties() {

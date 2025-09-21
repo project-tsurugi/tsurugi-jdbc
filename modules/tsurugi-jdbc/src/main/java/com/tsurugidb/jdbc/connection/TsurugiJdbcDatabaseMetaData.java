@@ -102,7 +102,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, HasFactory
 
     @Override
     public String getURL() throws SQLException {
-        String endpoint = ownerConnection.getEndpoint();
+        String endpoint = ownerConnection.getProperties().getEndpoint();
         return TsurugiJdbcUrlParser.getJdbcUrl(endpoint);
     }
 
