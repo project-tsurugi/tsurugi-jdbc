@@ -35,19 +35,19 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
-import com.tsurugidb.jdbc.factory.HasFactory;
+import com.tsurugidb.jdbc.factory.GetFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
 public class TsurugiJdbcConvertUtil {
 
-    private final HasFactory hasFactory;
+    private final GetFactory factoryHolder;
 
-    public TsurugiJdbcConvertUtil(@Nonnull HasFactory hasFactory) {
-        this.hasFactory = Objects.requireNonNull(hasFactory);
+    public TsurugiJdbcConvertUtil(@Nonnull GetFactory factoryHolder) {
+        this.factoryHolder = Objects.requireNonNull(factoryHolder);
     }
 
     protected TsurugiJdbcFactory getFactory() {
-        return hasFactory.getFactory();
+        return factoryHolder.getFactory();
     }
 
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {

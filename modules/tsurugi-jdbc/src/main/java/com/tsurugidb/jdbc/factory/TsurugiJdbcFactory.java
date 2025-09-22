@@ -23,6 +23,7 @@ import com.tsurugidb.jdbc.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
+import com.tsurugidb.jdbc.resultset.AbstractResultSet;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetConverter;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetProperties;
@@ -103,11 +104,11 @@ public class TsurugiJdbcFactory {
         return new TsurugiJdbcResultSet(statement, transaction, future, properties);
     }
 
-    public TsurugiJdbcResultSetConverter createResultSetConverter(HasFactory resultSet) {
+    public TsurugiJdbcResultSetConverter createResultSetConverter(AbstractResultSet resultSet) {
         return new TsurugiJdbcResultSetConverter(resultSet);
     }
 
-    public TsurugiJdbcConvertUtil createConvertUtil(HasFactory hasFactory) {
-        return new TsurugiJdbcConvertUtil(hasFactory);
+    public TsurugiJdbcConvertUtil createConvertUtil(GetFactory factoryHolder) {
+        return new TsurugiJdbcConvertUtil(factoryHolder);
     }
 }

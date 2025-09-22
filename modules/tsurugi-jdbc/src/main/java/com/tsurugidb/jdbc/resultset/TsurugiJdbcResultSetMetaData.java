@@ -19,6 +19,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
+import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.sql.proto.SqlCommon;
@@ -39,6 +40,10 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
         return ownerResultSet.getFactory();
     }
 
+    protected TsurugiJdbcExceptionHandler getExceptionHandler() {
+        return getFactory().getExceptionHandler();
+    }
+
     protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
         return getFactory().getSqlTypeUtil();
     }
@@ -48,7 +53,7 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
         try {
             return iface.cast(this);
         } catch (ClassCastException e) {
-            throw getFactory().getExceptionHandler().unwrapException(iface);
+            throw getExceptionHandler().unwrapException(iface);
         }
     }
 
@@ -70,7 +75,7 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
         try {
             return lowColumnList.get(index);
         } catch (IndexOutOfBoundsException e) {
-            throw getFactory().getExceptionHandler().sqlException("getLowColumn error", e);
+            throw getExceptionHandler().sqlException("getLowColumn error", e);
         }
     }
 

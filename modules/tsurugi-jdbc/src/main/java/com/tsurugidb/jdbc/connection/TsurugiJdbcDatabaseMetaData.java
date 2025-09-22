@@ -32,7 +32,7 @@ import com.tsurugidb.jdbc.TsurugiDriver;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
-import com.tsurugidb.jdbc.factory.HasFactory;
+import com.tsurugidb.jdbc.factory.GetFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.resultset.FixedResultSet;
 import com.tsurugidb.jdbc.resultset.FixedResultSetColumn;
@@ -41,26 +41,16 @@ import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
 
-public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, HasFactory {
+public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory {
 
     private final TsurugiJdbcConnection ownerConnection;
-    private TsurugiJdbcFactory factory;
 
     public TsurugiJdbcDatabaseMetaData(TsurugiJdbcConnection ownerConnection) {
         this.ownerConnection = ownerConnection;
     }
 
     @Override
-    public void setFactory(TsurugiJdbcFactory factory) {
-        this.factory = factory;
-    }
-
-    @Override
     public TsurugiJdbcFactory getFactory() {
-        var f = this.factory;
-        if (f != null) {
-            return f;
-        }
         return ownerConnection.getFactory();
     }
 

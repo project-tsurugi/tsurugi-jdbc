@@ -41,15 +41,14 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
-import com.tsurugidb.jdbc.factory.HasFactory;
+import com.tsurugidb.jdbc.factory.GetFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 
 @NotThreadSafe
-public abstract class AbstractResultSet implements ResultSet, HasFactory {
+public abstract class AbstractResultSet implements ResultSet, GetFactory {
 
-    private final HasFactory hasFactory;
-    private TsurugiJdbcFactory factory;
+    private final GetFactory factoryHolder;
     private TsurugiJdbcResultSetConverter resultSetConverter;
 
     private Map<String, Integer> columnNameIndexMap;
@@ -59,8 +58,8 @@ public abstract class AbstractResultSet implements ResultSet, HasFactory {
 
     protected boolean closed = false;
 
-    public AbstractResultSet(HasFactory owner) {
-        this.hasFactory = owner;
+    public AbstractResultSet(GetFactory owner) {
+        this.factoryHolder = owner;
 
         this.resultSetConverter = owner.getFactory().createResultSetConverter(this);
     }
@@ -74,17 +73,8 @@ public abstract class AbstractResultSet implements ResultSet, HasFactory {
     }
 
     @Override
-    public void setFactory(TsurugiJdbcFactory factory) {
-        this.factory = factory;
-    }
-
-    @Override
     public TsurugiJdbcFactory getFactory() {
-        var f = this.factory;
-        if (f != null) {
-            return f;
-        }
-        return hasFactory.getFactory();
+        return factoryHolder.getFactory();
     }
 
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
@@ -96,7 +86,7 @@ public abstract class AbstractResultSet implements ResultSet, HasFactory {
         try {
             return iface.cast(this);
         } catch (ClassCastException e) {
-            throw factory.getExceptionHandler().unwrapException(iface);
+            throw getExceptionHandler().unwrapException(iface);
         }
     }
 

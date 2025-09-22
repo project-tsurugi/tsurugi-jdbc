@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.tsurugidb.jdbc.factory.HasFactory;
+import com.tsurugidb.jdbc.factory.GetFactory;
 
 public class FixedResultSet extends AbstractResultSet {
 
@@ -36,7 +36,7 @@ public class FixedResultSet extends AbstractResultSet {
 
     private int currentRowNumber = 0;
 
-    public FixedResultSet(HasFactory owner, List<FixedResultSetColumn> columnList, List<Object[]> valuesList) {
+    public FixedResultSet(GetFactory owner, List<FixedResultSetColumn> columnList, List<Object[]> valuesList) {
         super(owner);
         this.columnList = Objects.requireNonNull(columnList);
         this.valuesList = Objects.requireNonNull(valuesList);

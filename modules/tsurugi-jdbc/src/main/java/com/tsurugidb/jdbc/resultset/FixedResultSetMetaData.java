@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
+import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 
@@ -40,6 +41,10 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         return ownerResultSet.getFactory();
     }
 
+    protected TsurugiJdbcExceptionHandler getExceptionHandler() {
+        return getFactory().getExceptionHandler();
+    }
+
     protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
         return getFactory().getSqlTypeUtil();
     }
@@ -49,7 +54,7 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         try {
             return iface.cast(this);
         } catch (ClassCastException e) {
-            throw getFactory().getExceptionHandler().unwrapException(iface);
+            throw getExceptionHandler().unwrapException(iface);
         }
     }
 
@@ -69,7 +74,7 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         try {
             return columnList.get(index);
         } catch (IndexOutOfBoundsException e) {
-            throw getFactory().getExceptionHandler().sqlException("getColumn error", e);
+            throw getExceptionHandler().sqlException("getColumn error", e);
         }
     }
 
@@ -179,7 +184,7 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         return "";
     }
 
-    public int getLength(int column) throws SQLException{
+    public int getLength(int column) throws SQLException {
         var rawColumn = getColumn(column);
         return rawColumn.length();
     }

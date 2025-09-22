@@ -71,7 +71,7 @@ public class TsurugiJdbcProperties {
 
     private final TsurugiJdbcPropertyString user = new TsurugiJdbcPropertyString(USER).description("user");
     private final TsurugiJdbcPropertyString password = new TsurugiJdbcPropertyString(PASSWORD).description("password");
-    private final TsurugiJdbcPropertyString authToken = new TsurugiJdbcPropertyString(AUTH_TOKEN).description("auth token");
+    private final TsurugiJdbcPropertyString authToken = new TsurugiJdbcPropertyString(AUTH_TOKEN).description("authentication token");
     private final TsurugiJdbcPropertyString credentials = new TsurugiJdbcPropertyString(CREDENTIALS).description("credential file path");
     private final TsurugiJdbcPropertyString applicationName = new TsurugiJdbcPropertyString(APPLICATION_NAME).description("application name");
     private final TsurugiJdbcPropertyString sessionLabel = new TsurugiJdbcPropertyString(SESSION_LABEL).description("session label");

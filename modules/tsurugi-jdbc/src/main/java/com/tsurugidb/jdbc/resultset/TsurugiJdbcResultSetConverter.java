@@ -33,7 +33,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
-import com.tsurugidb.jdbc.factory.HasFactory;
+import com.tsurugidb.jdbc.factory.GetFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.resultset.type.TsurugiJdbcBlobReference;
 import com.tsurugidb.jdbc.resultset.type.TsurugiJdbcClobReference;
@@ -44,10 +44,10 @@ import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
  */
 public class TsurugiJdbcResultSetConverter {
 
-    private final HasFactory ownerResultSet;
+    private final GetFactory ownerResultSet;
     private TsurugiJdbcConvertUtil convertUtil;
 
-    public TsurugiJdbcResultSetConverter(HasFactory ownerResultSet) {
+    public TsurugiJdbcResultSetConverter(GetFactory ownerResultSet) {
         this.ownerResultSet = ownerResultSet;
         var factory = ownerResultSet.getFactory();
         this.convertUtil = factory.createConvertUtil(ownerResultSet);
