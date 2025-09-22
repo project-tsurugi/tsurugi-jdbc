@@ -1203,10 +1203,25 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         throw new SQLFeatureNotSupportedException("getFunctions not supported");
     }
 
+    private static final List<FixedResultSetColumn> PSEUDO_COLUMNS_COLUMN_LIST = List.of( //
+            FixedResultSetColumn.ofStringNullable("TABLE_CAT"), //
+            FixedResultSetColumn.ofStringNullable("TABLE_SCHEM"), //
+            FixedResultSetColumn.ofString("TABLE_NAME"), //
+            FixedResultSetColumn.ofString("COLUMN_NAME"), //
+            FixedResultSetColumn.ofInt("DATA_TYPE"), //
+            FixedResultSetColumn.ofInt("COLUMN_SIZE"), //
+            FixedResultSetColumn.ofIntNullable("DECIMAL_DIGITS"), //
+            FixedResultSetColumn.ofInt("NUM_PREC_RADIX"), //
+            FixedResultSetColumn.ofString("COLUMN_USAGE"), //
+            FixedResultSetColumn.ofStringNullable("REMARKS"), //
+            FixedResultSetColumn.ofInt("CHAR_OCTET_LENGTH"), //
+            FixedResultSetColumn.ofString("IS_NULLABLE") //
+    );
+
     @Override
     public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-        // TODO empty ResultSet
-        return null;
+        List<Object[]> valuesList = List.of();
+        return new FixedResultSet(this, PSEUDO_COLUMNS_COLUMN_LIST, valuesList);
     }
 
     @Override
