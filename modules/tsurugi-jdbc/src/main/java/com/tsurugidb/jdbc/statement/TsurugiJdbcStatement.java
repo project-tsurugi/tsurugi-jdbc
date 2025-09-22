@@ -20,7 +20,9 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
@@ -44,6 +46,8 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     private TsurugiJdbcResultSet executingResultSet = null;
     private ExecuteResult lowUpdateResult = null;
+
+    private List<String> batchSqlList = null;
 
     private boolean poolable = false;
     private boolean closeOnCompletion = false;
@@ -308,20 +312,49 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     @Override
     public void addBatch(String sql) throws SQLException {
-        // TODO Auto-generated method stub
+        Objects.requireNonNull(sql);
 
+        if (this.batchSqlList == null) {
+            this.batchSqlList = new ArrayList<>();
+        }
+
+        batchSqlList.add(sql);
     }
 
     @Override
     public void clearBatch() throws SQLException {
-        // TODO Auto-generated method stub
-
+        var sqlList = this.batchSqlList;
+        if (sqlList != null) {
+            sqlList.clear();
+        }
     }
 
     @Override
     public int[] executeBatch() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        closeExecutingResultSet();
+
+        var sqlList = this.batchSqlList;
+        if (sqlList == null || sqlList.isEmpty()) {
+            return new int[0];
+        }
+
+        int timeout = properties.getExecuteTimeout();
+
+        var transaction = connection.getTransaction();
+        int[] result = transaction.executeAndAutoCommit(lowTransaction -> {
+            int[] count = new int[sqlList.size()];
+
+            int i = 0;
+            for (String sql : sqlList) {
+                var er = lowTransaction.executeStatement(sql).await(timeout, TimeUnit.SECONDS);
+                count[i++] = getUpdateCount(er);
+            }
+
+            return count;
+        });
+
+        clearBatch();
+        return result;
     }
 
     @Override

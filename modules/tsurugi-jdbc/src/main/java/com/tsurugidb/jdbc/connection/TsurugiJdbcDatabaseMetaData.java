@@ -1046,8 +1046,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
 
     @Override
     public boolean supportsBatchUpdates() throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     @Override

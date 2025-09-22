@@ -65,6 +65,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     private final List<Placeholder> lowPlaceholderList = new ArrayList<>();
     private final List<Parameter> lowParameterList = new ArrayList<>();
+    private List<List<Parameter>> batchParameterList = null;
 
     private com.tsurugidb.tsubakuro.sql.PreparedStatement lowPreparedStatement = null;
 
@@ -347,9 +348,56 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     }
 
     @Override
-    public void addBatch() throws SQLException {
-        // TODO Auto-generated method stub
+    public void addBatch(String sql) throws SQLException {
+        throw new SQLFeatureNotSupportedException("addBatch(sql) not supported for PreparedStatement");
+    }
 
+    @Override
+    public void addBatch() throws SQLException {
+        var parameter = List.copyOf(this.lowParameterList);
+
+        if (this.batchParameterList == null) {
+            this.batchParameterList = new ArrayList<>();
+        }
+        batchParameterList.add(parameter);
+    }
+
+    @Override
+    public void clearBatch() throws SQLException {
+        var parameterList = this.batchParameterList;
+        if (parameterList != null) {
+            parameterList.clear();
+        }
+    }
+
+    @Override
+    public int[] executeBatch() throws SQLException {
+        closeExecutingResultSet();
+
+        var parameterList = this.batchParameterList;
+        if (parameterList == null || parameterList.isEmpty()) {
+            return new int[0];
+        }
+
+        var lowPs = getLowPreparedStatement();
+
+        int timeout = properties.getExecuteTimeout();
+
+        var transaction = connection.getTransaction();
+        int[] result = transaction.executeAndAutoCommit(lowTransaction -> {
+            int[] count = new int[parameterList.size()];
+
+            int i = 0;
+            for (List<Parameter> parameter : parameterList) {
+                var er = lowTransaction.executeStatement(lowPs, parameter).await(timeout, TimeUnit.SECONDS);
+                count[i++] = getUpdateCount(er);
+            }
+
+            return count;
+        });
+
+        clearBatch();
+        return result;
     }
 
     @Override
