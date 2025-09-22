@@ -268,14 +268,12 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public SQLWarning getWarnings() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return null; // FIXME getWarnings()
     }
 
     @Override
     public void clearWarnings() throws SQLException {
-        // TODO Auto-generated method stub
-
+        // do nothing
     }
 
     @Override

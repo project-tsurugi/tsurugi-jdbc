@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.text.MessageFormat;
 import java.util.List;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
@@ -164,7 +166,7 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         case LONGVARBINARY:
             return getLength(column) * 2;
         default:
-            throw new UnsupportedOperationException(); // TODO SQLException
+            throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported JDBCType.{0}", jdbcType));
         }
     }
 
@@ -274,7 +276,7 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         case LONGVARBINARY:
             return byte[].class;
         default:
-            throw new UnsupportedOperationException(); // TODO SQLException
+            throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported JDBCType.{0}", jdbcType));
         }
     }
 }

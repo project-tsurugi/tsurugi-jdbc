@@ -97,14 +97,12 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
 
     @Override
     public SQLWarning getWarnings() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return null; // FIXME getWarnings()
     }
 
     @Override
     public void clearWarnings() throws SQLException {
-        // TODO Auto-generated method stub
-
+        // do nothing
     }
 
     @Override
@@ -700,8 +698,8 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
 
     @Override
     public Object getObject(String columnLabel, Map<String, Class<?>> map) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        int columnIndex = findColumn(columnLabel);
+        return getObject(columnIndex, map);
     }
 
     @Override
