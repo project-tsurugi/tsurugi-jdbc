@@ -17,11 +17,14 @@ package com.tsurugidb.jdbc.property;
 
 import java.sql.SQLException;
 import java.util.OptionalInt;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 
 public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
 
     private OptionalInt value = OptionalInt.empty();
     private OptionalInt defaultValue = OptionalInt.empty();
+    private IntSupplier defaultValueSupplier = null;
 
     public TsurugiJdbcPropertyInt(String name) {
         super(name);
@@ -35,6 +38,11 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
 
     public TsurugiJdbcPropertyInt defaultValue(int defaultValue) {
         this.defaultValue = OptionalInt.of(defaultValue);
+        return this;
+    }
+
+    public TsurugiJdbcPropertyInt defaultValue(IntSupplier supplier) {
+        this.defaultValueSupplier = supplier;
         return this;
     }
 
@@ -63,11 +71,12 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         var from = (TsurugiJdbcPropertyInt) fromProperty;
         this.value = from.value;
         this.defaultValue = from.defaultValue;
+        this.defaultValueSupplier = from.defaultValueSupplier;
     }
 
     public OptionalInt value() {
         if (this.value.isEmpty()) {
-            return this.defaultValue;
+            return defaultValue();
         }
         return this.value;
     }
@@ -81,11 +90,29 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         return Integer.toString(v.getAsInt());
     }
 
+    public void ifPresent(IntConsumer action) {
+        OptionalInt v = value();
+        v.ifPresent(action);
+    }
+
+    protected OptionalInt defaultValue() {
+        if (this.defaultValueSupplier != null) {
+            return OptionalInt.of(defaultValueSupplier.getAsInt());
+        }
+        return this.defaultValue;
+    }
+
     @Override
     public String getStringDefaultValue() {
-        if (this.defaultValue.isEmpty()) {
+        OptionalInt v = defaultValue();
+        if (v.isEmpty()) {
             return null;
         }
-        return Integer.toString(defaultValue.getAsInt());
+        return Integer.toString(v.getAsInt());
+    }
+
+    @Override
+    public String[] getChoice() {
+        return null;
     }
 }

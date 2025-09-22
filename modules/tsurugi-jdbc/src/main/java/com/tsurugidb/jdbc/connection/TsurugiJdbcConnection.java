@@ -491,12 +491,11 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public Properties getClientInfo() throws SQLException {
-        var entrySet = properties.getInternalProperties().getProperties();
-        var result = new Properties(entrySet.size());
-        for (var entry : entrySet) {
-            String key = entry.getKey();
-            var property = entry.getValue();
-            String value = (property != null) ? property.getStringValue() : null;
+        var values = properties.getInternalProperties().getProperties();
+        var result = new Properties(values.size());
+        for (var property : values) {
+            String key = property.name();
+            String value = property.getStringValue();
             result.setProperty(key, value);
         }
         return result;

@@ -75,4 +75,9 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
     public String getStringDefaultValue() {
         return Boolean.toString(this.defaultValue);
     }
+
+    @Override
+    public String[] getChoice() {
+        return new String[] { "true", "false" };
+    }
 }

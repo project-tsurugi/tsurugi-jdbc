@@ -20,14 +20,14 @@ import java.util.function.Consumer;
 
 public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcProperty {
 
-    private final Class<E> type;
+    private final Class<E> enumType;
     private E value;
     private E defaultValue;
     private Consumer<E> eventHandler;
 
     public TsurugiJdbcPropertyEnum(Class<E> type, String name) {
         super(name);
-        this.type = type;
+        this.enumType = type;
     }
 
     @Override
@@ -60,9 +60,9 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
             return;
         }
 
-        E[] constants = type.getEnumConstants();
+        E[] constants = enumType.getEnumConstants();
         for (var c : constants) {
-            if (value.equals(c.name())) {
+            if (value.equalsIgnoreCase(c.name())) {
                 setValue(c);
                 return;
             }
@@ -109,5 +109,16 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
             return null;
         }
         return this.defaultValue.name();
+    }
+
+    @Override
+    public String[] getChoice() {
+        E[] constants = enumType.getEnumConstants();
+
+        var result = new String[constants.length];
+        for (int i = 0; i < constants.length; i++) {
+            result[i] = constants[i].name();
+        }
+        return result;
     }
 }

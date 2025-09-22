@@ -19,17 +19,26 @@ import static com.tsurugidb.jdbc.TsurugiJdbcProperties.AUTO_COMMIT;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.BEGIN_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.COMMIT_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.DEFAULT_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiJdbcProperties.EXCLUSIVE_READ_AREA;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.EXECUTE_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiJdbcProperties.INCLUDE_DDL;
+import static com.tsurugidb.jdbc.TsurugiJdbcProperties.INCLUSIVE_READ_AREA;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.QUERY_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.ROLLBACK_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiJdbcProperties.SCAN_PARALLEL;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.SHUTDOWN_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.SHUTDOWN_TYPE;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.TRANSACTION_LABEL;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.TRANSACTION_TYPE;
+import static com.tsurugidb.jdbc.TsurugiJdbcProperties.WRITE_PRESERVE;
 
 import java.sql.ClientInfoStatus;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.tsurugidb.jdbc.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
@@ -38,7 +47,9 @@ import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyBoolean;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyEnum;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyInt;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyString;
+import com.tsurugidb.sql.proto.SqlRequest.ReadArea;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
+import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 
 public class TsurugiJdbcConnectionProperties {
 
@@ -54,6 +65,11 @@ public class TsurugiJdbcConnectionProperties {
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcTransactionType> transactionType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcTransactionType.class, TRANSACTION_TYPE)
             .withEventHandler(this::resetTransactionOption);
     private final TsurugiJdbcPropertyString transactionLabel = new TsurugiJdbcPropertyString(TRANSACTION_LABEL).withEventHandler(this::resetTransactionOption);
+    private final TsurugiJdbcPropertyBoolean includeDdl = new TsurugiJdbcPropertyBoolean(INCLUDE_DDL);
+    private final TsurugiJdbcPropertyString writePreserve = new TsurugiJdbcPropertyString(WRITE_PRESERVE);
+    private final TsurugiJdbcPropertyString inclusiveReadArea = new TsurugiJdbcPropertyString(INCLUSIVE_READ_AREA);
+    private final TsurugiJdbcPropertyString exclusiveReadArea = new TsurugiJdbcPropertyString(EXCLUSIVE_READ_AREA);
+    private final TsurugiJdbcPropertyInt scanParallel = new TsurugiJdbcPropertyInt(SCAN_PARALLEL);
     private final TsurugiJdbcPropertyBoolean autoCommit = new TsurugiJdbcPropertyBoolean(AUTO_COMMIT);
     private final TsurugiJdbcPropertyInt beginTimeout = new TsurugiJdbcPropertyInt(BEGIN_TIMEOUT);
     private final TsurugiJdbcPropertyInt commitTimeout = new TsurugiJdbcPropertyInt(COMMIT_TIMEOUT);
@@ -68,7 +84,7 @@ public class TsurugiJdbcConnectionProperties {
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
     private final TsurugiJdbcInternalProperties properties = TsurugiJdbcInternalProperties.of( //
-            transactionType, transactionLabel, autoCommit, //
+            transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, autoCommit, //
             beginTimeout, commitTimeout, rollbackTimeout, //
             executeTimeout, //
             queryTimeout, //
@@ -113,12 +129,46 @@ public class TsurugiJdbcConnectionProperties {
     public TransactionOption getTransactionOption() {
         if (this.transactionOptionBuilder == null) {
             var builder = TransactionOption.newBuilder();
+
             transactionType.ifPresent(t -> builder.setType(t.getLowTransactionType()));
             transactionLabel.ifPresent(builder::setLabel);
+            if (includeDdl.value()) {
+                builder.setModifiesDefinitions(true);
+            }
+            toStringList(writePreserve).ifPresent(list -> {
+                for (String tableName : list) {
+                    var wp = WritePreserve.newBuilder().setTableName(tableName).build();
+                    builder.addWritePreserves(wp);
+                }
+            });
+            toStringList(inclusiveReadArea).ifPresent(list -> {
+                for (String tableName : list) {
+                    var area = ReadArea.newBuilder().setTableName(tableName).build();
+                    builder.addInclusiveReadAreas(area);
+                }
+            });
+            toStringList(exclusiveReadArea).ifPresent(list -> {
+                for (String tableName : list) {
+                    var area = ReadArea.newBuilder().setTableName(tableName).build();
+                    builder.addExclusiveReadAreas(area);
+                }
+            });
+            scanParallel.ifPresent(builder::setScanParallel);
 
             this.transactionOptionBuilder = builder;
         }
         return transactionOptionBuilder.build();
+    }
+
+    protected Optional<List<String>> toStringList(TsurugiJdbcPropertyString property) {
+        String value = property.value();
+        if (value == null) {
+            return Optional.empty();
+        }
+
+        String[] ss = value.split(",");
+        List<String> list = Arrays.stream(ss).map(String::trim).collect(Collectors.toList());
+        return Optional.of(list);
     }
 
     public void setAutoCommit(boolean autoCommit) {

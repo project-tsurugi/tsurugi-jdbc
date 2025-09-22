@@ -741,7 +741,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, HasFactory
                         null, // TYPE_SCHEM
                         null, // TYPE_NAME
                         null, // SELF_REFERENCING_COL_NAME
-                        null // REF_GENERATION
+                        null, // REF_GENERATION
                 };
                 valuesList.add(values);
             }
@@ -939,7 +939,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, HasFactory
                         lowTableMetadata.getTableName(), // TABLE_NAME
                         keyName, // COLUMN_NAME
                         keySeq++, // KEY_SEQ
-                        null // PK_NAME
+                        null, // PK_NAME
                 };
                 valuesList.add(values);
             }
@@ -1187,13 +1187,11 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, HasFactory
 
     @Override
     public ResultSet getClientInfoProperties() throws SQLException {
-        var entries = ownerConnection.getProperties().getInternalProperties().getProperties();
-        var valuesList = new ArrayList<Object[]>(entries.size());
-        for (var entry : entries) {
-            String name = entry.getKey();
-            var property = entry.getValue();
+        var properties = ownerConnection.getProperties().getInternalProperties().getProperties();
+        var valuesList = new ArrayList<Object[]>(properties.size());
+        for (var property : properties) {
             Object[] values = { //
-                    name, // NAME
+                    property.name(), // NAME
                     0, // MAX_LEN
                     property.getStringDefaultValue(), // DEFAULT_VALUE
                     property.description(), // DESCRIPTION

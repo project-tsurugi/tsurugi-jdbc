@@ -17,6 +17,7 @@ package com.tsurugidb.jdbc.property;
 
 import java.sql.SQLException;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 public abstract class TsurugiJdbcProperty {
@@ -51,4 +52,6 @@ public abstract class TsurugiJdbcProperty {
     public abstract String getStringValue();
 
     public abstract String getStringDefaultValue();
+
+    public abstract @Nullable String[] getChoice();
 }

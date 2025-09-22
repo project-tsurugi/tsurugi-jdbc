@@ -31,11 +31,15 @@ import java.util.regex.Pattern;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
+import com.tsurugidb.jdbc.property.TsurugiJdbcProperty;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.common.SessionBuilder;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
+/**
+ * Tsurugi JDBC Driver.
+ */
 public class TsurugiDriver implements Driver, HasFactory {
     private static final Logger PARENT_LOGGER = Logger.getLogger(TsurugiDriver.class.getPackageName());
     private static final Logger LOG = Logger.getLogger(TsurugiDriver.class.getName());
@@ -53,8 +57,8 @@ public class TsurugiDriver implements Driver, HasFactory {
     }
 
     static {
-        var driver = new TsurugiDriver();
         try {
+            var driver = new TsurugiDriver();
             DriverManager.registerDriver(driver);
         } catch (SQLException e) {
             throw new ExceptionInInitializerError(e);
@@ -75,15 +79,14 @@ public class TsurugiDriver implements Driver, HasFactory {
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        var properties = TsurugiJdbcUrlParser.parse(factory, url);
+        var properties = TsurugiJdbcUrlParser.parse(factory, url, info);
         if (properties == null) {
             return null;
         }
-        properties.putAll(factory, info);
 
         var builder = createLowSessionBuilder(properties);
 
-        int timeout = properties.getConnectTimeout(DriverManager.getLoginTimeout());
+        int timeout = properties.getConnectTimeout();
         LOG.config(() -> String.format("connectTimeout=%d [seconds]", timeout));
 
         Session session;
@@ -131,7 +134,28 @@ public class TsurugiDriver implements Driver, HasFactory {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        throw new UnsupportedOperationException(); // TODO TsurugiDriver.getPropertyInfo()
+        var properties = TsurugiJdbcUrlParser.parse(factory, url, info);
+        if (properties == null) {
+            return new DriverPropertyInfo[0];
+        }
+
+        var values = properties.getInternalProperties().getProperties();
+        var result = new DriverPropertyInfo[values.size()];
+
+        int i = 0;
+        for (var property : values) {
+            result[i++] = toDriverPropertyInfo(property);
+        }
+
+        return result;
+    }
+
+    protected DriverPropertyInfo toDriverPropertyInfo(TsurugiJdbcProperty property) {
+        var info = new DriverPropertyInfo(property.name(), property.getStringValue());
+        info.description = property.description();
+        info.choices = property.getChoice();
+
+        return info;
     }
 
     @Override

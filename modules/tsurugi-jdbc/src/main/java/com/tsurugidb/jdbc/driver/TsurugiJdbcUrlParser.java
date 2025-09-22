@@ -18,10 +18,14 @@ package com.tsurugidb.jdbc.driver;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import com.tsurugidb.jdbc.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
+/**
+ * Tsurugi JDBC URL Parser.
+ */
 public class TsurugiJdbcUrlParser {
 
     private static final String URL_PREFIX = "jdbc:tsurugi:";
@@ -32,6 +36,14 @@ public class TsurugiJdbcUrlParser {
         }
 
         return url.startsWith(URL_PREFIX);
+    }
+
+    public static TsurugiJdbcProperties parse(TsurugiJdbcFactory factory, String url, Properties info) throws SQLException {
+        var properties = parse(factory, url);
+        if (properties != null) {
+            properties.putAll(factory, info);
+        }
+        return properties;
     }
 
     public static TsurugiJdbcProperties parse(TsurugiJdbcFactory factory, String url) throws SQLException {

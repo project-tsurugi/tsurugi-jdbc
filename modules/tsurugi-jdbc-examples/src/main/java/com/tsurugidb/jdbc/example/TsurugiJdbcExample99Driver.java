@@ -15,24 +15,32 @@
  */
 package com.tsurugidb.jdbc.example;
 
+import java.sql.Driver;
 import java.sql.DriverManager;
-import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.tsurugidb.jdbc.TsurugiDriver;
 
 public class TsurugiJdbcExample99Driver {
+    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample99Driver.class);
 
     static {
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
     }
 
-    public static void main(String[] args) throws SQLFeatureNotSupportedException {
+    public static void main(String[] args) throws SQLException {
         var driver = getTsurugiDriver();
         var logger = driver.getParentLogger();
-        logger.info("log example");
+        logger.info("ParentLogger example");
+
+        getPropertyInfo(driver);
     }
 
     static TsurugiDriver getTsurugiDriver() {
@@ -45,5 +53,22 @@ public class TsurugiJdbcExample99Driver {
             }
         }
         throw new RuntimeException("TsurugiDriver not found");
+    }
+
+    static void getPropertyInfo(Driver driver) throws SQLException {
+        LOG.info("getPropertyInfo() start");
+
+        String jdbcUrl = "jdbc:tsurugi:tcp://localhost:12345";
+        var info = new Properties();
+        info.setProperty("user", "tsurugi");
+        info.setProperty("password", "pass");
+        var driverProperties = driver.getPropertyInfo(jdbcUrl, info);
+
+        for (var property : driverProperties) {
+            String choices = (property.choices != null) ? Arrays.toString(property.choices) : "";
+            System.out.printf("%s: %s\t- %s %s%n", property.name, property.value, property.description, choices);
+        }
+
+        LOG.info("getPropertyInfo() end");
     }
 }

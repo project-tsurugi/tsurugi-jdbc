@@ -17,8 +17,8 @@ package com.tsurugidb.jdbc;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.OptionalInt;
 import java.util.Properties;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
@@ -51,6 +51,11 @@ public class TsurugiJdbcProperties {
     // Transaction
     public static final String TRANSACTION_TYPE = "transactionType";
     public static final String TRANSACTION_LABEL = "transactionLabel";
+    public static final String INCLUDE_DDL = "includeDdl";
+    public static final String WRITE_PRESERVE = "writePreserve";
+    public static final String INCLUSIVE_READ_AREA = "inclusiveReadArea";
+    public static final String EXCLUSIVE_READ_AREA = "exclusiveReadArea";
+    public static final String SCAN_PARALLEL = "scanParallel";
     public static final String AUTO_COMMIT = "autoCommit";
     public static final String BEGIN_TIMEOUT = "beginTimeout";
     public static final String COMMIT_TIMEOUT = "commitTimeout";
@@ -71,13 +76,19 @@ public class TsurugiJdbcProperties {
     private final TsurugiJdbcPropertyString applicationName = new TsurugiJdbcPropertyString(APPLICATION_NAME).description("application name");
     private final TsurugiJdbcPropertyString sessionLabel = new TsurugiJdbcPropertyString(SESSION_LABEL).description("session label");
     private final TsurugiJdbcPropertyBoolean keepAlive = new TsurugiJdbcPropertyBoolean(KEEP_ALIVE).defaultValue(true).description("session keep alive");
-    private final TsurugiJdbcPropertyInt connectTimeout = new TsurugiJdbcPropertyInt(CONNECT_TIMEOUT).description("connect timeout [seconds]");
-    private final TsurugiJdbcPropertyEnum<TsurugiJdbcShutdownType> shutdownType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcShutdownType.class, SHUTDOWN_TYPE).description("session shutdown type");
+    private final TsurugiJdbcPropertyInt connectTimeout = new TsurugiJdbcPropertyInt(CONNECT_TIMEOUT).description("connect timeout [seconds]").defaultValue(() -> DriverManager.getLoginTimeout());
+    private final TsurugiJdbcPropertyEnum<TsurugiJdbcShutdownType> shutdownType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcShutdownType.class, SHUTDOWN_TYPE)
+            .defaultValue(TsurugiJdbcShutdownType.GRACEFUL).description("session shutdown type");
     private final TsurugiJdbcPropertyInt shutdownTimeout = new TsurugiJdbcPropertyInt(SHUTDOWN_TIMEOUT).description("session shutdown timeout [seconds]");
 
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcTransactionType> transactionType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcTransactionType.class, TRANSACTION_TYPE)
             .defaultValue(TsurugiJdbcTransactionType.OCC).description("transaction type");
     private final TsurugiJdbcPropertyString transactionLabel = new TsurugiJdbcPropertyString(TRANSACTION_LABEL).description("transaction label");
+    private final TsurugiJdbcPropertyBoolean includeDdl = new TsurugiJdbcPropertyBoolean(INCLUDE_DDL).defaultValue(false).description("LTX include DDL");
+    private final TsurugiJdbcPropertyString writePreserve = new TsurugiJdbcPropertyString(WRITE_PRESERVE).description("LTX write preserve table names (comma separate)");
+    private final TsurugiJdbcPropertyString inclusiveReadArea = new TsurugiJdbcPropertyString(INCLUSIVE_READ_AREA).description("LTX inclusive read area table names (comma separate)");
+    private final TsurugiJdbcPropertyString exclusiveReadArea = new TsurugiJdbcPropertyString(EXCLUSIVE_READ_AREA).description("LTX exclusive read area table names (comma separate)");
+    private final TsurugiJdbcPropertyInt scanParallel = new TsurugiJdbcPropertyInt(SCAN_PARALLEL).description("RTX scan parallel");
     private final TsurugiJdbcPropertyBoolean autoCommit = new TsurugiJdbcPropertyBoolean(AUTO_COMMIT).defaultValue(true).description("auto commit");
     private final TsurugiJdbcPropertyInt beginTimeout = new TsurugiJdbcPropertyInt(BEGIN_TIMEOUT).description("transaction begin timeout [seconds]");
     private final TsurugiJdbcPropertyInt commitTimeout = new TsurugiJdbcPropertyInt(COMMIT_TIMEOUT).description("transaction commit timeout [seconds]");
@@ -87,13 +98,13 @@ public class TsurugiJdbcProperties {
 
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT).description("SELECT timeout [seconds]");
 
-    private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT).description("default timeout [seconds]");
+    private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT).description("default timeout [seconds]").defaultValue(0);
 
     private final TsurugiJdbcInternalProperties properties = TsurugiJdbcInternalProperties.of( //
             user, password, authToken, credentials, //
             applicationName, sessionLabel, keepAlive, connectTimeout, //
             shutdownType, shutdownTimeout, //
-            transactionType, transactionLabel, autoCommit, //
+            transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, autoCommit, //
             beginTimeout, commitTimeout, rollbackTimeout, //
             executeTimeout, //
             queryTimeout, //
@@ -174,17 +185,13 @@ public class TsurugiJdbcProperties {
         return keepAlive.value();
     }
 
-    public int getConnectTimeout(int defaultTimeout) {
-        var value = connectTimeout.value();
-        if (value.isPresent()) {
-            return value.getAsInt();
-        }
-        return getDefaultTimeout().orElse(defaultTimeout);
+    public int getConnectTimeout() {
+        return connectTimeout.value().orElse(getDefaultTimeout());
     }
 
     // Common
 
-    public OptionalInt getDefaultTimeout() {
-        return defaultTimeout.value();
+    public int getDefaultTimeout() {
+        return defaultTimeout.value().orElse(0);
     }
 }

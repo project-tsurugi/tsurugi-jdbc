@@ -83,4 +83,9 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
     public String getStringDefaultValue() {
         return this.defaultValue;
     }
+
+    @Override
+    public String[] getChoice() {
+        return null;
+    }
 }

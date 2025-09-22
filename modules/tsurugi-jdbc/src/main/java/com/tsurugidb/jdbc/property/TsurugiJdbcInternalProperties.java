@@ -17,11 +17,10 @@ package com.tsurugidb.jdbc.property;
 
 import java.sql.ClientInfoStatus;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -99,7 +98,7 @@ public class TsurugiJdbcInternalProperties {
         return map.get(key);
     }
 
-    public Set<Entry<String, TsurugiJdbcProperty>> getProperties() {
-        return map.entrySet();
+    public Collection<TsurugiJdbcProperty> getProperties() {
+        return map.values();
     }
 }
