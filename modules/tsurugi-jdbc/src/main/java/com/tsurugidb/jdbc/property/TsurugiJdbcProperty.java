@@ -15,8 +15,6 @@
  */
 package com.tsurugidb.jdbc.property;
 
-import java.sql.SQLException;
-
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -42,7 +40,7 @@ public abstract class TsurugiJdbcProperty {
         return this.description;
     }
 
-    public abstract void setStringValue(String value) throws SQLException;
+    public abstract void setStringValue(String value);
 
     @OverridingMethodsMustInvokeSuper
     public void setFrom(TsurugiJdbcProperty fromProperty) {

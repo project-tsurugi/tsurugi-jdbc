@@ -15,8 +15,8 @@
  */
 package com.tsurugidb.jdbc.property;
 
-import java.sql.SQLException;
 import java.util.OptionalInt;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
@@ -25,6 +25,7 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
     private OptionalInt value = OptionalInt.empty();
     private OptionalInt defaultValue = OptionalInt.empty();
     private IntSupplier defaultValueSupplier = null;
+    private Consumer<OptionalInt> changeEventHandler;
 
     public TsurugiJdbcPropertyInt(String name) {
         super(name);
@@ -46,21 +47,29 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         return this;
     }
 
+    public TsurugiJdbcPropertyInt changeEvent(Consumer<OptionalInt> handler) {
+        this.changeEventHandler = handler;
+        return this;
+    }
+
     public void setValue(int value) {
         this.value = OptionalInt.of(value);
+
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
+        }
     }
 
     @Override
-    public void setStringValue(String value) throws SQLException {
+    public void setStringValue(String value) {
         if (value == null) {
             this.value = OptionalInt.empty();
-            return;
+        } else {
+            this.value = OptionalInt.of(Integer.parseInt(value));
         }
 
-        try {
-            setValue(Integer.parseInt(value));
-        } catch (NumberFormatException e) {
-            throw new SQLException(e);
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
         }
     }
 
@@ -72,6 +81,10 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         this.value = from.value;
         this.defaultValue = from.defaultValue;
         this.defaultValueSupplier = from.defaultValueSupplier;
+
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
+        }
     }
 
     public OptionalInt value() {

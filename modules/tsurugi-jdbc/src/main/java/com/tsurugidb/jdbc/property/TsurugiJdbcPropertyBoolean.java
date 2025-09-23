@@ -15,18 +15,16 @@
  */
 package com.tsurugidb.jdbc.property;
 
+import java.util.function.Consumer;
+
 public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
 
     private Boolean value;
     private boolean defaultValue;
+    private Consumer<Boolean> changeEventHandler;
 
     public TsurugiJdbcPropertyBoolean(String name) {
         super(name);
-    }
-
-    public TsurugiJdbcPropertyBoolean defaultValue(boolean defaultValue) {
-        this.defaultValue = defaultValue;
-        return this;
     }
 
     @Override
@@ -35,18 +33,35 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
         return this;
     }
 
+    public TsurugiJdbcPropertyBoolean defaultValue(boolean defaultValue) {
+        this.defaultValue = defaultValue;
+        return this;
+    }
+
+    public TsurugiJdbcPropertyBoolean changeEvent(Consumer<Boolean> handler) {
+        this.changeEventHandler = handler;
+        return this;
+    }
+
     public void setValue(boolean value) {
         this.value = value;
+
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
+        }
     }
 
     @Override
     public void setStringValue(String value) {
         if (value == null) {
             this.value = null;
-            return;
+        } else {
+            this.value = Boolean.parseBoolean(value);
         }
 
-        this.value = Boolean.parseBoolean(value);
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
+        }
     }
 
     @Override
@@ -56,6 +71,10 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
         var from = (TsurugiJdbcPropertyBoolean) fromProperty;
         this.value = from.value;
         this.defaultValue = from.defaultValue;
+
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
+        }
     }
 
     public boolean value() {

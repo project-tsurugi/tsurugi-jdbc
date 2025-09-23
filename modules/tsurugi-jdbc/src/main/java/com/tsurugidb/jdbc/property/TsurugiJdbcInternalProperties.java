@@ -51,14 +51,12 @@ public class TsurugiJdbcInternalProperties {
 
         try {
             property.setStringValue(value);
-        } catch (SQLException e) {
-            throw e;
         } catch (Exception e) {
             throw factory.getExceptionHandler().propertyConvertException(key, e);
         }
     }
 
-    public void putForClient(String key, String value, Map<String, ClientInfoStatus> failedProperties) throws SQLException {
+    public void putForClient(String key, String value, Map<String, ClientInfoStatus> failedProperties) {
         var property = getProperty(key);
         if (property == null) {
             failedProperties.put(key, ClientInfoStatus.REASON_UNKNOWN_PROPERTY);
@@ -67,8 +65,6 @@ public class TsurugiJdbcInternalProperties {
 
         try {
             property.setStringValue(value);
-        } catch (SQLException e) {
-            throw e;
         } catch (Exception e) {
             failedProperties.put(key, ClientInfoStatus.REASON_VALUE_INVALID);
             throw e;

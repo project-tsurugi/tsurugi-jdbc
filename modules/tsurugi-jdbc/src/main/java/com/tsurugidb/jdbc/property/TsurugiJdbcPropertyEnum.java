@@ -23,7 +23,7 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
     private final Class<E> enumType;
     private E value;
     private E defaultValue;
-    private Consumer<E> eventHandler;
+    private Consumer<E> changeEventHandler;
 
     public TsurugiJdbcPropertyEnum(Class<E> type, String name) {
         super(name);
@@ -41,15 +41,16 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
         return this;
     }
 
-    public TsurugiJdbcPropertyEnum<E> withEventHandler(Consumer<E> handler) {
-        this.eventHandler = handler;
+    public TsurugiJdbcPropertyEnum<E> changeEvent(Consumer<E> handler) {
+        this.changeEventHandler = handler;
         return this;
     }
 
     public void setValue(E value) {
         this.value = value;
-        if (this.eventHandler != null) {
-            eventHandler.accept(value);
+
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
         }
     }
 
@@ -67,6 +68,7 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
                 return;
             }
         }
+
         throw new IllegalArgumentException("specified one of " + Arrays.toString(constants));
     }
 
@@ -78,6 +80,10 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
         var from = (TsurugiJdbcPropertyEnum<E>) fromProperty;
         this.value = from.value;
         this.defaultValue = from.defaultValue;
+
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
+        }
     }
 
     public E value() {

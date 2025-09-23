@@ -21,7 +21,7 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
 
     private String value;
     private String defaultValue;
-    private Consumer<String> eventHandler;
+    private Consumer<String> changeEventHandler;
 
     public TsurugiJdbcPropertyString(String name) {
         super(name);
@@ -38,16 +38,17 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
         return this;
     }
 
-    public TsurugiJdbcPropertyString withEventHandler(Consumer<String> handler) {
-        this.eventHandler = handler;
+    public TsurugiJdbcPropertyString changeEvent(Consumer<String> handler) {
+        this.changeEventHandler = handler;
         return this;
     }
 
     @Override
     public void setStringValue(String value) {
         this.value = value;
-        if (this.eventHandler != null) {
-            eventHandler.accept(value);
+
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
         }
     }
 
@@ -58,6 +59,10 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
         var from = (TsurugiJdbcPropertyString) fromProperty;
         this.value = from.value;
         this.defaultValue = from.defaultValue;
+
+        if (this.changeEventHandler != null) {
+            changeEventHandler.accept(this.value);
+        }
     }
 
     public String value() {

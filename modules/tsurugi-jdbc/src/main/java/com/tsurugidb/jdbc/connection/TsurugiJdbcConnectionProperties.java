@@ -33,7 +33,6 @@ import static com.tsurugidb.jdbc.TsurugiJdbcProperties.TRANSACTION_TYPE;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.WRITE_PRESERVE;
 
 import java.sql.ClientInfoStatus;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -63,13 +62,13 @@ public class TsurugiJdbcConnectionProperties {
     private TransactionOption.Builder transactionOptionBuilder = null;
 
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcTransactionType> transactionType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcTransactionType.class, TRANSACTION_TYPE)
-            .withEventHandler(this::resetTransactionOption);
-    private final TsurugiJdbcPropertyString transactionLabel = new TsurugiJdbcPropertyString(TRANSACTION_LABEL).withEventHandler(this::resetTransactionOption);
-    private final TsurugiJdbcPropertyBoolean includeDdl = new TsurugiJdbcPropertyBoolean(INCLUDE_DDL);
-    private final TsurugiJdbcPropertyString writePreserve = new TsurugiJdbcPropertyString(WRITE_PRESERVE);
-    private final TsurugiJdbcPropertyString inclusiveReadArea = new TsurugiJdbcPropertyString(INCLUSIVE_READ_AREA);
-    private final TsurugiJdbcPropertyString exclusiveReadArea = new TsurugiJdbcPropertyString(EXCLUSIVE_READ_AREA);
-    private final TsurugiJdbcPropertyInt scanParallel = new TsurugiJdbcPropertyInt(SCAN_PARALLEL);
+            .changeEvent(this::resetTransactionOption);
+    private final TsurugiJdbcPropertyString transactionLabel = new TsurugiJdbcPropertyString(TRANSACTION_LABEL).changeEvent(this::resetTransactionOption);
+    private final TsurugiJdbcPropertyBoolean includeDdl = new TsurugiJdbcPropertyBoolean(INCLUDE_DDL).changeEvent(this::resetTransactionOption);
+    private final TsurugiJdbcPropertyString writePreserve = new TsurugiJdbcPropertyString(WRITE_PRESERVE).changeEvent(this::resetTransactionOption);
+    private final TsurugiJdbcPropertyString inclusiveReadArea = new TsurugiJdbcPropertyString(INCLUSIVE_READ_AREA).changeEvent(this::resetTransactionOption);
+    private final TsurugiJdbcPropertyString exclusiveReadArea = new TsurugiJdbcPropertyString(EXCLUSIVE_READ_AREA).changeEvent(this::resetTransactionOption);
+    private final TsurugiJdbcPropertyInt scanParallel = new TsurugiJdbcPropertyInt(SCAN_PARALLEL).changeEvent(this::resetTransactionOption);
     private final TsurugiJdbcPropertyBoolean autoCommit = new TsurugiJdbcPropertyBoolean(AUTO_COMMIT);
     private final TsurugiJdbcPropertyInt beginTimeout = new TsurugiJdbcPropertyInt(BEGIN_TIMEOUT);
     private final TsurugiJdbcPropertyInt commitTimeout = new TsurugiJdbcPropertyInt(COMMIT_TIMEOUT);
@@ -99,7 +98,7 @@ public class TsurugiJdbcConnectionProperties {
         return this.endpoint;
     }
 
-    public void put(String key, String value, Map<String, ClientInfoStatus> failedProperties) throws SQLException {
+    public void put(String key, String value, Map<String, ClientInfoStatus> failedProperties) {
         properties.putForClient(key, value, failedProperties);
     }
 
