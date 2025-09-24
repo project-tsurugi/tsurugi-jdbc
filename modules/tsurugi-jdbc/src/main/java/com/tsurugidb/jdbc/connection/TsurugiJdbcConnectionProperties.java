@@ -35,11 +35,11 @@ import static com.tsurugidb.jdbc.TsurugiJdbcProperties.TRANSACTION_TYPE;
 import static com.tsurugidb.jdbc.TsurugiJdbcProperties.WRITE_PRESERVE;
 
 import java.sql.ClientInfoStatus;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.OptionalInt;
+
+import javax.annotation.Nullable;
 
 import com.tsurugidb.jdbc.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
@@ -48,6 +48,9 @@ import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyBoolean;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyEnum;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyInt;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyString;
+import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyStringList;
+import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
+import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.CommitOption;
 import com.tsurugidb.sql.proto.SqlRequest.ReadArea;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
@@ -69,9 +72,9 @@ public class TsurugiJdbcConnectionProperties {
             .changeEvent(this::clearTransactionOption);
     private final TsurugiJdbcPropertyString transactionLabel = new TsurugiJdbcPropertyString(TRANSACTION_LABEL).changeEvent(this::clearTransactionOption);
     private final TsurugiJdbcPropertyBoolean includeDdl = new TsurugiJdbcPropertyBoolean(INCLUDE_DDL).changeEvent(this::clearTransactionOption);
-    private final TsurugiJdbcPropertyString writePreserve = new TsurugiJdbcPropertyString(WRITE_PRESERVE).changeEvent(this::clearTransactionOption);
-    private final TsurugiJdbcPropertyString inclusiveReadArea = new TsurugiJdbcPropertyString(INCLUSIVE_READ_AREA).changeEvent(this::clearTransactionOption);
-    private final TsurugiJdbcPropertyString exclusiveReadArea = new TsurugiJdbcPropertyString(EXCLUSIVE_READ_AREA).changeEvent(this::clearTransactionOption);
+    private final TsurugiJdbcPropertyStringList writePreserve = new TsurugiJdbcPropertyStringList(WRITE_PRESERVE).changeEvent(this::clearTransactionOption);
+    private final TsurugiJdbcPropertyStringList inclusiveReadArea = new TsurugiJdbcPropertyStringList(INCLUSIVE_READ_AREA).changeEvent(this::clearTransactionOption);
+    private final TsurugiJdbcPropertyStringList exclusiveReadArea = new TsurugiJdbcPropertyStringList(EXCLUSIVE_READ_AREA).changeEvent(this::clearTransactionOption);
     private final TsurugiJdbcPropertyInt scanParallel = new TsurugiJdbcPropertyInt(SCAN_PARALLEL).changeEvent(this::clearTransactionOption);
     private final TsurugiJdbcPropertyBoolean autoCommit = new TsurugiJdbcPropertyBoolean(AUTO_COMMIT);
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcCommitType> commitType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcCommitType.class, COMMIT_TYPE).changeEvent(this::clearCommitOption);
@@ -128,6 +131,46 @@ public class TsurugiJdbcConnectionProperties {
         transactionLabel.setStringValue(label);
     }
 
+    public void setIncludeDdl(boolean include) {
+        includeDdl.setValue(include);
+    }
+
+    public boolean getIncludeDdl() {
+        return includeDdl.value();
+    }
+
+    public void setWritePreserve(List<String> tableNames) {
+        writePreserve.setValue(tableNames);
+    }
+
+    public @Nullable List<String> getWritePreserve() {
+        return writePreserve.value();
+    }
+
+    public void setInclusiveReadArea(List<String> tableNames) {
+        inclusiveReadArea.setValue(tableNames);
+    }
+
+    public @Nullable List<String> getInclusiveReadArea() {
+        return inclusiveReadArea.value();
+    }
+
+    public void setExclusiveReadArea(List<String> tableNames) {
+        exclusiveReadArea.setValue(tableNames);
+    }
+
+    public @Nullable List<String> getExclusiveReadArea() {
+        return exclusiveReadArea.value();
+    }
+
+    public void setScanParallel(int parallel) {
+        scanParallel.setValue(parallel);
+    }
+
+    public OptionalInt getScanParallel() {
+        return scanParallel.value();
+    }
+
     private <T> void clearTransactionOption(T value) {
         this.transactionOption = null;
     }
@@ -141,19 +184,19 @@ public class TsurugiJdbcConnectionProperties {
             if (includeDdl.value()) {
                 builder.setModifiesDefinitions(true);
             }
-            toStringList(writePreserve).ifPresent(list -> {
+            writePreserve.ifPresent(list -> {
                 for (String tableName : list) {
                     var wp = WritePreserve.newBuilder().setTableName(tableName).build();
                     builder.addWritePreserves(wp);
                 }
             });
-            toStringList(inclusiveReadArea).ifPresent(list -> {
+            inclusiveReadArea.ifPresent(list -> {
                 for (String tableName : list) {
                     var area = ReadArea.newBuilder().setTableName(tableName).build();
                     builder.addInclusiveReadAreas(area);
                 }
             });
-            toStringList(exclusiveReadArea).ifPresent(list -> {
+            exclusiveReadArea.ifPresent(list -> {
                 for (String tableName : list) {
                     var area = ReadArea.newBuilder().setTableName(tableName).build();
                     builder.addExclusiveReadAreas(area);
@@ -164,17 +207,6 @@ public class TsurugiJdbcConnectionProperties {
             this.transactionOption = builder.build();
         }
         return this.transactionOption;
-    }
-
-    protected Optional<List<String>> toStringList(TsurugiJdbcPropertyString property) {
-        String value = property.value();
-        if (value == null) {
-            return Optional.empty();
-        }
-
-        String[] ss = value.split(",");
-        List<String> list = Arrays.stream(ss).map(String::trim).collect(Collectors.toList());
-        return Optional.of(list);
     }
 
     // commit
@@ -188,11 +220,19 @@ public class TsurugiJdbcConnectionProperties {
     }
 
     public void setCommitType(TsurugiJdbcCommitType type) {
-        this.commitType.setValue(type);
+        commitType.setValue(type);
+    }
+
+    public TsurugiJdbcCommitType getCommitType() {
+        return commitType.value();
     }
 
     public void setAutoDispose(boolean autoDispose) {
         this.autoDispose.setValue(autoDispose);
+    }
+
+    public boolean getAutoDispose() {
+        return autoDispose.value();
     }
 
     private <T> void clearCommitOption(T value) {

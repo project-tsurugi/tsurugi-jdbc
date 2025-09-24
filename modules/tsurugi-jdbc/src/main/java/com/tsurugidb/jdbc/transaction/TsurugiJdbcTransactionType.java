@@ -13,33 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tsurugidb.jdbc.connection;
+package com.tsurugidb.jdbc.transaction;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
-import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
+import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 
-public enum TsurugiJdbcCommitType {
-    /** DEFAULT */
-    DEFAULT(CommitStatus.COMMIT_STATUS_UNSPECIFIED),
-    /** ACCEPTED */
-    ACCEPTED(CommitStatus.ACCEPTED),
-    /** AVAILABLE */
-    AVAILABLE(CommitStatus.AVAILABLE),
-    /** STORED */
-    STORED(CommitStatus.STORED),
-    /** PROPAGATED */
-    PROPAGATED(CommitStatus.PROPAGATED),
+public enum TsurugiJdbcTransactionType {
+    /** OCC */
+    OCC(TransactionType.SHORT),
+    /** LTX */
+    LTX(TransactionType.LONG),
+    /** RTX */
+    RTX(TransactionType.READ_ONLY),
 
     ;
 
-    private final CommitStatus lowType;
+    private final TransactionType lowType;
 
-    TsurugiJdbcCommitType(CommitStatus lowType) {
+    TsurugiJdbcTransactionType(TransactionType lowType) {
         this.lowType = lowType;
     }
 
     @TsurugiJdbcInternal
-    public CommitStatus getLowCommitStatus() {
+    public TransactionType getLowTransactionType() {
         return this.lowType;
     }
 }

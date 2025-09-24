@@ -35,20 +35,26 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
+import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
+import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 import com.tsurugidb.jdbc.util.LowCloser;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.common.Session;
@@ -86,6 +92,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         return this.factory;
     }
 
+    @TsurugiJdbcInternal
     public TsurugiJdbcConnectionProperties getProperties() {
         return this.properties;
     }
@@ -141,6 +148,46 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     public TsurugiJdbcTransactionType getTransactionType() {
         return properties.getTransactionType();
+    }
+
+    public void setTransactionIncludeDdl(boolean include) {
+        properties.setIncludeDdl(include);
+    }
+
+    public boolean getTransactionIncludeDdl() {
+        return properties.getIncludeDdl();
+    }
+
+    public void setWritePreserve(List<String> tableNames) {
+        properties.setWritePreserve(tableNames);
+    }
+
+    public @Nullable List<String> getWritePreserve() {
+        return properties.getWritePreserve();
+    }
+
+    public void setInclusiveReadArea(List<String> tableNames) {
+        properties.setInclusiveReadArea(tableNames);
+    }
+
+    public @Nullable List<String> getInclusiveReadArea() {
+        return properties.getInclusiveReadArea();
+    }
+
+    public void setExclusiveReadArea(List<String> tableNames) {
+        properties.setExclusiveReadArea(tableNames);
+    }
+
+    public @Nullable List<String> getExclusiveReadArea() {
+        return properties.getExclusiveReadArea();
+    }
+
+    public void setTransactionScanParallel(int parallel) {
+        properties.setScanParallel(parallel);
+    }
+
+    public OptionalInt getTransactionScanParallel() {
+        return properties.getScanParallel();
     }
 
     @TsurugiJdbcInternal
@@ -204,6 +251,22 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     @Override
     public boolean getAutoCommit() throws SQLException {
         return properties.getAutoCommit();
+    }
+
+    public void setCommitType(TsurugiJdbcCommitType type) {
+        properties.setCommitType(type);
+    }
+
+    public TsurugiJdbcCommitType getCommitType() {
+        return properties.getCommitType();
+    }
+
+    public void setCommitAutoDispose(boolean autoDispose) {
+        properties.setAutoDispose(autoDispose);
+    }
+
+    public boolean getCommitAutoDispose() {
+        return properties.getAutoDispose();
     }
 
     @Override

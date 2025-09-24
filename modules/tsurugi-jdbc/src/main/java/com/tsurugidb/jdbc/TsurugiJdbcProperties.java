@@ -22,15 +22,16 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
-import com.tsurugidb.jdbc.connection.TsurugiJdbcCommitType;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
-import com.tsurugidb.jdbc.connection.TsurugiJdbcTransactionType;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.property.TsurugiJdbcInternalProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyBoolean;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyEnum;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyInt;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyString;
+import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyStringList;
+import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
+import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
@@ -88,9 +89,9 @@ public class TsurugiJdbcProperties {
             .defaultValue(TsurugiJdbcTransactionType.OCC).description("transaction type");
     private final TsurugiJdbcPropertyString transactionLabel = new TsurugiJdbcPropertyString(TRANSACTION_LABEL).description("transaction label");
     private final TsurugiJdbcPropertyBoolean includeDdl = new TsurugiJdbcPropertyBoolean(INCLUDE_DDL).defaultValue(false).description("LTX include DDL");
-    private final TsurugiJdbcPropertyString writePreserve = new TsurugiJdbcPropertyString(WRITE_PRESERVE).description("LTX write preserve table names (comma separate)");
-    private final TsurugiJdbcPropertyString inclusiveReadArea = new TsurugiJdbcPropertyString(INCLUSIVE_READ_AREA).description("LTX inclusive read area table names (comma separate)");
-    private final TsurugiJdbcPropertyString exclusiveReadArea = new TsurugiJdbcPropertyString(EXCLUSIVE_READ_AREA).description("LTX exclusive read area table names (comma separate)");
+    private final TsurugiJdbcPropertyStringList writePreserve = new TsurugiJdbcPropertyStringList(WRITE_PRESERVE).description("LTX write preserve table names (comma separate)");
+    private final TsurugiJdbcPropertyStringList inclusiveReadArea = new TsurugiJdbcPropertyStringList(INCLUSIVE_READ_AREA).description("LTX inclusive read area table names (comma separate)");
+    private final TsurugiJdbcPropertyStringList exclusiveReadArea = new TsurugiJdbcPropertyStringList(EXCLUSIVE_READ_AREA).description("LTX exclusive read area table names (comma separate)");
     private final TsurugiJdbcPropertyInt scanParallel = new TsurugiJdbcPropertyInt(SCAN_PARALLEL).description("RTX scan parallel");
     private final TsurugiJdbcPropertyBoolean autoCommit = new TsurugiJdbcPropertyBoolean(AUTO_COMMIT).defaultValue(true).description("auto commit");
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcCommitType> commitType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcCommitType.class, COMMIT_TYPE).defaultValue(TsurugiJdbcCommitType.DEFAULT)
