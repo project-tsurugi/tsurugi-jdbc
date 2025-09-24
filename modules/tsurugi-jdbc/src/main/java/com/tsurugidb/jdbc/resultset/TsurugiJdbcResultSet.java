@@ -15,6 +15,7 @@
  */
 package com.tsurugidb.jdbc.resultset;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.SqlCloser;
+import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 import com.tsurugidb.tsubakuro.util.FutureResponse;
@@ -94,8 +96,9 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
     @Override
     public boolean next() throws SQLException {
         var lowRs = getLowResultSet();
-        if (nextLowRow(lowRs)) {
+        if (nextRow(lowRs)) {
             this.currentRowNumber++;
+            this.isAfterLast = false;
 
             initializeBuffer(lowRs);
             for (int i = 0; nextLowColumn(lowRs); i++) {
@@ -111,6 +114,19 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
             }
             return false;
         }
+    }
+
+    private boolean nextRow(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
+        boolean hasNext = nextLowRow(lowRs);
+        if (hasNext) {
+            int maxRows = ownerStatement.getMaxRows();
+            if (maxRows > 0) {
+                return this.currentRowNumber < maxRows;
+            }
+            return true;
+        }
+
+        return false;
     }
 
     private boolean nextLowRow(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
@@ -317,7 +333,7 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
         // The lowResultSet must be closed before commit.
         try (statement; var ps = lowPreparedStatement; commit; var f = resultSetFuture; var rs = lowResultSet) {
             // close only
-        } catch (Exception e) {
+        } catch (ServerException | IOException | InterruptedException e) {
             throw getExceptionHandler().sqlException("ResultSet close error", e);
         }
     }

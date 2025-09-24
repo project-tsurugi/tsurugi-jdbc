@@ -50,6 +50,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     private List<String> batchSqlList = null;
 
+    private int maxRows = 0;
     private boolean poolable = false;
     private boolean closeOnCompletion = false;
 
@@ -153,14 +154,16 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     @Override
     public int getMaxRows() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.maxRows;
     }
 
     @Override
     public void setMaxRows(int max) throws SQLException {
-        // TODO Auto-generated method stub
-
+        if (max < 0) {
+            var e = new IllegalArgumentException("max >= 0 is not satisfied");
+            throw getExceptionHandler().sqlException("setMaxRows error", e);
+        }
+        this.maxRows = max;
     }
 
     @Override
