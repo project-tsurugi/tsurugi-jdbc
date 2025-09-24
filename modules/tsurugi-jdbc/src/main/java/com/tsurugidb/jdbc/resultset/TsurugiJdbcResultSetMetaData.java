@@ -223,6 +223,6 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
         var lowColumn = getLowColumn(column);
         var util = getSqlTypeUtil();
         var type = util.toJavaClass(lowColumn);
-        return type.getName();
+        return type.getCanonicalName();
     }
 }

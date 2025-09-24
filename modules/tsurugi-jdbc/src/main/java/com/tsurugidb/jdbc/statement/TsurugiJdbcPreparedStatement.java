@@ -25,7 +25,6 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Date;
 import java.sql.NClob;
-import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.Ref;
 import java.sql.ResultSet;
@@ -44,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
@@ -81,6 +81,11 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
         return getFactory().getSqlTypeUtil();
+    }
+
+    @TsurugiJdbcInternal
+    public List<Placeholder> getLowPlaceholderList() {
+        return this.lowPlaceholderList;
     }
 
     protected com.tsurugidb.tsubakuro.sql.PreparedStatement getLowPreparedStatement() throws SQLException {
@@ -470,9 +475,10 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     }
 
     @Override
-    public ParameterMetaData getParameterMetaData() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+    @TsurugiJdbcNotSupported
+    public TsurugiJdbcParameterMetaData getParameterMetaData() throws SQLException {
+        // Placeholderをセットした後でしか有効でない
+        return getFactory().createParameterMetaDate(this);
     }
 
     @Override

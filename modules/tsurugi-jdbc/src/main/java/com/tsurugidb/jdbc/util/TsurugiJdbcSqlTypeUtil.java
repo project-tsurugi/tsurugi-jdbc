@@ -88,6 +88,25 @@ public class TsurugiJdbcSqlTypeUtil {
     public JDBCType toJdbcType(SqlCommon.Column lowColumn) throws SQLException {
         var atomType = lowColumn.getAtomType();
         switch (atomType) {
+        case CHARACTER:
+            if (isVarying(lowColumn)) {
+                return JDBCType.VARCHAR;
+            } else {
+                return JDBCType.CHAR;
+            }
+        case OCTET:
+            if (isVarying(lowColumn)) {
+                return JDBCType.VARBINARY;
+            } else {
+                return JDBCType.BINARY;
+            }
+        default:
+            return toJdbcType(atomType);
+        }
+    }
+
+    public JDBCType toJdbcType(AtomType atomType) throws SQLException {
+        switch (atomType) {
         case BOOLEAN:
             return JDBCType.BOOLEAN;
         case INT4:
@@ -101,17 +120,9 @@ public class TsurugiJdbcSqlTypeUtil {
         case DECIMAL:
             return JDBCType.DECIMAL;
         case CHARACTER:
-            if (isVarying(lowColumn)) {
-                return JDBCType.VARCHAR;
-            } else {
-                return JDBCType.CHAR;
-            }
+            return JDBCType.VARCHAR;
         case OCTET:
-            if (isVarying(lowColumn)) {
-                return JDBCType.VARBINARY;
-            } else {
-                return JDBCType.BINARY;
-            }
+            return JDBCType.VARBINARY;
         case DATE:
             return JDBCType.DATE;
         case TIME_OF_DAY:
@@ -134,6 +145,25 @@ public class TsurugiJdbcSqlTypeUtil {
     public String toSqlTypeName(SqlCommon.Column lowColumn) throws SQLException {
         var atomType = lowColumn.getAtomType();
         switch (atomType) {
+        case CHARACTER:
+            if (isVarying(lowColumn)) {
+                return "VARCHAR";
+            } else {
+                return "CHAR";
+            }
+        case OCTET:
+            if (isVarying(lowColumn)) {
+                return "VARBINARY";
+            } else {
+                return "BINARY";
+            }
+        default:
+            return toSqlTypeName(atomType);
+        }
+    }
+
+    public String toSqlTypeName(AtomType atomType) throws SQLException {
+        switch (atomType) {
         case BOOLEAN:
             return "BOOLEAN";
         case INT4:
@@ -147,17 +177,9 @@ public class TsurugiJdbcSqlTypeUtil {
         case DECIMAL:
             return "DECIMAL";
         case CHARACTER:
-            if (isVarying(lowColumn)) {
-                return "VARCHAR";
-            } else {
-                return "CHAR";
-            }
+            return "VARCHAR";
         case OCTET:
-            if (isVarying(lowColumn)) {
-                return "VARBINARY";
-            } else {
-                return "BINARY";
-            }
+            return "VARBINARY";
         case DATE:
             return "DATE";
         case TIME_OF_DAY:
@@ -217,6 +239,10 @@ public class TsurugiJdbcSqlTypeUtil {
 
     public Class<?> toJavaClass(SqlCommon.Column lowColumn) throws SQLException {
         var atomType = lowColumn.getAtomType();
+        return toJavaClass(atomType);
+    }
+
+    public Class<?> toJavaClass(AtomType atomType) throws SQLException {
         switch (atomType) {
         case BOOLEAN:
             return boolean.class;

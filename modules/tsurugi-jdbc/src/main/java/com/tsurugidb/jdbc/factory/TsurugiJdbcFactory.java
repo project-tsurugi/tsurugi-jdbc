@@ -28,6 +28,7 @@ import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetConverter;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetProperties;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcParameterGenerator;
+import com.tsurugidb.jdbc.statement.TsurugiJdbcParameterMetaData;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementProperties;
@@ -89,6 +90,10 @@ public class TsurugiJdbcFactory {
 
     public TsurugiJdbcParameterGenerator createParameterGenerator(TsurugiJdbcPreparedStatement preparedStatement) {
         return new TsurugiJdbcParameterGenerator(preparedStatement);
+    }
+
+    public TsurugiJdbcParameterMetaData createParameterMetaDate(TsurugiJdbcPreparedStatement preparedStatement) {
+        return new TsurugiJdbcParameterMetaData(preparedStatement);
     }
 
     public TsurugiJdbcTransaction createTransaction(Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionProperties properties) {
