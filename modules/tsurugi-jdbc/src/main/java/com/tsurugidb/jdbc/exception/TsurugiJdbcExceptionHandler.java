@@ -20,6 +20,7 @@ import java.sql.ClientInfoStatus;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLInvalidAuthorizationSpecException;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.SQLSyntaxErrorException;
@@ -32,6 +33,8 @@ import java.util.concurrent.TimeoutException;
 import com.tsurugidb.tsubakuro.exception.DiagnosticCode;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.exception.CcException;
+import com.tsurugidb.tsubakuro.sql.exception.CompileException;
+import com.tsurugidb.tsubakuro.sql.exception.ConstraintViolationException;
 
 public class TsurugiJdbcExceptionHandler {
 
@@ -122,6 +125,14 @@ public class TsurugiJdbcExceptionHandler {
         if (e instanceof CcException) {
             var state = SqlState.S40001_SERIALIZATION_FAILURE;
             return new SQLTransactionRollbackException(message, state.code(), vendorCode, e);
+        }
+        if (e instanceof CompileException) {
+            return new SQLSyntaxErrorException(message, SqlState.S42000_SYNTAX_ERROR_OR_ACCESS_RULE_VIOLATION.code(), vendorCode, e);
+        }
+
+        // SqlExecutionException
+        if (e instanceof ConstraintViolationException) {
+            return new SQLIntegrityConstraintViolationException(message, SqlState.S23000_INTEGRITY_CONSTRAINT_VIOLATION.code(), vendorCode, e);
         }
 
         // TODO convert ServerException to SQLException

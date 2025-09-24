@@ -26,6 +26,9 @@ public enum SqlState {
     /** 2200G: most specific type mismatch */
     S2200G_TYPE_MISMATCH("2200G", "most specific type mismatch"),
 
+    /** 23000: integrity constraint violation */
+    S23000_INTEGRITY_CONSTRAINT_VIOLATION("23000", "integrity constraint violation"),
+
     /** 25000: invalid transaction state */
     S25000_INVALID_TRANSACTION_STATE("25000", "invalid transaction state"),
     /** 25001: active SQL-transaction */
@@ -37,6 +40,8 @@ public enum SqlState {
     /** 40001: serialization failure */
     S40001_SERIALIZATION_FAILURE("40001", "serialization failure"),
 
+    /** 42000: syntax error or access rule violation */
+    S42000_SYNTAX_ERROR_OR_ACCESS_RULE_VIOLATION("42000", "syntax error or access rule violation"),
     /** 42703: undefined column name */
     S42703_UNDEFINED_COLUMN_NAME("42703", "undefined column name"),
 
