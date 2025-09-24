@@ -24,8 +24,10 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
+@TsurugiJdbcInternal
 public class TsurugiJdbcInternalProperties {
 
     public static TsurugiJdbcInternalProperties of(TsurugiJdbcProperty... properties) {
@@ -45,7 +47,7 @@ public class TsurugiJdbcInternalProperties {
     public void put(TsurugiJdbcFactory factory, String key, String value) throws SQLException {
         var property = getProperty(key);
         if (property == null) {
-            // TODO throw SQLWarning ?
+            // FIXME throw SQLWarning ?
             return;
         }
 
@@ -79,13 +81,24 @@ public class TsurugiJdbcInternalProperties {
         }
     }
 
-    public void copyFrom(TsurugiJdbcInternalProperties from) {
+    public void copyFrom(TsurugiJdbcInternalProperties fromProperties) {
         for (var entry : map.entrySet()) {
             String key = entry.getKey();
-            var property = from.getProperty(key);
-            if (property != null) {
-                var toProperty = entry.getValue();
-                toProperty.setFrom(property);
+            var from = fromProperties.getProperty(key);
+            if (from != null) {
+                var property = entry.getValue();
+                property.setFrom(from);
+            }
+        }
+    }
+
+    public void copyIfPresentFrom(TsurugiJdbcInternalProperties fromProperties) {
+        for (var entry : map.entrySet()) {
+            String key = entry.getKey();
+            var from = fromProperties.getProperty(key);
+            if (from != null && from.isPresent()) {
+                var property = entry.getValue();
+                property.setFrom(from);
             }
         }
     }

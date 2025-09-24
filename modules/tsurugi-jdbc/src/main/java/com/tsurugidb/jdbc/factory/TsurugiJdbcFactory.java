@@ -42,6 +42,16 @@ import com.tsurugidb.tsubakuro.util.FutureResponse;
 
 public class TsurugiJdbcFactory {
 
+    private static TsurugiJdbcFactory defaultFactory = new TsurugiJdbcFactory();
+
+    public static void setDefaultFactory(@Nonnull TsurugiJdbcFactory factory) {
+        defaultFactory = Objects.requireNonNull(factory);
+    }
+
+    public static TsurugiJdbcFactory getDefaultFactory() {
+        return defaultFactory;
+    }
+
     private TsurugiJdbcExceptionHandler exceptionHandler = new TsurugiJdbcExceptionHandler();
     private TsurugiJdbcSqlTypeUtil sqlTypeUtil = new TsurugiJdbcSqlTypeUtil();
 

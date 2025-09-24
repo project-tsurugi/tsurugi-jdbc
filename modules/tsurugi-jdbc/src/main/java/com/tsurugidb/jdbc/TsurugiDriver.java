@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
@@ -54,16 +56,21 @@ public class TsurugiDriver implements Driver, HasFactory {
         DRIVER_VERSION_MINAR = Integer.parseInt(ss[1]);
     }
 
+    private static final TsurugiDriver INSTANCE;
     static {
         try {
-            var driver = new TsurugiDriver();
-            DriverManager.registerDriver(driver);
+            INSTANCE = new TsurugiDriver();
+            DriverManager.registerDriver(INSTANCE);
         } catch (SQLException e) {
             throw new ExceptionInInitializerError(e);
         }
     }
 
-    private TsurugiJdbcFactory factory = new TsurugiJdbcFactory();
+    public static TsurugiDriver getTsurugiDriver() {
+        return INSTANCE;
+    }
+
+    private TsurugiJdbcFactory factory = TsurugiJdbcFactory.getDefaultFactory();
 
     @Override
     public void setFactory(TsurugiJdbcFactory factory) {
@@ -86,6 +93,10 @@ public class TsurugiDriver implements Driver, HasFactory {
             return null;
         }
 
+        return connect(properties);
+    }
+
+    public Connection connect(@Nonnull TsurugiJdbcProperties properties) throws SQLException {
         var builder = createLowSessionBuilder(properties);
 
         int timeout = properties.getConnectTimeout();

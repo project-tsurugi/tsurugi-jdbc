@@ -86,6 +86,11 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
         }
     }
 
+    @Override
+    public boolean isPresent() {
+        return this.value != null;
+    }
+
     public E value() {
         if (this.value == null) {
             return this.defaultValue;

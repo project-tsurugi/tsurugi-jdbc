@@ -47,6 +47,8 @@ public abstract class TsurugiJdbcProperty {
         this.description = fromProperty.description;
     }
 
+    public abstract boolean isPresent();
+
     public abstract String getStringValue();
 
     public abstract String getStringDefaultValue();

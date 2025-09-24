@@ -87,6 +87,11 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         }
     }
 
+    @Override
+    public boolean isPresent() {
+        return this.value.isPresent();
+    }
+
     public OptionalInt value() {
         if (this.value.isEmpty()) {
             return defaultValue();

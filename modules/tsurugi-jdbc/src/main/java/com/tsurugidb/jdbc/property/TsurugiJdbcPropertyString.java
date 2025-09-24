@@ -43,13 +43,17 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
         return this;
     }
 
-    @Override
-    public void setStringValue(String value) {
+    public void setValue(String value) {
         this.value = value;
 
         if (this.changeEventHandler != null) {
             changeEventHandler.accept(this.value);
         }
+    }
+
+    @Override
+    public void setStringValue(String value) {
+        setValue(value);
     }
 
     @Override
@@ -63,6 +67,11 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
         if (this.changeEventHandler != null) {
             changeEventHandler.accept(this.value);
         }
+    }
+
+    @Override
+    public boolean isPresent() {
+        return this.value != null;
     }
 
     public String value() {

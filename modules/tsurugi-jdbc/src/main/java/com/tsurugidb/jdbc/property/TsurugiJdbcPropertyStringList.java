@@ -85,6 +85,11 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
         }
     }
 
+    @Override
+    public boolean isPresent() {
+        return this.value != null;
+    }
+
     public List<String> value() {
         if (this.value == null) {
             return this.defaultValue;

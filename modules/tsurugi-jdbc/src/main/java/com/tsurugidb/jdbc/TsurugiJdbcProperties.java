@@ -19,10 +19,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.OptionalInt;
 import java.util.Properties;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.property.TsurugiJdbcInternalProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyBoolean;
@@ -118,10 +121,12 @@ public class TsurugiJdbcProperties {
             queryTimeout, //
             defaultTimeout);
 
+    @TsurugiJdbcInternal
     public void put(TsurugiJdbcFactory factory, String key, String value) throws SQLException {
         properties.put(factory, key, value);
     }
 
+    @TsurugiJdbcInternal
     public void putAll(TsurugiJdbcFactory factory, Properties info) throws SQLException {
         properties.putAll(factory, info);
     }
@@ -129,6 +134,19 @@ public class TsurugiJdbcProperties {
     @TsurugiJdbcInternal
     public TsurugiJdbcInternalProperties getInternalProperties() {
         return this.properties;
+    }
+
+    public void setJdbcUrl(String url) throws SQLException {
+        setJdbcUrl(TsurugiJdbcFactory.getDefaultFactory(), url);
+    }
+
+    @TsurugiJdbcInternal
+    public void setJdbcUrl(TsurugiJdbcFactory factory, String url) throws SQLException {
+        var fromProperties = TsurugiJdbcUrlParser.parse(factory, url);
+        if (fromProperties != null) {
+            setEndpoint(fromProperties.getEndpoint());
+            properties.copyFrom(fromProperties.getInternalProperties());
+        }
     }
 
     // Session
@@ -141,16 +159,32 @@ public class TsurugiJdbcProperties {
         return endpoint;
     }
 
+    public void setUser(String user) {
+        this.user.setValue(user);
+    }
+
     public String getUser() {
         return user.value();
+    }
+
+    public void setPassword(String password) {
+        this.password.setValue(password);
     }
 
     public String getPassword() {
         return password.value();
     }
 
+    public void setAuthToken(String authToken) {
+        this.authToken.setValue(authToken);
+    }
+
     public String getAuthToken() {
         return authToken.value();
+    }
+
+    public void setCredentials(String path) {
+        this.credentials.setValue(path);
     }
 
     public String getCredentials() {
@@ -181,25 +215,187 @@ public class TsurugiJdbcProperties {
         return NullCredential.INSTANCE;
     }
 
+    public void setApplicationName(String applicationName) {
+        this.applicationName.setValue(applicationName);
+    }
+
     public String getApplicationName() {
         return applicationName.value();
+    }
+
+    public void setSessionLabel(String sessionLabel) {
+        this.sessionLabel.setValue(sessionLabel);
     }
 
     public String getSessionLabel() {
         return sessionLabel.value();
     }
 
+    public void setKeepAlive(boolean keepAlive) {
+        this.keepAlive.setValue(keepAlive);
+    }
+
     public boolean getKeepAlive() {
         return keepAlive.value();
     }
 
+    public void setConnectTimeout(int timeout) {
+        this.connectTimeout.setValue(timeout);
+    }
+
     public int getConnectTimeout() {
-        return connectTimeout.value().orElse(getDefaultTimeout());
+        return connectTimeout.value().getAsInt();
+    }
+
+    public void setShutdownType(TsurugiJdbcShutdownType shutdownType) {
+        this.shutdownType.setValue(shutdownType);
+    }
+
+    public TsurugiJdbcShutdownType getShutdownType() {
+        return shutdownType.value();
+    }
+
+    public void setShutdownTimeout(int timeout) {
+        this.shutdownTimeout.setValue(timeout);
+    }
+
+    public OptionalInt getShutdownTimeout() {
+        return shutdownTimeout.value();
+    }
+
+    // Transaction
+
+    public void setTransactionType(TsurugiJdbcTransactionType transactionType) {
+        this.transactionType.setValue(transactionType);
+    }
+
+    public TsurugiJdbcTransactionType getTransactionType() {
+        return transactionType.value();
+    }
+
+    public void setTransactionLabel(String transactionLabel) {
+        this.transactionLabel.setValue(transactionLabel);
+    }
+
+    public String getTransactionLabel() {
+        return transactionLabel.value();
+    }
+
+    public void setTransactionIncludeDdl(boolean includeDdl) {
+        this.includeDdl.setValue(includeDdl);
+    }
+
+    public boolean getTransactionIncludeDdl() {
+        return includeDdl.value();
+    }
+
+    public void setWritePreserve(List<String> tableNames) {
+        this.writePreserve.setValue(tableNames);
+    }
+
+    public List<String> getWritePreserve() {
+        return writePreserve.value();
+    }
+
+    public void setInclusiveReadArea(List<String> tableNames) {
+        this.inclusiveReadArea.setValue(tableNames);
+    }
+
+    public List<String> getInclusiveReadArea() {
+        return inclusiveReadArea.value();
+    }
+
+    public void setExclusiveReadArea(List<String> tableNames) {
+        this.exclusiveReadArea.setValue(tableNames);
+    }
+
+    public List<String> getExclusiveReadArea() {
+        return exclusiveReadArea.value();
+    }
+
+    public void setTransactionScanParallel(int scanParallel) {
+        this.scanParallel.setValue(scanParallel);
+    }
+
+    public OptionalInt getScanParallel() {
+        return scanParallel.value();
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        this.autoCommit.setValue(autoCommit);
+    }
+
+    public boolean getAutoCommit() {
+        return autoCommit.value();
+    }
+
+    public void setCommitType(TsurugiJdbcCommitType commitType) {
+        this.commitType.setValue(commitType);
+    }
+
+    public TsurugiJdbcCommitType getCommitType() {
+        return commitType.value();
+    }
+
+    public void setCommitAutoDispose(boolean autoDispose) {
+        this.autoDispose.setValue(autoDispose);
+    }
+
+    public boolean getTransactionAutoDispose() {
+        return autoDispose.value();
+    }
+
+    public void setBeginTimeout(int timeout) {
+        this.beginTimeout.setValue(timeout);
+    }
+
+    public OptionalInt getBeginTimeout() {
+        return beginTimeout.value();
+    }
+
+    public void setCommitTimeout(int timeout) {
+        this.commitTimeout.setValue(timeout);
+    }
+
+    public OptionalInt getCommitTimeout() {
+        return commitTimeout.value();
+    }
+
+    public void setRollbackTimeout(int timeout) {
+        this.rollbackTimeout.setValue(timeout);
+    }
+
+    public OptionalInt getRollbackTimeout() {
+        return rollbackTimeout.value();
+    }
+
+    // Statement
+
+    public void setExecuteTimeout(int timeout) {
+        this.executeTimeout.setValue(timeout);
+    }
+
+    public OptionalInt getExecuteTimeout() {
+        return executeTimeout.value();
+    }
+
+    // ResultSet
+
+    public void setQueryTimeout(int timeout) {
+        this.queryTimeout.setValue(timeout);
+    }
+
+    public OptionalInt getQueryTimeout() {
+        return queryTimeout.value();
     }
 
     // Common
 
-    public int getDefaultTimeout() {
-        return defaultTimeout.value().orElse(0);
+    public void setDefaultTimeout(int defaultTimeout) {
+        this.defaultTimeout.setValue(defaultTimeout);
+    }
+
+    public OptionalInt getDefaultTimeout() {
+        return defaultTimeout.value();
     }
 }
