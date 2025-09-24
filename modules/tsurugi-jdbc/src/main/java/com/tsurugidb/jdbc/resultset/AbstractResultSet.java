@@ -33,6 +33,7 @@ import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Map;
 
@@ -332,7 +333,7 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
 
         Integer index = columnNameIndexMap.get(columnLabel);
         if (index == null) {
-            throw new SQLException(); // TODO TsurugiSQLExceptionHandler
+            throw getExceptionHandler().undefinedColumnNameException(MessageFormat.format("Column {0} not found", columnLabel));
         }
         return index;
     }

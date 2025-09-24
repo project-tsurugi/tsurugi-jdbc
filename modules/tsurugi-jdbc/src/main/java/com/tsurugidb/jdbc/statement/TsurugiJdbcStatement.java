@@ -31,6 +31,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
+import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
@@ -71,12 +72,16 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         return this.factory;
     }
 
+    protected TsurugiJdbcExceptionHandler getExceptionHandler() {
+        return getFactory().getExceptionHandler();
+    }
+
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         try {
             return iface.cast(this);
         } catch (ClassCastException e) {
-            throw factory.getExceptionHandler().unwrapException(iface);
+            throw getExceptionHandler().unwrapException(iface);
         }
     }
 
@@ -207,7 +212,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
                 int timeout = properties.getDefaultTimeout();
                 lowPs = sqlClient.prepare(sql, List.of()).await(timeout, TimeUnit.SECONDS);
             } catch (Exception e) {
-                throw factory.getExceptionHandler().sqlException("LowPreparedStatement create error", e);
+                throw getExceptionHandler().sqlException("LowPreparedStatement create error", e);
             }
         }
 
@@ -217,7 +222,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
                 try {
                     lowPs.close();
                 } catch (Exception e) {
-                    throw factory.getExceptionHandler().sqlException("LowPreparedStatement close error", e);
+                    throw getExceptionHandler().sqlException("LowPreparedStatement close error", e);
                 }
             }
         };
@@ -446,7 +451,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
                 rs.close();
             }
         } catch (Exception e) {
-            throw factory.getExceptionHandler().sqlException("Statement close error", e);
+            throw getExceptionHandler().sqlException("Statement close error", e);
         }
     }
 

@@ -90,7 +90,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
                 int timeout = properties.getDefaultTimeout();
                 this.lowPreparedStatement = sqlClient.prepare(sql, lowPlaceholderList).await(timeout, TimeUnit.SECONDS);
             } catch (Exception e) {
-                throw factory.getExceptionHandler().sqlException("LowPreparedStatement create error", e);
+                throw getExceptionHandler().sqlException("LowPreparedStatement create error", e);
             }
         }
         return this.lowPreparedStatement;
@@ -148,7 +148,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         try {
             lowParameter = parameterGenerator.generate(name);
         } catch (RuntimeException e) {
-            throw factory.getExceptionHandler().sqlException("setParameter error", e);
+            throw getExceptionHandler().sqlException("setParameter error", e);
         }
         setLowParameter(parameterIndex, lowParameter);
     }
@@ -313,7 +313,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     @Override
     public void setObject(int parameterIndex, Object x) throws SQLException {
         if (x == null) {
-            throw factory.getExceptionHandler().dataNullValueNoIndicatorParameterException("setObject error");
+            throw getExceptionHandler().dataNullValueNoIndicatorParameterException("setObject error");
         }
 
         var atomType = parameterGenerator.toAtomType(x.getClass());
@@ -551,7 +551,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         try {
             return Math.toIntExact(length);
         } catch (ArithmeticException e) {
-            throw factory.getExceptionHandler().dataException("Not supported length", e);
+            throw getExceptionHandler().dataException("Not supported length", e);
         }
     }
 
@@ -607,7 +607,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         try (superCloser; var ps = lowPreparedStatement) {
             // close only
         } catch (ServerException | IOException | InterruptedException e) {
-            throw factory.getExceptionHandler().sqlException("PreparedStatement close error", e);
+            throw getExceptionHandler().sqlException("PreparedStatement close error", e);
         }
     }
 }

@@ -15,17 +15,15 @@
  */
 package com.tsurugidb.jdbc.transaction;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
+import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
-import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 
 @TsurugiJdbcInternal
@@ -47,6 +45,10 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         this.propertes = propertes;
     }
 
+    protected TsurugiJdbcExceptionHandler getExceptionHandler() {
+        return factory.getExceptionHandler();
+    }
+
     public Transaction getLowTransaction() {
         return this.lowTransaction;
     }
@@ -59,7 +61,8 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         boolean alreadyExecuted = this.executed.getAndSet(true);
 
         if (autoCommit && alreadyExecuted) {
-            throw new SQLException("already executed"); // TODO TsurugiSQLExceptionHandler
+            var e = new IllegalStateException("Transaction statement already executed");
+            throw getExceptionHandler().sqlException("execute error", e);
         }
     }
 
@@ -95,8 +98,8 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         try {
             R result = action.execute(lowTransaction);
             return result;
-        } catch (IOException | InterruptedException | ServerException | TimeoutException e) {
-            throw factory.getExceptionHandler().sqlException("Transaction execute error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("Transaction execute error", e);
         }
     }
 
@@ -110,8 +113,8 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
 
             try {
                 lowTransaction.commit(commitOption).await(timeout, TimeUnit.SECONDS);
-            } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
-                throw factory.getExceptionHandler().sqlException("Transaction commit error", e);
+            } catch (Exception e) {
+                throw getExceptionHandler().sqlException("Transaction commit error", e);
             }
         } catch (Throwable e) {
             try {
@@ -132,8 +135,8 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
 
             try {
                 lowTransaction.rollback().await(timeout, TimeUnit.SECONDS);
-            } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
-                throw factory.getExceptionHandler().sqlException("Transaction rollback error", e);
+            } catch (Exception e) {
+                throw getExceptionHandler().sqlException("Transaction rollback error", e);
             }
         } catch (Throwable e) {
             try {
@@ -153,8 +156,8 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
 
         try {
             lowTransaction.close();
-        } catch (ServerException | IOException | InterruptedException e) {
-            throw factory.getExceptionHandler().sqlException("Transaction close error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("Transaction close error", e);
         }
     }
 

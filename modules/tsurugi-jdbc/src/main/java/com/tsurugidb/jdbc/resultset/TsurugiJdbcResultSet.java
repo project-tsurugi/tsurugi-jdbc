@@ -15,23 +15,19 @@
  */
 package com.tsurugidb.jdbc.resultset;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
-import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.SqlCloser;
-import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 import com.tsurugidb.tsubakuro.util.FutureResponse;
@@ -39,7 +35,6 @@ import com.tsurugidb.tsubakuro.util.FutureResponse;
 @NotThreadSafe
 public class TsurugiJdbcResultSet extends AbstractResultSet {
 
-    private TsurugiJdbcFactory factory;
     private final TsurugiJdbcStatement ownerStatement;
     private final TsurugiJdbcTransaction transaction;
     private final TsurugiJdbcResultSetProperties properties;
@@ -78,8 +73,8 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
             int timeout = properties.getQueryTimeout();
             try {
                 this.lowResultSet = resultSetFuture.await(timeout, TimeUnit.SECONDS);
-            } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
-                throw factory.getExceptionHandler().sqlException("LowResultSet get error", e);
+            } catch (Exception e) {
+                throw getExceptionHandler().sqlException("LowResultSet get error", e);
             }
             this.resultSetFuture = null;
 
@@ -92,7 +87,7 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
         try {
             return lowRs.getMetadata();
         } catch (Exception e) {
-            throw factory.getExceptionHandler().sqlException("ResultSet getMetadata error", e);
+            throw getExceptionHandler().sqlException("ResultSet getMetadata error", e);
         }
     }
 
@@ -121,8 +116,8 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
     private boolean nextLowRow(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
         try {
             return lowRs.nextRow();
-        } catch (IOException | InterruptedException | ServerException e) {
-            throw factory.getExceptionHandler().sqlException("ResultSet nextRow error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("ResultSet nextRow error", e);
         }
     }
 
@@ -145,16 +140,16 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
     private boolean nextLowColumn(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
         try {
             return lowRs.nextColumn();
-        } catch (IOException | InterruptedException | ServerException e) {
-            throw factory.getExceptionHandler().sqlException("ResultSet nextColumn error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("ResultSet nextColumn error", e);
         }
     }
 
     private Object fetchLowValue(com.tsurugidb.tsubakuro.sql.ResultSet lowRs, TsurugiJdbcResultSetGetter getter) throws SQLException {
         try {
             return getter.fetchValue(this, lowRs);
-        } catch (IOException | InterruptedException | ServerException e) {
-            throw factory.getExceptionHandler().sqlException("ResultSet fetchValue error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("ResultSet fetchValue error", e);
         }
     }
 
@@ -322,8 +317,8 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
         // The lowResultSet must be closed before commit.
         try (statement; var ps = lowPreparedStatement; commit; var f = resultSetFuture; var rs = lowResultSet) {
             // close only
-        } catch (IOException | InterruptedException | ServerException e) {
-            throw factory.getExceptionHandler().sqlException("ResultSet close error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("ResultSet close error", e);
         }
     }
 

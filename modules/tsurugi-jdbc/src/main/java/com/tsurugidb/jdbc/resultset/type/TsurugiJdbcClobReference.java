@@ -15,7 +15,6 @@
  */
 package com.tsurugidb.jdbc.resultset.type;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -24,11 +23,10 @@ import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
+import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
-import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ClobReference;
 
 public class TsurugiJdbcClobReference implements Clob {
@@ -41,13 +39,16 @@ public class TsurugiJdbcClobReference implements Clob {
         this.lowClob = lowClob;
     }
 
+    protected TsurugiJdbcExceptionHandler getExceptionHandler() {
+        return ownerResultSet.getFactory().getExceptionHandler();
+    }
+
     public Reader openReader(long timeout, TimeUnit unit) throws SQLException {
         var transaction = ownerResultSet.getTransaction().getLowTransaction();
         try {
             return transaction.openReader(lowClob).await(timeout, unit);
-        } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
-            var factory = ownerResultSet.getFactory();
-            throw factory.getExceptionHandler().sqlException("CLOB open error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("CLOB open error", e);
         }
     }
 

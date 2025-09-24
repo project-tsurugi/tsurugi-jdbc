@@ -22,6 +22,7 @@ import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.SQLInvalidAuthorizationSpecException;
 import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLSyntaxErrorException;
 import java.sql.SQLTimeoutException;
 import java.sql.SQLTransactionRollbackException;
 import java.text.MessageFormat;
@@ -187,5 +188,11 @@ public class TsurugiJdbcExceptionHandler {
     public SQLException transactionFoundException() {
         String message = "Transaction exists";
         return new SQLException(message, SqlState.S25001_ACTIVE_TRANSACTION.code());
+    }
+
+    // ResultSet
+
+    public SQLException undefinedColumnNameException(String message) {
+        return new SQLSyntaxErrorException(message, SqlState.S42703_UNDEFINED_COLUMN_NAME.code());
     }
 }

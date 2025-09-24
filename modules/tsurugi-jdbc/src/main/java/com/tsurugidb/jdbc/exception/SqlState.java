@@ -37,6 +37,9 @@ public enum SqlState {
     /** 40001: serialization failure */
     S40001_SERIALIZATION_FAILURE("40001", "serialization failure"),
 
+    /** 42703: undefined column name */
+    S42703_UNDEFINED_COLUMN_NAME("42703", "undefined column name"),
+
     /** HY000: CLI-specific condition */
     HY000_CLI_SPECIFIC_CONDITION("HY000", "CLI-specific condition"),
     /** HY024: invalid attribute value */

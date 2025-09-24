@@ -15,18 +15,16 @@
  */
 package com.tsurugidb.jdbc.resultset.type;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
+import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
-import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.BlobReference;
 
 public class TsurugiJdbcBlobReference implements Blob {
@@ -39,13 +37,16 @@ public class TsurugiJdbcBlobReference implements Blob {
         this.lowBlob = lowBlob;
     }
 
+    protected TsurugiJdbcExceptionHandler getExceptionHandler() {
+        return ownerResultSet.getFactory().getExceptionHandler();
+    }
+
     public InputStream openInputStream(long timeout, TimeUnit unit) throws SQLException {
         var transaction = ownerResultSet.getTransaction().getLowTransaction();
         try {
             return transaction.openInputStream(lowBlob).await(timeout, unit);
-        } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
-            var factory = ownerResultSet.getFactory();
-            throw factory.getExceptionHandler().sqlException("BLOB open error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("BLOB open error", e);
         }
     }
 

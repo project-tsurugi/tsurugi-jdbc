@@ -15,7 +15,6 @@
  */
 package com.tsurugidb.jdbc;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -24,18 +23,17 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
+import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.property.TsurugiJdbcProperty;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.common.SessionBuilder;
-import com.tsurugidb.tsubakuro.exception.ServerException;
 
 /**
  * Tsurugi JDBC Driver.
@@ -77,6 +75,10 @@ public class TsurugiDriver implements Driver, HasFactory {
         return this.factory;
     }
 
+    protected TsurugiJdbcExceptionHandler getExceptionHandler() {
+        return getFactory().getExceptionHandler();
+    }
+
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
         var properties = TsurugiJdbcUrlParser.parse(factory, url, info);
@@ -92,8 +94,8 @@ public class TsurugiDriver implements Driver, HasFactory {
         Session session;
         try {
             session = builder.create(timeout, TimeUnit.SECONDS);
-        } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
-            throw factory.getExceptionHandler().sqlException("Connect error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("Connect error", e);
         }
 
         return factory.createConnection(session, properties);

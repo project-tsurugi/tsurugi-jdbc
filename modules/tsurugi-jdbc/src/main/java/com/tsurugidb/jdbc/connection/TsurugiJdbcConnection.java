@@ -15,7 +15,6 @@
  */
 package com.tsurugidb.jdbc.connection;
 
-import java.io.IOException;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -42,13 +41,13 @@ import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
+import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
@@ -58,7 +57,6 @@ import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 import com.tsurugidb.jdbc.util.LowCloser;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.common.Session;
-import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 
@@ -92,6 +90,10 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         return this.factory;
     }
 
+    protected TsurugiJdbcExceptionHandler getExceptionHandler() {
+        return getFactory().getExceptionHandler();
+    }
+
     @TsurugiJdbcInternal
     public TsurugiJdbcConnectionProperties getProperties() {
         return this.properties;
@@ -102,7 +104,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         try {
             return iface.cast(this);
         } catch (ClassCastException e) {
-            throw factory.getExceptionHandler().unwrapException(iface);
+            throw getExceptionHandler().unwrapException(iface);
         }
     }
 
@@ -206,8 +208,8 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         Transaction lowTransaction;
         try {
             lowTransaction = lowSqlClient.createTransaction(option).await(timeout, TimeUnit.SECONDS);
-        } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
-            throw factory.getExceptionHandler().sqlException("Transaction create error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("Transaction create error", e);
         }
 
         transaction = factory.createTransaction(lowTransaction, getAutoCommit(), properties);
@@ -222,7 +224,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     protected TsurugiJdbcTransaction checkTransactionActive() throws SQLException {
         var transaction = getFieldTransaction();
         if (transaction == null) {
-            throw factory.getExceptionHandler().transactionNotFoundException();
+            throw getExceptionHandler().transactionNotFoundException();
         }
         return transaction;
     }
@@ -230,7 +232,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     protected void checkTransactionInactive() throws SQLException {
         var transaction = getFieldTransaction();
         if (transaction != null) {
-            throw factory.getExceptionHandler().transactionFoundException();
+            throw getExceptionHandler().transactionFoundException();
         }
     }
 
@@ -508,11 +510,11 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         try {
             properties.put(name, value, failedProperties);
         } catch (Exception e) {
-            throw factory.getExceptionHandler().clientInfoException(e, failedProperties);
+            throw getExceptionHandler().clientInfoException(e, failedProperties);
         }
 
         if (!failedProperties.isEmpty()) {
-            throw factory.getExceptionHandler().clientInfoException(null, failedProperties);
+            throw getExceptionHandler().clientInfoException(null, failedProperties);
         }
     }
 
@@ -533,7 +535,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
         if (!failedProperties.isEmpty()) {
             var firstException = !exceptionList.isEmpty() ? exceptionList.get(0) : null;
-            var e = factory.getExceptionHandler().clientInfoException(firstException, failedProperties);
+            var e = getExceptionHandler().clientInfoException(firstException, failedProperties);
             for (int i = 1; i < exceptionList.size(); i++) {
                 e.addSuppressed(exceptionList.get(i));
             }
@@ -626,8 +628,8 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
         try (var s = lowSession; shutdown; var c = lowSqlClient; var t = transaction) {
             this.transaction = null;
-        } catch (ServerException | IOException | InterruptedException | TimeoutException e) {
-            throw factory.getExceptionHandler().sqlException("Connection close error", e);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("Connection close error", e);
         }
     }
 
