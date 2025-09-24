@@ -431,9 +431,9 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public ResultSetMetaData getMetaData() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new SQLFeatureNotSupportedException("getMetaData not supported");
     }
 
     @Override

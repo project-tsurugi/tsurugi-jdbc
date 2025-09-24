@@ -140,15 +140,15 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public int getMaxFieldSize() throws SQLException {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public void setMaxFieldSize(int max) throws SQLException {
-        // TODO Auto-generated method stub
-
+        throw new SQLFeatureNotSupportedException("setMaxFieldSize not supported");
     }
 
     @Override
@@ -164,9 +164,12 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public void setEscapeProcessing(boolean enable) throws SQLException {
-        // TODO Auto-generated method stub
-
+        // FIXME setEscapeProcessing()
+        if (enable) {
+            throw new SQLFeatureNotSupportedException("setEscapeProcessing not supported");
+        }
     }
 
     @Override
@@ -283,26 +286,26 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     @Override
     public void setFetchDirection(int direction) throws SQLException {
-        // TODO Auto-generated method stub
-
+        if (direction != ResultSet.FETCH_FORWARD) {
+            throw new SQLFeatureNotSupportedException("setFetchDirection not supported");
+        }
     }
 
     @Override
     public int getFetchDirection() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        return ResultSet.FETCH_FORWARD;
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public void setFetchSize(int rows) throws SQLException {
-        // TODO Auto-generated method stub
-
+        // not supported
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public int getFetchSize() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        return 0; // not supported
     }
 
     @Override

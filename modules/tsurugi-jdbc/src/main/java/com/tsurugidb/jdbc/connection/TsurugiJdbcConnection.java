@@ -589,21 +589,22 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public void abort(Executor executor) throws SQLException {
-        // TODO Auto-generated method stub
-
+        // FIXME TsurugiJdbcConnection.abort(): shutdown(FORCEFUL)を実行するか？
+        throw new SQLFeatureNotSupportedException("abort not supported");
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        // TODO Auto-generated method stub
-
+        throw new SQLFeatureNotSupportedException("setNetworkTimeout not supported");
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public int getNetworkTimeout() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new SQLFeatureNotSupportedException("getNetworkTimeout not supported");
     }
 
     @Override
