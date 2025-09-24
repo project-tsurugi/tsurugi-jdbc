@@ -15,34 +15,34 @@
  */
 package com.tsurugidb.jdbc.statement;
 
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.DEFAULT_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.EXECUTE_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.QUERY_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.DEFAULT_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.EXECUTE_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.QUERY_TIMEOUT;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
-import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
-import com.tsurugidb.jdbc.property.TsurugiJdbcInternalProperties;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionConfig;
+import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyInt;
 
-public class TsurugiJdbcStatementProperties {
+public class TsurugiJdbcStatementConfig {
 
-    public static TsurugiJdbcStatementProperties of(TsurugiJdbcConnectionProperties from) {
-        var properties = new TsurugiJdbcStatementProperties();
-        properties.properties.copyFrom(from.getInternalProperties());
-        return properties;
+    public static TsurugiJdbcStatementConfig of(TsurugiJdbcConnectionConfig from) {
+        var config = new TsurugiJdbcStatementConfig();
+        config.properties.copyFrom(from.getInternalProperties());
+        return config;
     }
 
     private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT);
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
-    private final TsurugiJdbcInternalProperties properties = TsurugiJdbcInternalProperties.of( //
+    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of( //
             executeTimeout, //
             queryTimeout, //
             defaultTimeout);
 
     @TsurugiJdbcInternal
-    public TsurugiJdbcInternalProperties getInternalProperties() {
+    public TsurugiJdbcProperties getInternalProperties() {
         return this.properties;
     }
 

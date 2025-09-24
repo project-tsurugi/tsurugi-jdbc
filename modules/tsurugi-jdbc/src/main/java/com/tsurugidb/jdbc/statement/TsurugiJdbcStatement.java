@@ -43,7 +43,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     protected TsurugiJdbcFactory factory;
     protected final TsurugiJdbcConnection connection;
-    protected final TsurugiJdbcStatementProperties properties;
+    protected final TsurugiJdbcStatementConfig config;
 
     private TsurugiJdbcResultSet executingResultSet = null;
     private ExecuteResult lowUpdateResult = null;
@@ -57,10 +57,10 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     private boolean closed = false;
 
     @TsurugiJdbcInternal
-    public TsurugiJdbcStatement(TsurugiJdbcFactory factory, TsurugiJdbcConnection connection, TsurugiJdbcStatementProperties properties) {
+    public TsurugiJdbcStatement(TsurugiJdbcFactory factory, TsurugiJdbcConnection connection, TsurugiJdbcStatementConfig config) {
         this.factory = factory;
         this.connection = connection;
-        this.properties = properties;
+        this.config = config;
     }
 
     @Override
@@ -98,7 +98,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         var transaction = connection.getTransaction();
         var rs = transaction.executeOnly(lowTransaction -> {
             var future = lowTransaction.executeQuery(sql);
-            return factory.createResultSet(this, transaction, future, properties);
+            return factory.createResultSet(this, transaction, future, config);
         });
 
         setExecutingResultSet(rs);
@@ -109,7 +109,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     public int executeUpdate(String sql) throws SQLException {
         closeExecutingResultSet();
 
-        int timeout = properties.getExecuteTimeout();
+        int timeout = config.getExecuteTimeout();
 
         var transaction = connection.getTransaction();
         ExecuteResult lowResult = transaction.executeAndAutoCommit(lowTransaction -> {
@@ -177,12 +177,12 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     @Override
     public int getQueryTimeout() throws SQLException {
-        return properties.getQueryTimeout();
+        return config.getQueryTimeout();
     }
 
     @Override
     public void setQueryTimeout(int seconds) throws SQLException {
-        properties.setQueryTimeout(seconds);
+        config.setQueryTimeout(seconds);
     }
 
     @Override
@@ -215,7 +215,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         {
             var sqlClient = connection.getLowSqlClient();
             try {
-                int timeout = properties.getDefaultTimeout();
+                int timeout = config.getDefaultTimeout();
                 lowPs = sqlClient.prepare(sql, List.of()).await(timeout, TimeUnit.SECONDS);
             } catch (Exception e) {
                 throw getExceptionHandler().sqlException("LowPreparedStatement create error", e);
@@ -239,7 +239,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
             if (lowPs.hasResultRecords()) {
                 var rs = transaction.executeOnly(lowTransaction -> {
                     var future = lowTransaction.executeQuery(lowPs, List.of());
-                    return factory.createResultSet(this, transaction, future, properties);
+                    return factory.createResultSet(this, transaction, future, config);
                 });
 
                 rs.setLowPreparedStatement(lowPs);
@@ -248,7 +248,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
                 setExecutingResultSet(rs);
                 return true;
             } else {
-                int timeout = properties.getExecuteTimeout();
+                int timeout = config.getExecuteTimeout();
                 ExecuteResult lowResult = transaction.executeAndAutoCommit(lowTransaction -> {
                     return lowTransaction.executeStatement(lowPs, List.of()).await(timeout, TimeUnit.SECONDS);
                 });
@@ -349,7 +349,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
             return new int[0];
         }
 
-        int timeout = properties.getExecuteTimeout();
+        int timeout = config.getExecuteTimeout();
 
         var transaction = connection.getTransaction();
         int[] result = transaction.executeAndAutoCommit(lowTransaction -> {

@@ -15,24 +15,24 @@
  */
 package com.tsurugidb.jdbc.connection;
 
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.AUTO_COMMIT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.AUTO_DISPOSE;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.BEGIN_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.COMMIT_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.COMMIT_TYPE;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.DEFAULT_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.EXCLUSIVE_READ_AREA;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.EXECUTE_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.INCLUDE_DDL;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.INCLUSIVE_READ_AREA;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.QUERY_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.ROLLBACK_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.SCAN_PARALLEL;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.SHUTDOWN_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.SHUTDOWN_TYPE;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.TRANSACTION_LABEL;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.TRANSACTION_TYPE;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.WRITE_PRESERVE;
+import static com.tsurugidb.jdbc.TsurugiConfig.AUTO_COMMIT;
+import static com.tsurugidb.jdbc.TsurugiConfig.AUTO_DISPOSE;
+import static com.tsurugidb.jdbc.TsurugiConfig.BEGIN_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.COMMIT_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.COMMIT_TYPE;
+import static com.tsurugidb.jdbc.TsurugiConfig.DEFAULT_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.EXCLUSIVE_READ_AREA;
+import static com.tsurugidb.jdbc.TsurugiConfig.EXECUTE_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.INCLUDE_DDL;
+import static com.tsurugidb.jdbc.TsurugiConfig.INCLUSIVE_READ_AREA;
+import static com.tsurugidb.jdbc.TsurugiConfig.QUERY_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.ROLLBACK_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.SCAN_PARALLEL;
+import static com.tsurugidb.jdbc.TsurugiConfig.SHUTDOWN_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.SHUTDOWN_TYPE;
+import static com.tsurugidb.jdbc.TsurugiConfig.TRANSACTION_LABEL;
+import static com.tsurugidb.jdbc.TsurugiConfig.TRANSACTION_TYPE;
+import static com.tsurugidb.jdbc.TsurugiConfig.WRITE_PRESERVE;
 
 import java.sql.ClientInfoStatus;
 import java.util.List;
@@ -41,9 +41,9 @@ import java.util.OptionalInt;
 
 import javax.annotation.Nullable;
 
-import com.tsurugidb.jdbc.TsurugiJdbcProperties;
+import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
-import com.tsurugidb.jdbc.property.TsurugiJdbcInternalProperties;
+import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyBoolean;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyEnum;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyInt;
@@ -56,12 +56,12 @@ import com.tsurugidb.sql.proto.SqlRequest.ReadArea;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 
-public class TsurugiJdbcConnectionProperties {
+public class TsurugiJdbcConnectionConfig {
 
-    public static TsurugiJdbcConnectionProperties of(TsurugiJdbcProperties from) {
-        var properties = new TsurugiJdbcConnectionProperties(from.getEndpoint());
-        properties.properties.copyFrom(from.getInternalProperties());
-        return properties;
+    public static TsurugiJdbcConnectionConfig of(TsurugiConfig from) {
+        var config = new TsurugiJdbcConnectionConfig(from.getEndpoint());
+        config.properties.copyFrom(from.getInternalProperties());
+        return config;
     }
 
     private final String endpoint;
@@ -91,7 +91,7 @@ public class TsurugiJdbcConnectionProperties {
 
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
-    private final TsurugiJdbcInternalProperties properties = TsurugiJdbcInternalProperties.of( //
+    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of( //
             transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, //
             autoCommit, commitType, autoDispose, //
             beginTimeout, commitTimeout, rollbackTimeout, //
@@ -100,7 +100,7 @@ public class TsurugiJdbcConnectionProperties {
             shutdownType, shutdownTimeout, //
             defaultTimeout);
 
-    public TsurugiJdbcConnectionProperties(String endpoint) {
+    public TsurugiJdbcConnectionConfig(String endpoint) {
         this.endpoint = endpoint;
     }
 
@@ -113,7 +113,7 @@ public class TsurugiJdbcConnectionProperties {
     }
 
     @TsurugiJdbcInternal
-    public TsurugiJdbcInternalProperties getInternalProperties() {
+    public TsurugiJdbcProperties getInternalProperties() {
         return this.properties;
     }
 

@@ -28,19 +28,19 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
 @TsurugiJdbcInternal
-public class TsurugiJdbcInternalProperties {
+public class TsurugiJdbcProperties {
 
-    public static TsurugiJdbcInternalProperties of(TsurugiJdbcProperty... properties) {
+    public static TsurugiJdbcProperties of(TsurugiJdbcProperty... properties) {
         var map = new LinkedHashMap<String, TsurugiJdbcProperty>(properties.length);
         for (var property : properties) {
             map.put(property.name(), property);
         }
-        return new TsurugiJdbcInternalProperties(map);
+        return new TsurugiJdbcProperties(map);
     }
 
     private final Map<String, TsurugiJdbcProperty> map;
 
-    public TsurugiJdbcInternalProperties(Map<String, TsurugiJdbcProperty> map) {
+    public TsurugiJdbcProperties(Map<String, TsurugiJdbcProperty> map) {
         this.map = map;
     }
 
@@ -81,7 +81,7 @@ public class TsurugiJdbcInternalProperties {
         }
     }
 
-    public void copyFrom(TsurugiJdbcInternalProperties fromProperties) {
+    public void copyFrom(TsurugiJdbcProperties fromProperties) {
         for (var entry : map.entrySet()) {
             String key = entry.getKey();
             var from = fromProperties.getProperty(key);
@@ -92,7 +92,7 @@ public class TsurugiJdbcInternalProperties {
         }
     }
 
-    public void copyIfPresentFrom(TsurugiJdbcInternalProperties fromProperties) {
+    public void copyIfPresentFrom(TsurugiJdbcProperties fromProperties) {
         for (var entry : map.entrySet()) {
             String key = entry.getKey();
             var from = fromProperties.getProperty(key);

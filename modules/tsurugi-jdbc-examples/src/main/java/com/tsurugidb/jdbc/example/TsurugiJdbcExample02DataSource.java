@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import com.tsurugidb.jdbc.TsurugiJdbcDataSource;
-import com.tsurugidb.jdbc.TsurugiJdbcProperties;
+import com.tsurugidb.jdbc.TsurugiConfig;
+import com.tsurugidb.jdbc.TsurugiDataSource;
 
 public class TsurugiJdbcExample02DataSource {
     private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample02DataSource.class);
@@ -43,7 +43,7 @@ public class TsurugiJdbcExample02DataSource {
     static void connect0() throws SQLException {
         LOG.info("connect0 start");
 
-        var dataSource = new TsurugiJdbcDataSource();
+        var dataSource = new TsurugiDataSource();
         dataSource.setEndpoint("tcp://localhost:12345");
 
         try (var connection = dataSource.getConnection()) {
@@ -55,7 +55,7 @@ public class TsurugiJdbcExample02DataSource {
     static void connect1() throws SQLException {
         LOG.info("connect1 start");
 
-        var dataSource = new TsurugiJdbcDataSource();
+        var dataSource = new TsurugiDataSource();
         dataSource.setEndpoint("tcp://localhost:12345");
         dataSource.setUser("tsurugi");
         dataSource.setPassword("password");
@@ -69,7 +69,7 @@ public class TsurugiJdbcExample02DataSource {
     static void connect2() throws SQLException {
         LOG.info("connect2 start");
 
-        var dataSource = new TsurugiJdbcDataSource();
+        var dataSource = new TsurugiDataSource();
         dataSource.setEndpoint("tcp://localhost:12345");
 
         try (var connection = dataSource.getConnection("tsurugi", "password")) {
@@ -81,11 +81,11 @@ public class TsurugiJdbcExample02DataSource {
     static void connect3() throws SQLException {
         LOG.info("connect3 start");
 
-        var properties = new TsurugiJdbcProperties();
-        properties.setEndpoint("tcp://localhost:12345");
-        properties.setUser("tsurugi");
-        properties.setPassword("password");
-        var dataSource = new TsurugiJdbcDataSource(properties);
+        var config = new TsurugiConfig();
+        config.setEndpoint("tcp://localhost:12345");
+        config.setUser("tsurugi");
+        config.setPassword("password");
+        var dataSource = new TsurugiDataSource(config);
 
         try (var connection = dataSource.getConnection()) {
         }
@@ -100,7 +100,7 @@ public class TsurugiJdbcExample02DataSource {
                 + encode("?", "user", "tsurugi") //
                 + encode("&", "password", "password");
 
-        var dataSource = new TsurugiJdbcDataSource();
+        var dataSource = new TsurugiDataSource();
         dataSource.setJdbcUrl(url);
 
         try (var connection = dataSource.getConnection()) {

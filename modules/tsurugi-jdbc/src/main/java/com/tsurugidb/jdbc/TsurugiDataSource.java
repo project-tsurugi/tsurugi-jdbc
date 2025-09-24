@@ -33,18 +33,18 @@ import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 
-public class TsurugiJdbcDataSource implements DataSource, HasFactory {
-    private static final Logger PARENT_LOGGER = Logger.getLogger(TsurugiJdbcDataSource.class.getPackageName());
+public class TsurugiDataSource implements DataSource, HasFactory {
+    private static final Logger PARENT_LOGGER = Logger.getLogger(TsurugiDataSource.class.getPackageName());
 
     private TsurugiJdbcFactory factory = TsurugiJdbcFactory.getDefaultFactory();
-    private final TsurugiJdbcProperties properties;
+    private final TsurugiConfig config;
 
-    public TsurugiJdbcDataSource() {
-        this(new TsurugiJdbcProperties());
+    public TsurugiDataSource() {
+        this(new TsurugiConfig());
     }
 
-    public TsurugiJdbcDataSource(TsurugiJdbcProperties properties) {
-        this.properties = properties;
+    public TsurugiDataSource(TsurugiConfig config) {
+        this.config = config;
     }
 
     @Override
@@ -80,137 +80,137 @@ public class TsurugiJdbcDataSource implements DataSource, HasFactory {
         return iface.isInstance(this);
     }
 
-    public TsurugiJdbcProperties getProperties() {
-        return properties;
+    public TsurugiConfig getConfig() {
+        return this.config;
     }
 
     public void setJdbcUrl(String url) throws SQLException {
-        this.properties.setJdbcUrl(getFactory(), url);
+        this.config.setJdbcUrl(getFactory(), url);
     }
 
     // Session
 
     public void setEndpoint(String endpoint) {
-        properties.setEndpoint(endpoint);
+        config.setEndpoint(endpoint);
     }
 
     public void setUser(String user) throws SQLException {
-        properties.setUser(user);
+        config.setUser(user);
     }
 
     public void setPassword(String password) throws SQLException {
-        properties.setPassword(password);
+        config.setPassword(password);
     }
 
     public void setAuthToken(String authToken) throws SQLException {
-        properties.setAuthToken(authToken);
+        config.setAuthToken(authToken);
     }
 
     public void setCredentials(String path) throws SQLException {
-        properties.setCredentials(path);
+        config.setCredentials(path);
     }
 
     public void setApplicationName(String applicationName) {
-        properties.setApplicationName(applicationName);
+        config.setApplicationName(applicationName);
     }
 
     public void setSessionLabel(String sessionLabel) {
-        properties.setSessionLabel(sessionLabel);
+        config.setSessionLabel(sessionLabel);
     }
 
     public void setKeepAlive(boolean keepAlive) {
-        properties.setKeepAlive(keepAlive);
+        config.setKeepAlive(keepAlive);
     }
 
     public void setConnectTimeout(int seconds) {
-        properties.setConnectTimeout(seconds);
+        config.setConnectTimeout(seconds);
     }
 
     public void setShutdownType(TsurugiJdbcShutdownType shutdownType) {
-        properties.setShutdownType(shutdownType);
+        config.setShutdownType(shutdownType);
     }
 
     public void setShutdownTimeout(int seconds) {
-        properties.setShutdownTimeout(seconds);
+        config.setShutdownTimeout(seconds);
     }
 
     // Transaction
 
     public void setTransactionType(TsurugiJdbcTransactionType transactionType) {
-        properties.setTransactionType(transactionType);
+        config.setTransactionType(transactionType);
     }
 
     public void setTransactionLabel(String transactionLabel) {
-        properties.setTransactionLabel(transactionLabel);
+        config.setTransactionLabel(transactionLabel);
     }
 
     public void setTransactionIncludeDdl(boolean includeDdl) {
-        properties.setTransactionIncludeDdl(includeDdl);
+        config.setTransactionIncludeDdl(includeDdl);
     }
 
     public void setWritePreserve(List<String> tableNames) {
-        properties.setWritePreserve(tableNames);
+        config.setWritePreserve(tableNames);
     }
 
     public void setInclusiveReadArea(List<String> tableNames) {
-        properties.setInclusiveReadArea(tableNames);
+        config.setInclusiveReadArea(tableNames);
     }
 
     public void setExclusiveReadArea(List<String> tableNames) {
-        properties.setExclusiveReadArea(tableNames);
+        config.setExclusiveReadArea(tableNames);
     }
 
     public void setTransactionScanParallel(int scanParallel) {
-        properties.setTransactionScanParallel(scanParallel);
+        config.setTransactionScanParallel(scanParallel);
     }
 
     public void setAutoCommit(boolean autoCommit) {
-        properties.setAutoCommit(autoCommit);
+        config.setAutoCommit(autoCommit);
     }
 
     public void setCommitType(TsurugiJdbcCommitType commitType) {
-        properties.setCommitType(commitType);
+        config.setCommitType(commitType);
     }
 
     public void setCommitAutoDispose(boolean autoDispose) {
-        properties.setCommitAutoDispose(autoDispose);
+        config.setCommitAutoDispose(autoDispose);
     }
 
     public void setBeginTimeout(int seconds) {
-        properties.setBeginTimeout(seconds);
+        config.setBeginTimeout(seconds);
     }
 
     public void setCommitTimeout(int seconds) {
-        properties.setCommitTimeout(seconds);
+        config.setCommitTimeout(seconds);
     }
 
     public void setRollbackTimeout(int seconds) {
-        properties.setRollbackTimeout(seconds);
+        config.setRollbackTimeout(seconds);
     }
 
     // Statement
 
     public void setExecuteTimeout(int seconds) {
-        properties.setExecuteTimeout(seconds);
+        config.setExecuteTimeout(seconds);
     }
 
     // ResultSet
 
     public void setQueryTimeout(int seconds) {
-        properties.setQueryTimeout(seconds);
+        config.setQueryTimeout(seconds);
     }
 
     // Common
 
     public void setDefaultTimeout(int seconds) {
-        properties.setDefaultTimeout(seconds);
+        config.setDefaultTimeout(seconds);
     }
 
     // connect
 
     @Override
     public Connection getConnection() throws SQLException {
-        return TsurugiDriver.getTsurugiDriver().connect(this.properties);
+        return TsurugiDriver.getTsurugiDriver().connect(this.config);
     }
 
     @Override
@@ -240,12 +240,12 @@ public class TsurugiJdbcDataSource implements DataSource, HasFactory {
      */
     @Override
     public void setLoginTimeout(int seconds) throws SQLException {
-        properties.setConnectTimeout(seconds);
+        config.setConnectTimeout(seconds);
     }
 
     @Override
     public int getLoginTimeout() throws SQLException {
-        return properties.getConnectTimeout();
+        return config.getConnectTimeout();
     }
 
     @Override

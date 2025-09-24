@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import com.tsurugidb.jdbc.TsurugiJdbcProperties;
+import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
 /**
@@ -38,15 +38,15 @@ public class TsurugiJdbcUrlParser {
         return url.startsWith(URL_PREFIX);
     }
 
-    public static TsurugiJdbcProperties parse(TsurugiJdbcFactory factory, String url, Properties info) throws SQLException {
-        var properties = parse(factory, url);
-        if (properties != null) {
-            properties.putAll(factory, info);
+    public static TsurugiConfig parse(TsurugiJdbcFactory factory, String url, Properties info) throws SQLException {
+        var config = parse(factory, url);
+        if (config != null) {
+            config.putAll(factory, info);
         }
-        return properties;
+        return config;
     }
 
-    public static TsurugiJdbcProperties parse(TsurugiJdbcFactory factory, String url) throws SQLException {
+    public static TsurugiConfig parse(TsurugiJdbcFactory factory, String url) throws SQLException {
         if (url == null) {
             throw factory.getExceptionHandler().jdbcUrlNullException();
         }
@@ -68,8 +68,8 @@ public class TsurugiJdbcUrlParser {
             }
         }
 
-        var result = new TsurugiJdbcProperties();
-        result.setEndpoint(endpointUrl);
+        var config = new TsurugiConfig();
+        config.setEndpoint(endpointUrl);
 
         if (queryString != null) {
             String[] pairs = queryString.split("&");
@@ -79,11 +79,11 @@ public class TsurugiJdbcUrlParser {
                 String key = decode(keyValue[0]);
                 String value = keyValue.length > 1 ? decode(keyValue[1]) : null;
 
-                result.put(factory, key, value);
+                config.put(factory, key, value);
             }
         }
 
-        return result;
+        return config;
     }
 
     private static String decode(String s) {

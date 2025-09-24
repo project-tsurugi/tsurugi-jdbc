@@ -58,8 +58,8 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         return getFactory().getExceptionHandler();
     }
 
-    protected TsurugiJdbcConnectionProperties getProperties() {
-        return ownerConnection.getProperties();
+    protected TsurugiJdbcConnectionConfig getConfig() {
+        return ownerConnection.getConfig();
     }
 
     protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
@@ -92,14 +92,14 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
 
     @Override
     public String getURL() throws SQLException {
-        String endpoint = ownerConnection.getProperties().getEndpoint();
+        String endpoint = ownerConnection.getConfig().getEndpoint();
         return TsurugiJdbcUrlParser.getJdbcUrl(endpoint);
     }
 
     @Override
     public String getUserName() throws SQLException {
         var lowSession = ownerConnection.getLowSession();
-        int timeout = getProperties().getDefaultTimeout();
+        int timeout = getConfig().getDefaultTimeout();
         try {
             Optional<String> userName = lowSession.getUserName().await(timeout, TimeUnit.SECONDS);
             return userName.orElse(null);
@@ -712,7 +712,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
 
             var lowSqlClient = ownerConnection.getLowSqlClient();
 
-            int timeout = ownerConnection.getProperties().getDefaultTimeout();
+            int timeout = ownerConnection.getConfig().getDefaultTimeout();
             var lowTableList = lowSqlClient.listTables().await(timeout, TimeUnit.SECONDS);
             List<String> tableNames = lowTableList.getTableNames();
 
@@ -801,7 +801,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
 
             var lowSqlClient = ownerConnection.getLowSqlClient();
 
-            int timeout = ownerConnection.getProperties().getDefaultTimeout();
+            int timeout = ownerConnection.getConfig().getDefaultTimeout();
             var lowTableList = lowSqlClient.listTables().await(timeout, TimeUnit.SECONDS);
             List<String> tableNames = lowTableList.getTableNames();
 
@@ -913,7 +913,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
 
             TableMetadata lowTableMetadata;
             try {
-                int timeout = ownerConnection.getProperties().getDefaultTimeout();
+                int timeout = ownerConnection.getConfig().getDefaultTimeout();
                 lowTableMetadata = lowSqlClient.getTableMetadata(table).await(timeout, TimeUnit.SECONDS);
             } catch (TargetNotFoundException e) {
                 return new FixedResultSet(this, PRIMARY_KEYS_COLUMN_LIST, List.of());
@@ -1176,7 +1176,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
 
     @Override
     public ResultSet getClientInfoProperties() throws SQLException {
-        var properties = ownerConnection.getProperties().getInternalProperties().getProperties();
+        var properties = ownerConnection.getConfig().getInternalProperties().getProperties();
         var valuesList = new ArrayList<Object[]>(properties.size());
         for (var property : properties) {
             Object[] values = { //

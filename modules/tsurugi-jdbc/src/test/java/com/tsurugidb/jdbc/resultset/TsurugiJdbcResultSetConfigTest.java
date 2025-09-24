@@ -21,23 +21,23 @@ import java.sql.SQLException;
 
 import org.junit.jupiter.api.Test;
 
-import com.tsurugidb.jdbc.TsurugiJdbcProperties;
-import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
+import com.tsurugidb.jdbc.TsurugiConfig;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionConfig;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
-import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementProperties;
+import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementConfig;
 
-class TsurugiJdbcResultSetPropertiesTest {
+class TsurugiJdbcResultSetConfigTest {
 
     private final TsurugiJdbcFactory factory = new TsurugiJdbcFactory();
 
     @Test
     void getQueryTimeout() throws SQLException {
-        var root = new TsurugiJdbcProperties();
+        var root = new TsurugiConfig();
         root.put(factory, "queryTimeout", "123");
 
-        var connection = TsurugiJdbcConnectionProperties.of(root);
-        var statement = TsurugiJdbcStatementProperties.of(connection);
-        var target = TsurugiJdbcResultSetProperties.of(statement);
+        var connection = TsurugiJdbcConnectionConfig.of(root);
+        var statement = TsurugiJdbcStatementConfig.of(connection);
+        var target = TsurugiJdbcResultSetConfig.of(statement);
 
         assertEquals(123, target.getQueryTimeout());
         assertEquals(0, target.getDefaultTimeout());
@@ -45,12 +45,12 @@ class TsurugiJdbcResultSetPropertiesTest {
 
     @Test
     void getDefaultTimeout() throws SQLException {
-        var root = new TsurugiJdbcProperties();
+        var root = new TsurugiConfig();
         root.put(factory, "defaultTimeout", "123");
 
-        var connection = TsurugiJdbcConnectionProperties.of(root);
-        var statement = TsurugiJdbcStatementProperties.of(connection);
-        var target = TsurugiJdbcResultSetProperties.of(statement);
+        var connection = TsurugiJdbcConnectionConfig.of(root);
+        var statement = TsurugiJdbcStatementConfig.of(connection);
+        var target = TsurugiJdbcResultSetConfig.of(statement);
 
         assertEquals(123, target.getQueryTimeout());
         assertEquals(123, target.getDefaultTimeout());

@@ -27,7 +27,7 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
-import com.tsurugidb.jdbc.property.TsurugiJdbcInternalProperties;
+import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyBoolean;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyEnum;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyInt;
@@ -41,7 +41,7 @@ import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredential;
 
-public class TsurugiJdbcProperties {
+public class TsurugiConfig {
     // Session
     public static final String USER = "user";
     public static final String PASSWORD = "password";
@@ -110,7 +110,7 @@ public class TsurugiJdbcProperties {
 
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT).description("default timeout [seconds]").defaultValue(0);
 
-    private final TsurugiJdbcInternalProperties properties = TsurugiJdbcInternalProperties.of( //
+    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of( //
             user, password, authToken, credentials, //
             applicationName, sessionLabel, keepAlive, connectTimeout, //
             shutdownType, shutdownTimeout, //
@@ -132,7 +132,7 @@ public class TsurugiJdbcProperties {
     }
 
     @TsurugiJdbcInternal
-    public TsurugiJdbcInternalProperties getInternalProperties() {
+    public TsurugiJdbcProperties getInternalProperties() {
         return this.properties;
     }
 
@@ -142,10 +142,10 @@ public class TsurugiJdbcProperties {
 
     @TsurugiJdbcInternal
     public void setJdbcUrl(TsurugiJdbcFactory factory, String url) throws SQLException {
-        var fromProperties = TsurugiJdbcUrlParser.parse(factory, url);
-        if (fromProperties != null) {
-            setEndpoint(fromProperties.getEndpoint());
-            properties.copyFrom(fromProperties.getInternalProperties());
+        var fromConfig = TsurugiJdbcUrlParser.parse(factory, url);
+        if (fromConfig != null) {
+            setEndpoint(fromConfig.getEndpoint());
+            properties.copyFrom(fromConfig.getInternalProperties());
         }
     }
 

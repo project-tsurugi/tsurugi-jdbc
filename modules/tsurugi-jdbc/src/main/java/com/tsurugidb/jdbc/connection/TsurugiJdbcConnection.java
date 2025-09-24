@@ -66,18 +66,18 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     private TsurugiJdbcFactory factory;
     private final Session lowSession;
     private final SqlClient lowSqlClient;
-    private final TsurugiJdbcConnectionProperties properties;
+    private final TsurugiJdbcConnectionConfig config;
 
     private TsurugiJdbcDatabaseMetaData metaData = null;
 
     private TsurugiJdbcTransaction transaction = null;
 
     @TsurugiJdbcInternal
-    public TsurugiJdbcConnection(TsurugiJdbcFactory factory, Session lowSession, TsurugiJdbcConnectionProperties properties) {
+    public TsurugiJdbcConnection(TsurugiJdbcFactory factory, Session lowSession, TsurugiJdbcConnectionConfig config) {
         this.factory = factory;
         this.lowSession = Objects.requireNonNull(lowSession);
         this.lowSqlClient = SqlClient.attach(lowSession);
-        this.properties = properties;
+        this.config = config;
     }
 
     @Override
@@ -95,8 +95,8 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     @TsurugiJdbcInternal
-    public TsurugiJdbcConnectionProperties getProperties() {
-        return this.properties;
+    public TsurugiJdbcConnectionConfig getConfig() {
+        return this.config;
     }
 
     @Override
@@ -115,12 +115,12 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public TsurugiJdbcStatement createStatement() throws SQLException {
-        return factory.createStatement(this, properties);
+        return factory.createStatement(this, config);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        return factory.createPreparedStatement(this, properties, sql);
+        return factory.createPreparedStatement(this, config, sql);
     }
 
     @Override
@@ -145,51 +145,51 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     public void setTransactionType(TsurugiJdbcTransactionType type) {
-        properties.setTransactionType(type);
+        config.setTransactionType(type);
     }
 
     public TsurugiJdbcTransactionType getTransactionType() {
-        return properties.getTransactionType();
+        return config.getTransactionType();
     }
 
     public void setTransactionIncludeDdl(boolean include) {
-        properties.setIncludeDdl(include);
+        config.setIncludeDdl(include);
     }
 
     public boolean getTransactionIncludeDdl() {
-        return properties.getIncludeDdl();
+        return config.getIncludeDdl();
     }
 
     public void setWritePreserve(List<String> tableNames) {
-        properties.setWritePreserve(tableNames);
+        config.setWritePreserve(tableNames);
     }
 
     public @Nullable List<String> getWritePreserve() {
-        return properties.getWritePreserve();
+        return config.getWritePreserve();
     }
 
     public void setInclusiveReadArea(List<String> tableNames) {
-        properties.setInclusiveReadArea(tableNames);
+        config.setInclusiveReadArea(tableNames);
     }
 
     public @Nullable List<String> getInclusiveReadArea() {
-        return properties.getInclusiveReadArea();
+        return config.getInclusiveReadArea();
     }
 
     public void setExclusiveReadArea(List<String> tableNames) {
-        properties.setExclusiveReadArea(tableNames);
+        config.setExclusiveReadArea(tableNames);
     }
 
     public @Nullable List<String> getExclusiveReadArea() {
-        return properties.getExclusiveReadArea();
+        return config.getExclusiveReadArea();
     }
 
     public void setTransactionScanParallel(int parallel) {
-        properties.setScanParallel(parallel);
+        config.setScanParallel(parallel);
     }
 
     public OptionalInt getTransactionScanParallel() {
-        return properties.getScanParallel();
+        return config.getScanParallel();
     }
 
     @TsurugiJdbcInternal
@@ -202,7 +202,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         var option = getTransactionOption();
         LOG.config(() -> String.format("transactionOption=%s", option));
 
-        int timeout = properties.getBeginTimeout();
+        int timeout = config.getBeginTimeout();
         LOG.config(() -> String.format("beginTimeout=%d [seconds]", timeout));
 
         Transaction lowTransaction;
@@ -212,13 +212,13 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
             throw getExceptionHandler().sqlException("Transaction create error", e);
         }
 
-        transaction = factory.createTransaction(lowTransaction, getAutoCommit(), properties);
+        transaction = factory.createTransaction(lowTransaction, getAutoCommit(), config);
         this.transaction = transaction;
         return transaction;
     }
 
     protected SqlRequest.TransactionOption getTransactionOption() {
-        return properties.getTransactionOption();
+        return config.getTransactionOption();
     }
 
     protected TsurugiJdbcTransaction checkTransactionActive() throws SQLException {
@@ -247,28 +247,28 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        properties.setAutoCommit(autoCommit);
+        config.setAutoCommit(autoCommit);
     }
 
     @Override
     public boolean getAutoCommit() throws SQLException {
-        return properties.getAutoCommit();
+        return config.getAutoCommit();
     }
 
     public void setCommitType(TsurugiJdbcCommitType type) {
-        properties.setCommitType(type);
+        config.setCommitType(type);
     }
 
     public TsurugiJdbcCommitType getCommitType() {
-        return properties.getCommitType();
+        return config.getCommitType();
     }
 
     public void setCommitAutoDispose(boolean autoDispose) {
-        properties.setAutoDispose(autoDispose);
+        config.setAutoDispose(autoDispose);
     }
 
     public boolean getCommitAutoDispose() {
-        return properties.getAutoDispose();
+        return config.getAutoDispose();
     }
 
     @Override
@@ -508,7 +508,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         var failedProperties = new LinkedHashMap<String, ClientInfoStatus>();
 
         try {
-            properties.put(name, value, failedProperties);
+            config.put(name, value, failedProperties);
         } catch (Exception e) {
             throw getExceptionHandler().clientInfoException(e, failedProperties);
         }
@@ -527,7 +527,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
             try {
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
-                this.properties.put(key, value, failedProperties);
+                this.config.put(key, value, failedProperties);
             } catch (Exception e) {
                 exceptionList.add(e);
             }
@@ -545,7 +545,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public String getClientInfo(String name) throws SQLException {
-        var property = properties.getInternalProperties().getProperty(name);
+        var property = config.getInternalProperties().getProperty(name);
         if (property == null) {
             return null;
         }
@@ -554,7 +554,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public Properties getClientInfo() throws SQLException {
-        var values = properties.getInternalProperties().getProperties();
+        var values = config.getInternalProperties().getProperties();
         var result = new Properties(values.size());
         for (var property : values) {
             String key = property.name();
@@ -611,12 +611,12 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     public void close() throws SQLException {
         LowCloser shutdown;
         {
-            var shutdownType = properties.getShutdownType();
+            var shutdownType = config.getShutdownType();
             LOG.config(() -> String.format("shutdownType=%s", shutdownType));
 
             var lowShutdownType = shutdownType.getLowShutdownType();
             if (lowShutdownType != null) {
-                int timeout = properties.getShutdownTimeout();
+                int timeout = config.getShutdownTimeout();
                 LOG.config(() -> String.format("shutdownTimeout=%d [seconds]", timeout));
 
                 shutdown = () -> {

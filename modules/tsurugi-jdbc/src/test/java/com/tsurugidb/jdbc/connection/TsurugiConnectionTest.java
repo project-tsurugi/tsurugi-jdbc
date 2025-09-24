@@ -31,8 +31,8 @@ class TsurugiConnectionTest {
 
     private static TsurugiJdbcConnection createTestConnection() {
         var session = new LowSessionTestMock();
-        var properties = new TsurugiJdbcConnectionProperties("endpoint");
-        return factory.createConnection(session, properties);
+        var config = new TsurugiJdbcConnectionConfig("endpoint");
+        return factory.createConnection(session, config);
     }
 
     @Test

@@ -39,7 +39,7 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
 
     private final TsurugiJdbcStatement ownerStatement;
     private final TsurugiJdbcTransaction transaction;
-    private final TsurugiJdbcResultSetProperties properties;
+    private final TsurugiJdbcResultSetConfig config;
     private PreparedStatement lowPreparedStatement = null; // close on ResultSet.close()
 
     private FutureResponse<com.tsurugidb.tsubakuro.sql.ResultSet> resultSetFuture;
@@ -53,12 +53,12 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
     private boolean finished = false;
 
     public TsurugiJdbcResultSet(TsurugiJdbcStatement statement, TsurugiJdbcTransaction transaction, FutureResponse<com.tsurugidb.tsubakuro.sql.ResultSet> resultSetFuture,
-            TsurugiJdbcResultSetProperties properties) {
+            TsurugiJdbcResultSetConfig config) {
         super(statement);
         this.ownerStatement = statement;
         this.transaction = transaction;
         this.resultSetFuture = resultSetFuture;
-        this.properties = properties;
+        this.config = config;
     }
 
     public void setLowPreparedStatement(PreparedStatement lowPs) {
@@ -72,7 +72,7 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
 
     protected com.tsurugidb.tsubakuro.sql.ResultSet getLowResultSet() throws SQLException {
         if (this.lowResultSet == null) {
-            int timeout = properties.getQueryTimeout();
+            int timeout = config.getQueryTimeout();
             try {
                 this.lowResultSet = resultSetFuture.await(timeout, TimeUnit.SECONDS);
             } catch (Exception e) {

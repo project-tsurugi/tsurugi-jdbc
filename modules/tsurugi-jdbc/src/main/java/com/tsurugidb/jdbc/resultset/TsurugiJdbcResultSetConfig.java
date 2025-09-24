@@ -15,25 +15,25 @@
  */
 package com.tsurugidb.jdbc.resultset;
 
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.DEFAULT_TIMEOUT;
-import static com.tsurugidb.jdbc.TsurugiJdbcProperties.QUERY_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.DEFAULT_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.QUERY_TIMEOUT;
 
-import com.tsurugidb.jdbc.property.TsurugiJdbcInternalProperties;
+import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyInt;
-import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementProperties;
+import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementConfig;
 
-public class TsurugiJdbcResultSetProperties {
+public class TsurugiJdbcResultSetConfig {
 
-    public static TsurugiJdbcResultSetProperties of(TsurugiJdbcStatementProperties from) {
-        var properties = new TsurugiJdbcResultSetProperties();
-        properties.properties.copyFrom(from.getInternalProperties());
-        return properties;
+    public static TsurugiJdbcResultSetConfig of(TsurugiJdbcStatementConfig from) {
+        var config = new TsurugiJdbcResultSetConfig();
+        config.properties.copyFrom(from.getInternalProperties());
+        return config;
     }
 
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
-    private final TsurugiJdbcInternalProperties properties = TsurugiJdbcInternalProperties.of( //
+    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of( //
             queryTimeout, //
             defaultTimeout);
 

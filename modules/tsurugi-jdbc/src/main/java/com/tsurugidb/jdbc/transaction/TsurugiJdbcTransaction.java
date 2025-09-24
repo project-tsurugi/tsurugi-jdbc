@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
-import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionConfig;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.tsubakuro.sql.Transaction;
@@ -33,12 +33,12 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
     private TsurugiJdbcFactory factory;
     private final Transaction lowTransaction;
     private final boolean autoCommit;
-    private final TsurugiJdbcConnectionProperties propertes;
+    private final TsurugiJdbcConnectionConfig propertes;
 
     private final AtomicBoolean executed = new AtomicBoolean(false);
     private boolean closed = false;
 
-    public TsurugiJdbcTransaction(TsurugiJdbcFactory factory, Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionProperties propertes) {
+    public TsurugiJdbcTransaction(TsurugiJdbcFactory factory, Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionConfig propertes) {
         this.factory = factory;
         this.lowTransaction = lowTransaction;
         this.autoCommit = autoCommit;

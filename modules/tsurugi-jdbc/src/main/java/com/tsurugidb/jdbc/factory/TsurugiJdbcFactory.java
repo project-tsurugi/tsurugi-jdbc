@@ -19,19 +19,19 @@ import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
-import com.tsurugidb.jdbc.TsurugiJdbcProperties;
+import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
-import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionConfig;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.resultset.AbstractResultSet;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
+import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetConfig;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetConverter;
-import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetProperties;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcParameterGenerator;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcParameterMetaData;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
-import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementProperties;
+import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementConfig;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
@@ -71,31 +71,31 @@ public class TsurugiJdbcFactory {
         return this.sqlTypeUtil;
     }
 
-    public TsurugiJdbcConnection createConnection(Session lowSession, TsurugiJdbcProperties fromProperties) {
-        var properties = TsurugiJdbcConnectionProperties.of(fromProperties);
-        return createConnection(lowSession, properties);
+    public TsurugiJdbcConnection createConnection(Session lowSession, TsurugiConfig fromConfig) {
+        var config = TsurugiJdbcConnectionConfig.of(fromConfig);
+        return createConnection(lowSession, config);
     }
 
-    public TsurugiJdbcConnection createConnection(Session lowSession, TsurugiJdbcConnectionProperties properties) {
-        return new TsurugiJdbcConnection(this, lowSession, properties);
+    public TsurugiJdbcConnection createConnection(Session lowSession, TsurugiJdbcConnectionConfig config) {
+        return new TsurugiJdbcConnection(this, lowSession, config);
     }
 
-    public TsurugiJdbcStatement createStatement(TsurugiJdbcConnection connection, TsurugiJdbcConnectionProperties fromProperties) {
-        var properties = TsurugiJdbcStatementProperties.of(fromProperties);
-        return createStatement(connection, properties);
+    public TsurugiJdbcStatement createStatement(TsurugiJdbcConnection connection, TsurugiJdbcConnectionConfig fromConfig) {
+        var config = TsurugiJdbcStatementConfig.of(fromConfig);
+        return createStatement(connection, config);
     }
 
-    public TsurugiJdbcStatement createStatement(TsurugiJdbcConnection connection, TsurugiJdbcStatementProperties properties) {
-        return new TsurugiJdbcStatement(this, connection, properties);
+    public TsurugiJdbcStatement createStatement(TsurugiJdbcConnection connection, TsurugiJdbcStatementConfig config) {
+        return new TsurugiJdbcStatement(this, connection, config);
     }
 
-    public TsurugiJdbcPreparedStatement createPreparedStatement(TsurugiJdbcConnection connection, TsurugiJdbcConnectionProperties fromProperties, String sql) {
-        var properties = TsurugiJdbcStatementProperties.of(fromProperties);
-        return createPreparedStatement(connection, properties, sql);
+    public TsurugiJdbcPreparedStatement createPreparedStatement(TsurugiJdbcConnection connection, TsurugiJdbcConnectionConfig fromConfig, String sql) {
+        var config = TsurugiJdbcStatementConfig.of(fromConfig);
+        return createPreparedStatement(connection, config, sql);
     }
 
-    public TsurugiJdbcPreparedStatement createPreparedStatement(TsurugiJdbcConnection connection, TsurugiJdbcStatementProperties properties, String sql) {
-        return new TsurugiJdbcPreparedStatement(this, connection, properties, sql);
+    public TsurugiJdbcPreparedStatement createPreparedStatement(TsurugiJdbcConnection connection, TsurugiJdbcStatementConfig config, String sql) {
+        return new TsurugiJdbcPreparedStatement(this, connection, config, sql);
     }
 
     public TsurugiJdbcParameterGenerator createParameterGenerator(TsurugiJdbcPreparedStatement preparedStatement) {
@@ -106,17 +106,17 @@ public class TsurugiJdbcFactory {
         return new TsurugiJdbcParameterMetaData(preparedStatement);
     }
 
-    public TsurugiJdbcTransaction createTransaction(Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionProperties properties) {
-        return new TsurugiJdbcTransaction(this, lowTransaction, autoCommit, properties);
+    public TsurugiJdbcTransaction createTransaction(Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionConfig config) {
+        return new TsurugiJdbcTransaction(this, lowTransaction, autoCommit, config);
     }
 
-    public TsurugiJdbcResultSet createResultSet(TsurugiJdbcStatement statement, TsurugiJdbcTransaction transaction, FutureResponse<ResultSet> future, TsurugiJdbcStatementProperties fromProperties) {
-        var properties = TsurugiJdbcResultSetProperties.of(fromProperties);
-        return createResultSet(statement, transaction, future, properties);
+    public TsurugiJdbcResultSet createResultSet(TsurugiJdbcStatement statement, TsurugiJdbcTransaction transaction, FutureResponse<ResultSet> future, TsurugiJdbcStatementConfig fromConfig) {
+        var config = TsurugiJdbcResultSetConfig.of(fromConfig);
+        return createResultSet(statement, transaction, future, config);
     }
 
-    public TsurugiJdbcResultSet createResultSet(TsurugiJdbcStatement statement, TsurugiJdbcTransaction transaction, FutureResponse<ResultSet> future, TsurugiJdbcResultSetProperties properties) {
-        return new TsurugiJdbcResultSet(statement, transaction, future, properties);
+    public TsurugiJdbcResultSet createResultSet(TsurugiJdbcStatement statement, TsurugiJdbcTransaction transaction, FutureResponse<ResultSet> future, TsurugiJdbcResultSetConfig config) {
+        return new TsurugiJdbcResultSet(statement, transaction, future, config);
     }
 
     public TsurugiJdbcResultSetConverter createResultSetConverter(AbstractResultSet resultSet) {

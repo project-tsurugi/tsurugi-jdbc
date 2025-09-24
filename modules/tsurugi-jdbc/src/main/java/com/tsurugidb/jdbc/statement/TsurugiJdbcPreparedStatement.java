@@ -69,8 +69,8 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     private com.tsurugidb.tsubakuro.sql.PreparedStatement lowPreparedStatement = null;
 
-    public TsurugiJdbcPreparedStatement(TsurugiJdbcFactory factory, TsurugiJdbcConnection connection, TsurugiJdbcStatementProperties properties, String sql) {
-        super(factory, connection, properties);
+    public TsurugiJdbcPreparedStatement(TsurugiJdbcFactory factory, TsurugiJdbcConnection connection, TsurugiJdbcStatementConfig config, String sql) {
+        super(factory, connection, config);
         this.sql = sql;
         this.parameterGenerator = factory.createParameterGenerator(this);
     }
@@ -92,7 +92,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         if (this.lowPreparedStatement == null) {
             var sqlClient = connection.getLowSqlClient();
             try {
-                int timeout = properties.getDefaultTimeout();
+                int timeout = config.getDefaultTimeout();
                 this.lowPreparedStatement = sqlClient.prepare(sql, lowPlaceholderList).await(timeout, TimeUnit.SECONDS);
             } catch (Exception e) {
                 throw getExceptionHandler().sqlException("LowPreparedStatement create error", e);
@@ -110,7 +110,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         var transaction = connection.getTransaction();
         var rs = transaction.executeOnly(lowTransaction -> {
             var future = lowTransaction.executeQuery(lowPs, lowParameterList);
-            return factory.createResultSet(this, transaction, future, properties);
+            return factory.createResultSet(this, transaction, future, config);
         });
 
         setExecutingResultSet(rs);
@@ -123,7 +123,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
         var lowPs = getLowPreparedStatement();
 
-        int timeout = properties.getExecuteTimeout();
+        int timeout = config.getExecuteTimeout();
 
         var transaction = connection.getTransaction();
         ExecuteResult result = transaction.executeAndAutoCommit(lowTransaction -> {
@@ -336,13 +336,13 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         if (lowPs.hasResultRecords()) {
             var rs = transaction.executeOnly(lowTransaction -> {
                 var future = lowTransaction.executeQuery(lowPs, lowParameterList);
-                return factory.createResultSet(this, transaction, future, properties);
+                return factory.createResultSet(this, transaction, future, config);
             });
 
             setExecutingResultSet(rs);
             return true;
         } else {
-            int timeout = properties.getExecuteTimeout();
+            int timeout = config.getExecuteTimeout();
             ExecuteResult lowResult = transaction.executeAndAutoCommit(lowTransaction -> {
                 return lowTransaction.executeStatement(lowPs, lowParameterList).await(timeout, TimeUnit.SECONDS);
             });
@@ -386,7 +386,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
         var lowPs = getLowPreparedStatement();
 
-        int timeout = properties.getExecuteTimeout();
+        int timeout = config.getExecuteTimeout();
 
         var transaction = connection.getTransaction();
         int[] result = transaction.executeAndAutoCommit(lowTransaction -> {

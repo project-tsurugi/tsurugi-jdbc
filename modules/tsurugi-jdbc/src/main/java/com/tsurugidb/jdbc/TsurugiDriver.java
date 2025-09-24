@@ -88,18 +88,18 @@ public class TsurugiDriver implements Driver, HasFactory {
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        var properties = TsurugiJdbcUrlParser.parse(factory, url, info);
-        if (properties == null) {
+        var config = TsurugiJdbcUrlParser.parse(factory, url, info);
+        if (config == null) {
             return null;
         }
 
-        return connect(properties);
+        return connect(config);
     }
 
-    public Connection connect(@Nonnull TsurugiJdbcProperties properties) throws SQLException {
-        var builder = createLowSessionBuilder(properties);
+    public Connection connect(@Nonnull TsurugiConfig config) throws SQLException {
+        var builder = createLowSessionBuilder(config);
 
-        int timeout = properties.getConnectTimeout();
+        int timeout = config.getConnectTimeout();
         LOG.config(() -> String.format("connectTimeout=%d [seconds]", timeout));
 
         Session session;
@@ -109,31 +109,31 @@ public class TsurugiDriver implements Driver, HasFactory {
             throw getExceptionHandler().sqlException("Connect error", e);
         }
 
-        return factory.createConnection(session, properties);
+        return factory.createConnection(session, config);
     }
 
-    protected SessionBuilder createLowSessionBuilder(TsurugiJdbcProperties properties) throws SQLException {
-        String endpoint = properties.getEndpoint();
+    protected SessionBuilder createLowSessionBuilder(TsurugiConfig config) throws SQLException {
+        String endpoint = config.getEndpoint();
         LOG.config(() -> String.format("endpoint=%s", endpoint));
         var builder = SessionBuilder.connect(endpoint);
 
-        Credential credential = properties.getCredential(factory);
+        Credential credential = config.getCredential(factory);
         LOG.config(() -> String.format("credential=%s", credential));
         builder.withCredential(credential);
 
-        String applicationName = properties.getApplicationName();
+        String applicationName = config.getApplicationName();
         LOG.config(() -> String.format("applicationName=%s", applicationName));
         if (applicationName != null) {
             builder.withApplicationName(applicationName);
         }
 
-        String label = properties.getSessionLabel();
+        String label = config.getSessionLabel();
         LOG.config(() -> String.format("label=%s", label));
         if (label != null) {
             builder.withLabel(label);
         }
 
-        boolean keepAlive = properties.getKeepAlive();
+        boolean keepAlive = config.getKeepAlive();
         LOG.config(() -> String.format("keepAlive=%b", keepAlive));
         builder.withKeepAlive(keepAlive);
 
@@ -147,12 +147,12 @@ public class TsurugiDriver implements Driver, HasFactory {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        var properties = TsurugiJdbcUrlParser.parse(factory, url, info);
-        if (properties == null) {
+        var config = TsurugiJdbcUrlParser.parse(factory, url, info);
+        if (config == null) {
             return new DriverPropertyInfo[0];
         }
 
-        var values = properties.getInternalProperties().getProperties();
+        var values = config.getInternalProperties().getProperties();
         var result = new DriverPropertyInfo[values.size()];
 
         int i = 0;
