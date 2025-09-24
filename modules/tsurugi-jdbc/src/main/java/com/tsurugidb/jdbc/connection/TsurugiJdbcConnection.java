@@ -86,7 +86,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         return this.factory;
     }
 
-    protected TsurugiJdbcConnectionProperties getProperties() {
+    public TsurugiJdbcConnectionProperties getProperties() {
         return this.properties;
     }
 

@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionProperties;
@@ -29,6 +30,7 @@ import com.tsurugidb.tsubakuro.sql.Transaction;
 
 @TsurugiJdbcInternal
 public class TsurugiJdbcTransaction implements AutoCloseable {
+    private static final Logger LOG = Logger.getLogger(TsurugiJdbcTransaction.class.getName());
 
     private TsurugiJdbcFactory factory;
     private final Transaction lowTransaction;
@@ -100,10 +102,14 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
 
     public void commit() throws SQLException {
         try {
-            // TODO CommitOption
+            var commitOption = propertes.getCommitOption();
+            LOG.config(() -> String.format("commitOption=%s", commitOption));
+
             int timeout = propertes.getCommitTimeout();
+            LOG.config(() -> String.format("commitTimeout=%d [seconds]", timeout));
+
             try {
-                lowTransaction.commit().await(timeout, TimeUnit.SECONDS);
+                lowTransaction.commit(commitOption).await(timeout, TimeUnit.SECONDS);
             } catch (IOException | ServerException | InterruptedException | TimeoutException e) {
                 throw factory.getExceptionHandler().sqlException("Transaction commit error", e);
             }
@@ -122,6 +128,8 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
     public void rollback() throws SQLException {
         try {
             int timeout = propertes.getRollbackTimeout();
+            LOG.config(() -> String.format("rollbackTimeout=%d [seconds]", timeout));
+
             try {
                 lowTransaction.rollback().await(timeout, TimeUnit.SECONDS);
             } catch (IOException | ServerException | InterruptedException | TimeoutException e) {

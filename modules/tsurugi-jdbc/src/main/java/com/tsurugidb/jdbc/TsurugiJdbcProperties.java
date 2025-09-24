@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcCommitType;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcTransactionType;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
@@ -57,6 +58,8 @@ public class TsurugiJdbcProperties {
     public static final String EXCLUSIVE_READ_AREA = "exclusiveReadArea";
     public static final String SCAN_PARALLEL = "scanParallel";
     public static final String AUTO_COMMIT = "autoCommit";
+    public static final String COMMIT_TYPE = "commitType";
+    public static final String AUTO_DISPOSE = "autoDispose";
     public static final String BEGIN_TIMEOUT = "beginTimeout";
     public static final String COMMIT_TIMEOUT = "commitTimeout";
     public static final String ROLLBACK_TIMEOUT = "rollbackTimeout";
@@ -90,6 +93,9 @@ public class TsurugiJdbcProperties {
     private final TsurugiJdbcPropertyString exclusiveReadArea = new TsurugiJdbcPropertyString(EXCLUSIVE_READ_AREA).description("LTX exclusive read area table names (comma separate)");
     private final TsurugiJdbcPropertyInt scanParallel = new TsurugiJdbcPropertyInt(SCAN_PARALLEL).description("RTX scan parallel");
     private final TsurugiJdbcPropertyBoolean autoCommit = new TsurugiJdbcPropertyBoolean(AUTO_COMMIT).defaultValue(true).description("auto commit");
+    private final TsurugiJdbcPropertyEnum<TsurugiJdbcCommitType> commitType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcCommitType.class, COMMIT_TYPE).defaultValue(TsurugiJdbcCommitType.DEFAULT)
+            .description("commit type");
+    private final TsurugiJdbcPropertyBoolean autoDispose = new TsurugiJdbcPropertyBoolean(AUTO_DISPOSE).defaultValue(false).description("automatically dispose upon commit");
     private final TsurugiJdbcPropertyInt beginTimeout = new TsurugiJdbcPropertyInt(BEGIN_TIMEOUT).description("transaction begin timeout [seconds]");
     private final TsurugiJdbcPropertyInt commitTimeout = new TsurugiJdbcPropertyInt(COMMIT_TIMEOUT).description("transaction commit timeout [seconds]");
     private final TsurugiJdbcPropertyInt rollbackTimeout = new TsurugiJdbcPropertyInt(ROLLBACK_TIMEOUT).description("transaction rollback timeout [seconds]");
@@ -104,7 +110,8 @@ public class TsurugiJdbcProperties {
             user, password, authToken, credentials, //
             applicationName, sessionLabel, keepAlive, connectTimeout, //
             shutdownType, shutdownTimeout, //
-            transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, autoCommit, //
+            transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, //
+            autoCommit, commitType, autoDispose, //
             beginTimeout, commitTimeout, rollbackTimeout, //
             executeTimeout, //
             queryTimeout, //
