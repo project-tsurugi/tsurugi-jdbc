@@ -15,7 +15,6 @@
  */
 package com.tsurugidb.jdbc;
 
-import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
@@ -28,6 +27,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
@@ -87,7 +87,7 @@ public class TsurugiDriver implements Driver, HasFactory {
     }
 
     @Override
-    public Connection connect(String url, Properties info) throws SQLException {
+    public TsurugiJdbcConnection connect(String url, Properties info) throws SQLException {
         var config = TsurugiJdbcUrlParser.parse(factory, url, info);
         if (config == null) {
             return null;
@@ -96,7 +96,7 @@ public class TsurugiDriver implements Driver, HasFactory {
         return connect(config);
     }
 
-    public Connection connect(@Nonnull TsurugiConfig config) throws SQLException {
+    public TsurugiJdbcConnection connect(@Nonnull TsurugiConfig config) throws SQLException {
         var builder = createLowSessionBuilder(config);
 
         int timeout = config.getConnectTimeout();

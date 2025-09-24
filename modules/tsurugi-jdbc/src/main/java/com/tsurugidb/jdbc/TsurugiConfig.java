@@ -391,8 +391,8 @@ public class TsurugiConfig {
 
     // Common
 
-    public void setDefaultTimeout(int defaultTimeout) {
-        this.defaultTimeout.setValue(defaultTimeout);
+    public void setDefaultTimeout(int timeout) {
+        this.defaultTimeout.setValue(timeout);
     }
 
     public OptionalInt getDefaultTimeout() {

@@ -17,7 +17,6 @@ package com.tsurugidb.jdbc;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.ConnectionBuilder;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
@@ -26,6 +25,8 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
@@ -209,7 +210,7 @@ public class TsurugiDataSource implements DataSource, HasFactory {
     // connect
 
     @Override
-    public Connection getConnection() throws SQLException {
+    public TsurugiJdbcConnection getConnection() throws SQLException {
         return TsurugiDriver.getTsurugiDriver().connect(this.config);
     }
 
@@ -249,8 +250,7 @@ public class TsurugiDataSource implements DataSource, HasFactory {
     }
 
     @Override
-    public ConnectionBuilder createConnectionBuilder() throws SQLException {
-        // TODO Auto-generated method stub: createConnectionBuilder()
-        return null;
+    public TsurugiJdbcConnectionBuilder createConnectionBuilder() throws SQLException {
+        return new TsurugiJdbcConnectionBuilder();
     }
 }
