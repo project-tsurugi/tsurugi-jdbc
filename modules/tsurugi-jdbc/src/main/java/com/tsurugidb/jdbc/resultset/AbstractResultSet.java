@@ -666,9 +666,9 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new SQLFeatureNotSupportedException("getObject not supported");
     }
 
     @Override
