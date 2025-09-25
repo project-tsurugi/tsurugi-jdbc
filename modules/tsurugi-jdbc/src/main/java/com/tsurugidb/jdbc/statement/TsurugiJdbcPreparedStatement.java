@@ -292,6 +292,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     }
 
     @Override
+    @Deprecated
     public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
         var atomType = AtomType.CHARACTER;
         setParameter(parameterIndex, atomType, name -> parameterGenerator.createUnicodeStream(name, x, length));

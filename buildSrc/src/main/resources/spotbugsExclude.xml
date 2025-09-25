@@ -14,5 +14,9 @@
       <Bug pattern="NP_BOOLEAN_RETURN_NULL" />
     </Or>
   </Match>
+  <Match>
+    <Class name="com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement" />
+    <Bug pattern="OVERRIDING_METHODS_MUST_INVOKE_SUPER" />
+  </Match>
 
 </FindBugsFilter>

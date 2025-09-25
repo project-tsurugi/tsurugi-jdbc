@@ -44,17 +44,15 @@ public class TableNameMatcher {
         return Pattern.compile(regex);
     }
 
-    @SuppressWarnings("unused")
-    private String catalog;
-    @SuppressWarnings("unused")
-    private Pattern schemaPattern;
+//  private String catalog;
+//  private Pattern schemaPattern;
     private Pattern tableNamePattern;
     private Pattern columnNamePattern;
     private Set<String> types;
 
     public TableNameMatcher(String catalog, Pattern schemaPattern, Pattern tableNamePattern, Set<String> types) {
-        this.catalog = catalog;
-        this.schemaPattern = schemaPattern;
+//      this.catalog = catalog;
+//      this.schemaPattern = schemaPattern;
         this.tableNamePattern = tableNamePattern;
         this.types = types;
     }

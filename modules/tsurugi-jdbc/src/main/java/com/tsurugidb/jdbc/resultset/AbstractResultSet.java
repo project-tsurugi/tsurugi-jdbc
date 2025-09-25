@@ -168,6 +168,7 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
     }
 
     @Override
+    @Deprecated
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
@@ -210,6 +211,7 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
     }
 
     @Override
+    @Deprecated
     public InputStream getUnicodeStream(int columnIndex) throws SQLException {
         Object value = getObject(columnIndex);
         var converter = getConverter();
@@ -272,6 +274,7 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
     }
 
     @Override
+    @Deprecated
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
         int columnIndex = findColumn(columnLabel);
         return getBigDecimal(columnIndex);
@@ -308,6 +311,7 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
     }
 
     @Override
+    @Deprecated
     public InputStream getUnicodeStream(String columnLabel) throws SQLException {
         int columnIndex = findColumn(columnLabel);
         return getUnicodeStream(columnIndex);
