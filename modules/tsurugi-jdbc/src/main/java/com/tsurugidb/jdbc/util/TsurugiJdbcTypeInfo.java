@@ -18,8 +18,18 @@ package com.tsurugidb.jdbc.util;
 import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 
+/**
+ * Tsurugi JDBC Type Info.
+ */
 public class TsurugiJdbcTypeInfo implements Cloneable {
 
+    /**
+     * Create type info.
+     *
+     * @param typeName type name
+     * @param dataType data type
+     * @return type info
+     */
     public static TsurugiJdbcTypeInfo of(String typeName, JDBCType dataType) {
         return new TsurugiJdbcTypeInfo(typeName, dataType);
     }
@@ -43,47 +53,101 @@ public class TsurugiJdbcTypeInfo implements Cloneable {
     private int sqlDatetimeSub;
     private int numPrecRaddix;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param typeName type name
+     * @param dataType data type
+     */
     public TsurugiJdbcTypeInfo(String typeName, JDBCType dataType) {
         this.typeName = typeName;
         this.dataType = dataType;
     }
 
+    /**
+     * Get SQL type.
+     *
+     * @return SQL type (java.sql.Types)
+     */
     public Integer getSqlType() {
         return dataType.getVendorTypeNumber();
     }
 
+    /**
+     * Set precision.
+     *
+     * @param precision precision
+     * @return this
+     */
     public TsurugiJdbcTypeInfo precision(int precision) {
         this.precision = precision;
         return this;
     }
 
+    /**
+     * Set literal prefix/suffix.
+     *
+     * @param prefix literal prefix
+     * @param suffix literal suffix
+     * @return this
+     */
     public TsurugiJdbcTypeInfo literalPrefix(String prefix, String suffix) {
         this.literalPrefix = prefix;
         this.literalSuffix = suffix;
         return this;
     }
 
+    /**
+     * Set searchable.
+     *
+     * @param searchable searchable
+     * @return this
+     */
     public TsurugiJdbcTypeInfo searchable(int searchable) {
         this.searchable = (short) searchable;
         return this;
     }
 
+    /**
+     * Set unsigned attribute.
+     *
+     * @param unsignedAttribute unsigned attribute
+     * @return this
+     */
     public TsurugiJdbcTypeInfo unsignedAttribute(boolean unsignedAttribute) {
         this.unsignedAttribute = unsignedAttribute;
         return this;
     }
 
+    /**
+     * Set auto increment.
+     *
+     * @param autoIncrement auto increment
+     * @return this
+     */
     public TsurugiJdbcTypeInfo autoIncrement(boolean autoIncrement) {
         this.autoIncrement = autoIncrement;
         return this;
     }
 
+    /**
+     * Set scale.
+     *
+     * @param minimumScale minimum scale
+     * @param maximumScale maximum scale
+     * @return this
+     */
     public TsurugiJdbcTypeInfo minimumScale(short minimumScale, short maximumScale) {
         this.minimumScale = minimumScale;
         this.maximumScale = maximumScale;
         return this;
     }
 
+    /**
+     * Convert to values.
+     *
+     * @return values
+     */
     public Object[] toValues() {
         Object[] values = { //
                 typeName, //
@@ -117,6 +181,13 @@ public class TsurugiJdbcTypeInfo implements Cloneable {
         }
     }
 
+    /**
+     * Clone.
+     *
+     * @param typeName type name
+     * @param dataType data type
+     * @return type info
+     */
     public TsurugiJdbcTypeInfo clone(String typeName, JDBCType dataType) {
         var clone = clone();
         clone.typeName = typeName;

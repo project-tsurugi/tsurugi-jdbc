@@ -25,25 +25,49 @@ import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 
+/**
+ * {@link TsurugiJdbcResultSet} Meta Data.
+ */
 public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
 
     private final TsurugiJdbcResultSet ownerResultSet;
     private final com.tsurugidb.tsubakuro.sql.ResultSetMetadata lowMetadata;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param ownerResultSet result set
+     * @param lowMetadata    low-level metadata
+     */
     @TsurugiJdbcInternal
     public TsurugiJdbcResultSetMetaData(TsurugiJdbcResultSet ownerResultSet, com.tsurugidb.tsubakuro.sql.ResultSetMetadata lowMetadata) {
         this.ownerResultSet = ownerResultSet;
         this.lowMetadata = lowMetadata;
     }
 
+    /**
+     * Get factory.
+     *
+     * @return factory
+     */
     public TsurugiJdbcFactory getFactory() {
         return ownerResultSet.getFactory();
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
 
+    /**
+     * Get SQL type utility.
+     *
+     * @return SQL type utility
+     */
     protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
         return getFactory().getSqlTypeUtil();
     }
@@ -68,6 +92,13 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
         return lowColumnList.size();
     }
 
+    /**
+     * Get column.
+     *
+     * @param column column number (1-origin)
+     * @return column
+     * @throws SQLException if the column number is out of range
+     */
     @TsurugiJdbcInternal
     public SqlCommon.Column getLowColumn(int column) throws SQLException {
         int index = column - 1;
@@ -79,6 +110,13 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
         }
     }
 
+    /**
+     * Get AtomType.
+     *
+     * @param column column number (1-origin)
+     * @return AtomType
+     * @throws SQLException if the column number is out of range
+     */
     @TsurugiJdbcInternal
     public AtomType getLowAtomType(int column) throws SQLException {
         var lowColumn = getLowColumn(column);
@@ -158,6 +196,13 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
         return "";
     }
 
+    /**
+     * Get length.
+     *
+     * @param column column number (1-origin)
+     * @return length
+     * @throws SQLException if the column number is out of range
+     */
     public int getLength(int column) throws SQLException {
         var lowColumn = getLowColumn(column);
         var util = getSqlTypeUtil();

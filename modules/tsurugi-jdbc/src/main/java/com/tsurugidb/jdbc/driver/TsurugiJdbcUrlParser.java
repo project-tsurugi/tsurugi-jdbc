@@ -26,10 +26,18 @@ import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 /**
  * Tsurugi JDBC URL Parser.
  */
-public class TsurugiJdbcUrlParser {
+public final class TsurugiJdbcUrlParser {
 
     private static final String URL_PREFIX = "jdbc:tsurugi:";
 
+    /**
+     * Accept URL.
+     *
+     * @param factory factory
+     * @param url     JDBC URL
+     * @return true if this parser can parse the URL
+     * @throws SQLException if the url is null
+     */
     public static boolean acceptUrl(TsurugiJdbcFactory factory, String url) throws SQLException {
         if (url == null) {
             throw factory.getExceptionHandler().jdbcUrlNullException();
@@ -38,6 +46,15 @@ public class TsurugiJdbcUrlParser {
         return url.startsWith(URL_PREFIX);
     }
 
+    /**
+     * Parse URL.
+     *
+     * @param factory factory
+     * @param url     JDBC URL
+     * @param info    connection arguments
+     * @return configuration
+     * @throws SQLException if the url is null
+     */
     public static TsurugiConfig parse(TsurugiJdbcFactory factory, String url, Properties info) throws SQLException {
         var config = parse(factory, url);
         if (config != null) {
@@ -46,6 +63,14 @@ public class TsurugiJdbcUrlParser {
         return config;
     }
 
+    /**
+     * Parse URL.
+     *
+     * @param factory factory
+     * @param url     JDBC URL
+     * @return configuration
+     * @throws SQLException if the url is null
+     */
     public static TsurugiConfig parse(TsurugiJdbcFactory factory, String url) throws SQLException {
         if (url == null) {
             throw factory.getExceptionHandler().jdbcUrlNullException();
@@ -90,7 +115,16 @@ public class TsurugiJdbcUrlParser {
         return URLDecoder.decode(s, StandardCharsets.UTF_8);
     }
 
-    public static String getJdbcUrl(String endpoint) {
+    /**
+     * Create JDBC URL.
+     *
+     * @param endpoint endpoint
+     * @return JDBC URL
+     */
+    public static String createJdbcUrl(String endpoint) {
         return URL_PREFIX + endpoint;
+    }
+
+    private TsurugiJdbcUrlParser() {
     }
 }

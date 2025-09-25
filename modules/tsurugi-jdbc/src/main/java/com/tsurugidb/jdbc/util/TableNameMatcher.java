@@ -18,8 +18,20 @@ package com.tsurugidb.jdbc.util;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * Table name matcher.
+ */
 public class TableNameMatcher {
 
+    /**
+     * Create TableNameMatcher.
+     *
+     * @param catalog          database name
+     * @param schemaPattern    schema pattern
+     * @param tableNamePattern table name pattern
+     * @param types            types
+     * @return TableNameMatcher
+     */
     public static TableNameMatcher of(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
         Set<String> set;
         if (types != null) {
@@ -44,19 +56,34 @@ public class TableNameMatcher {
         return Pattern.compile(regex);
     }
 
-//  private String catalog;
-//  private Pattern schemaPattern;
+    // private String catalog;
+    // private Pattern schemaPattern;
     private Pattern tableNamePattern;
     private Pattern columnNamePattern;
     private Set<String> types;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param catalog          database name
+     * @param schemaPattern    schema pattern
+     * @param tableNamePattern table name pattern
+     * @param types            types
+     */
     public TableNameMatcher(String catalog, Pattern schemaPattern, Pattern tableNamePattern, Set<String> types) {
-//      this.catalog = catalog;
-//      this.schemaPattern = schemaPattern;
+        // this.catalog = catalog;
+        // this.schemaPattern = schemaPattern;
         this.tableNamePattern = tableNamePattern;
         this.types = types;
     }
 
+    /**
+     * Matches table name and type.
+     *
+     * @param tableName table name
+     * @param type      type
+     * @return true if matches, false otherwise
+     */
     public boolean matches(String tableName, String type) {
         if (tableNamePattern != null) {
             if (!tableNamePattern.matcher(tableName).matches()) {
@@ -73,11 +100,23 @@ public class TableNameMatcher {
         return true;
     }
 
+    /**
+     * Set column name pattern.
+     *
+     * @param columnNamePattern column name pattern
+     * @return this
+     */
     public TableNameMatcher columnNamePattern(String columnNamePattern) {
         this.columnNamePattern = toPattern(columnNamePattern);
         return this;
     }
 
+    /**
+     * Matches column name.
+     *
+     * @param columnName column name
+     * @return true if matches, false otherwise
+     */
     public boolean matchesColumnName(String columnName) {
         if (columnNamePattern != null) {
             if (!columnNamePattern.matcher(columnName).matches()) {

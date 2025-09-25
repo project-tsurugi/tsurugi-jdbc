@@ -46,6 +46,9 @@ import com.tsurugidb.jdbc.factory.GetFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 
+/**
+ * Tsurugi JDBC Abstract ResultSet.
+ */
 @NotThreadSafe
 public abstract class AbstractResultSet implements ResultSet, GetFactory {
 
@@ -54,21 +57,39 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
 
     private Map<String, Integer> columnNameIndexMap;
 
+    /** current row number. */
     protected int currentRowNumber = 0;
+    /** wasNull flag. */
     protected boolean wasNull;
 
+    /** closed flag. */
     protected boolean closed = false;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param owner factory holder
+     */
     public AbstractResultSet(GetFactory owner) {
         this.factoryHolder = owner;
 
         this.resultSetConverter = owner.getFactory().createResultSetConverter(this);
     }
 
+    /**
+     * Get result set converter.
+     *
+     * @return result set converter
+     */
     protected TsurugiJdbcResultSetConverter getConverter() {
         return this.resultSetConverter;
     }
 
+    /**
+     * Set convert utility.
+     *
+     * @param convertUtil convert utility
+     */
     public void setConvertUtil(@Nonnull TsurugiJdbcConvertUtil convertUtil) {
         resultSetConverter.setConvertUtil(convertUtil);
     }
@@ -78,6 +99,11 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
         return factoryHolder.getFactory();
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
@@ -342,6 +368,12 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
         return index;
     }
 
+    /**
+     * Create column name to index map.
+     *
+     * @return map
+     * @throws SQLException if a database access error occurs
+     */
     protected abstract Map<String, Integer> createColumnIndexMap() throws SQLException;
 
     @Override

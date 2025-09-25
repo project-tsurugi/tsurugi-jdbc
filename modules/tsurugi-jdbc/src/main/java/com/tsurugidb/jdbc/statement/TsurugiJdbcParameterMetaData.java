@@ -26,22 +26,45 @@ import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
 
+/**
+ * Tsurugi JDBC ParameterMetadata.
+ */
 public class TsurugiJdbcParameterMetaData implements ParameterMetaData {
 
     private final TsurugiJdbcPreparedStatement ownerPreparedStatement;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param ownerPreparedStatement prepared statement
+     */
     public TsurugiJdbcParameterMetaData(TsurugiJdbcPreparedStatement ownerPreparedStatement) {
         this.ownerPreparedStatement = Objects.requireNonNull(ownerPreparedStatement);
     }
 
+    /**
+     * Get factory.
+     *
+     * @return factory
+     */
     protected TsurugiJdbcFactory getFactory() {
         return ownerPreparedStatement.getFactory();
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
 
+    /**
+     * Get SQL type utility.
+     *
+     * @return SQL type utility
+     */
     protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
         return getFactory().getSqlTypeUtil();
     }
@@ -60,14 +83,28 @@ public class TsurugiJdbcParameterMetaData implements ParameterMetaData {
         return iface.isInstance(this);
     }
 
+    /**
+     * Get low-level placeholder list.
+     *
+     * @return low-level placeholder list
+     */
     protected List<Placeholder> getLowPlaceholderList() {
         return ownerPreparedStatement.getLowPlaceholderList();
     }
 
+    /**
+     * Get low-level placeholder.
+     *
+     * @param param parameter number (1-origin)
+     * @return low-level placeholder
+     * @throws SQLException if the parameter number is out of range
+     */
     protected Placeholder getLowPlaceholder(int param) throws SQLException {
+        int index = param - 1;
+
         var lowPlaceholderList = getLowPlaceholderList();
         try {
-            return lowPlaceholderList.get(param);
+            return lowPlaceholderList.get(index);
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("getLowPlaceholder error", e);
         }

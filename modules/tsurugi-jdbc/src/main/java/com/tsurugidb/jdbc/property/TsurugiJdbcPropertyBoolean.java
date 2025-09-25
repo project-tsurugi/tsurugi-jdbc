@@ -17,12 +17,20 @@ package com.tsurugidb.jdbc.property;
 
 import java.util.function.Consumer;
 
+/**
+ * Tsurugi JDBC Property (boolean).
+ */
 public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
 
     private Boolean value;
     private boolean defaultValue;
     private Consumer<Boolean> changeEventHandler;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param name property name
+     */
     public TsurugiJdbcPropertyBoolean(String name) {
         super(name);
     }
@@ -33,16 +41,33 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
         return this;
     }
 
+    /**
+     * Set default value.
+     *
+     * @param defaultValue default value
+     * @return this
+     */
     public TsurugiJdbcPropertyBoolean defaultValue(boolean defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
 
+    /**
+     * Set change event handler.
+     *
+     * @param handler change event handler
+     * @return this
+     */
     public TsurugiJdbcPropertyBoolean changeEvent(Consumer<Boolean> handler) {
         this.changeEventHandler = handler;
         return this;
     }
 
+    /**
+     * Set value.
+     *
+     * @param value value
+     */
     public void setValue(boolean value) {
         this.value = value;
 
@@ -82,6 +107,11 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
         return this.value != null;
     }
 
+    /**
+     * Get value.
+     *
+     * @return value
+     */
     public boolean value() {
         if (this.value == null) {
             return this.defaultValue;

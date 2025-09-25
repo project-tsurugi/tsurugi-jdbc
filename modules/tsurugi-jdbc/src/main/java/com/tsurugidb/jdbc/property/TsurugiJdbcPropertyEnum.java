@@ -18,6 +18,11 @@ package com.tsurugidb.jdbc.property;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
+/**
+ * Tsurugi JDBC Property (enum).
+ *
+ * @param <E> enum type
+ */
 public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcProperty {
 
     private final Class<E> enumType;
@@ -25,6 +30,12 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
     private E defaultValue;
     private Consumer<E> changeEventHandler;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param type enum type
+     * @param name property name
+     */
     public TsurugiJdbcPropertyEnum(Class<E> type, String name) {
         super(name);
         this.enumType = type;
@@ -36,16 +47,33 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
         return this;
     }
 
+    /**
+     * Set default value.
+     *
+     * @param defaultValue default value
+     * @return this
+     */
     public TsurugiJdbcPropertyEnum<E> defaultValue(E defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
 
+    /**
+     * Set change event handler.
+     *
+     * @param handler change event handler
+     * @return this
+     */
     public TsurugiJdbcPropertyEnum<E> changeEvent(Consumer<E> handler) {
         this.changeEventHandler = handler;
         return this;
     }
 
+    /**
+     * Set value.
+     *
+     * @param value value
+     */
     public void setValue(E value) {
         this.value = value;
 
@@ -91,6 +119,11 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
         return this.value != null;
     }
 
+    /**
+     * Get value.
+     *
+     * @return value
+     */
     public E value() {
         if (this.value == null) {
             return this.defaultValue;
@@ -107,10 +140,15 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
         return v.name();
     }
 
-    public void ifPresent(Consumer<E> consumer) {
+    /**
+     * If value is present, execute the specified action.
+     *
+     * @param action action
+     */
+    public void ifPresent(Consumer<E> action) {
         E v = value();
         if (v != null) {
-            consumer.accept(v);
+            action.accept(v);
         }
     }
 

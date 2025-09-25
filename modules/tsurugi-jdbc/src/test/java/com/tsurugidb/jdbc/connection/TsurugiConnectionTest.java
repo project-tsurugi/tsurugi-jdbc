@@ -23,6 +23,7 @@ import java.sql.SQLException;
 
 import org.junit.jupiter.api.Test;
 
+import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
 class TsurugiConnectionTest {
@@ -31,7 +32,8 @@ class TsurugiConnectionTest {
 
     private static TsurugiJdbcConnection createTestConnection() {
         var session = new LowSessionTestMock();
-        var config = new TsurugiJdbcConnectionConfig("endpoint");
+        var root = new TsurugiConfig();
+        var config = TsurugiJdbcConnectionConfig.of(root);
         return factory.createConnection(session, config);
     }
 

@@ -20,6 +20,7 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -44,16 +45,21 @@ public class TsurugiDriver implements Driver, HasFactory {
     private static final Logger PARENT_LOGGER = Logger.getLogger(TsurugiDriver.class.getPackageName());
     private static final Logger LOG = Logger.getLogger(TsurugiDriver.class.getName());
 
+    /** Driver name. */
     public static final String DRIVER_NAME = "Tsurugi JDBC Driver";
+    /** Driver version. */
     public static final String DRIVER_VERSION = "0.1.0";
+    /** Tsurugi version. */
     public static final String TSURUGI_VERSION = "1.6.0"; // FIXME tsurugidbのバージョンが取れるようになるまでの暫定用
 
+    /** Driver major version. */
     public static final int DRIVER_VERSION_MAJOR;
-    public static final int DRIVER_VERSION_MINAR;
+    /** Driver minor version. */
+    public static final int DRIVER_VERSION_MINOR;
     static {
         String[] ss = DRIVER_VERSION.split(Pattern.quote("."));
         DRIVER_VERSION_MAJOR = Integer.parseInt(ss[0]);
-        DRIVER_VERSION_MINAR = Integer.parseInt(ss[1]);
+        DRIVER_VERSION_MINOR = Integer.parseInt(ss[1]);
     }
 
     private static final TsurugiDriver INSTANCE;
@@ -66,6 +72,11 @@ public class TsurugiDriver implements Driver, HasFactory {
         }
     }
 
+    /**
+     * Get the singleton instance of TsurugiDriver.
+     *
+     * @return instance
+     */
     public static TsurugiDriver getTsurugiDriver() {
         return INSTANCE;
     }
@@ -82,6 +93,11 @@ public class TsurugiDriver implements Driver, HasFactory {
         return this.factory;
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
@@ -96,7 +112,15 @@ public class TsurugiDriver implements Driver, HasFactory {
         return connect(config);
     }
 
+    /**
+     * Connect to the database.
+     *
+     * @param config configuration
+     * @return connection
+     * @throws SQLException if a database access error occurs
+     */
     public TsurugiJdbcConnection connect(@Nonnull TsurugiConfig config) throws SQLException {
+        Objects.requireNonNull(config, "config is null");
         var builder = createLowSessionBuilder(config);
 
         int timeout = config.getConnectTimeout();
@@ -112,6 +136,13 @@ public class TsurugiDriver implements Driver, HasFactory {
         return factory.createConnection(session, config);
     }
 
+    /**
+     * Create low-level SessionBuilder.
+     *
+     * @param config configuration
+     * @return SessionBuilder
+     * @throws SQLException If SessionBuilder creation fails
+     */
     protected SessionBuilder createLowSessionBuilder(TsurugiConfig config) throws SQLException {
         String endpoint = config.getEndpoint();
         LOG.config(() -> String.format("endpoint=%s", endpoint));
@@ -163,6 +194,12 @@ public class TsurugiDriver implements Driver, HasFactory {
         return result;
     }
 
+    /**
+     * Convert to DriverPropertyInfo.
+     *
+     * @param property property
+     * @return DriverPropertyInfo
+     */
     protected DriverPropertyInfo toDriverPropertyInfo(TsurugiJdbcProperty property) {
         var info = new DriverPropertyInfo(property.name(), property.getStringValue());
         info.description = property.description();
@@ -178,7 +215,7 @@ public class TsurugiDriver implements Driver, HasFactory {
 
     @Override
     public int getMinorVersion() {
-        return DRIVER_VERSION_MINAR;
+        return DRIVER_VERSION_MINOR;
     }
 
     @Override

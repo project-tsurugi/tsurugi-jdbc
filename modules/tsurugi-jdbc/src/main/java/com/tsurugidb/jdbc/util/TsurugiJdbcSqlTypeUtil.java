@@ -36,9 +36,19 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.sql.proto.SqlCommon;
 import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 
+/**
+ * Tsurugi JDBC SQL Type Utility.
+ */
 @TsurugiJdbcInternal
 public class TsurugiJdbcSqlTypeUtil {
 
+    /**
+     * Convert from java.sql.Types to AtomType.
+     *
+     * @param sqlType SQL type (java.sql.Types)
+     * @return AtomType
+     * @throws SQLException if SQL type is not supported
+     */
     public AtomType toLowAtomType(int sqlType) throws SQLException {
         switch (sqlType) {
         case java.sql.Types.BOOLEAN:
@@ -85,6 +95,13 @@ public class TsurugiJdbcSqlTypeUtil {
         }
     }
 
+    /**
+     * Convert from Column to JDBCType.
+     *
+     * @param lowColumn column
+     * @return JDBCType
+     * @throws SQLException if type is not supported
+     */
     public JDBCType toJdbcType(SqlCommon.Column lowColumn) throws SQLException {
         var atomType = lowColumn.getAtomType();
         switch (atomType) {
@@ -105,6 +122,13 @@ public class TsurugiJdbcSqlTypeUtil {
         }
     }
 
+    /**
+     * Convert from AtomType to JDBCType.
+     *
+     * @param atomType atom type
+     * @return JDBCType
+     * @throws SQLException if atom type is not supported
+     */
     public JDBCType toJdbcType(AtomType atomType) throws SQLException {
         switch (atomType) {
         case BOOLEAN:
@@ -142,6 +166,13 @@ public class TsurugiJdbcSqlTypeUtil {
         }
     }
 
+    /**
+     * Convert from Column to SQL type name.
+     *
+     * @param lowColumn column
+     * @return SQL type name
+     * @throws SQLException if type is not supported
+     */
     public String toSqlTypeName(SqlCommon.Column lowColumn) throws SQLException {
         var atomType = lowColumn.getAtomType();
         switch (atomType) {
@@ -162,6 +193,13 @@ public class TsurugiJdbcSqlTypeUtil {
         }
     }
 
+    /**
+     * Convert from AtomType to SQL type name.
+     *
+     * @param atomType atom type
+     * @return SQL type name
+     * @throws SQLException if atom type is not supported
+     */
     public String toSqlTypeName(AtomType atomType) throws SQLException {
         switch (atomType) {
         case BOOLEAN:
@@ -199,6 +237,13 @@ public class TsurugiJdbcSqlTypeUtil {
         }
     }
 
+    /**
+     * Get display size for the column.
+     *
+     * @param lowColumn column
+     * @return display size
+     * @throws SQLException if type is not supported
+     */
     public int toDisplaySize(SqlCommon.Column lowColumn) throws SQLException {
         var atomType = lowColumn.getAtomType();
         switch (atomType) {
@@ -237,11 +282,25 @@ public class TsurugiJdbcSqlTypeUtil {
         }
     }
 
+    /**
+     * Convert from Column to Java class.
+     *
+     * @param lowColumn column
+     * @return Java class
+     * @throws SQLException if type is not supported
+     */
     public Class<?> toJavaClass(SqlCommon.Column lowColumn) throws SQLException {
         var atomType = lowColumn.getAtomType();
         return toJavaClass(atomType);
     }
 
+    /**
+     * Convert from AtomType to Java class.
+     *
+     * @param atomType atom type
+     * @return Java class
+     * @throws SQLException if atom type is not supported
+     */
     public Class<?> toJavaClass(AtomType atomType) throws SQLException {
         switch (atomType) {
         case BOOLEAN:
@@ -279,6 +338,12 @@ public class TsurugiJdbcSqlTypeUtil {
         }
     }
 
+    /**
+     * Get length for column.
+     *
+     * @param lowColumn column
+     * @return length
+     */
     public int getLength(SqlCommon.Column lowColumn) {
         var lengthOpt = findLength(lowColumn);
         if (lengthOpt.isPresent()) {
@@ -292,6 +357,12 @@ public class TsurugiJdbcSqlTypeUtil {
         return 0;
     }
 
+    /**
+     * Get precision for column.
+     *
+     * @param lowColumn column
+     * @return precision
+     */
     public int getPrecision(SqlCommon.Column lowColumn) {
         var precisionOpt = findPrecision(lowColumn);
         if (precisionOpt.isPresent()) {
@@ -305,6 +376,12 @@ public class TsurugiJdbcSqlTypeUtil {
         return 0;
     }
 
+    /**
+     * Get scale for column.
+     *
+     * @param lowColumn column
+     * @return scale
+     */
     public int getScale(SqlCommon.Column lowColumn) {
         var scaleOpt = findScale(lowColumn);
         if (scaleOpt.isPresent()) {
@@ -318,18 +395,30 @@ public class TsurugiJdbcSqlTypeUtil {
         return 0;
     }
 
+    /**
+     * Whether the column type is nullable.
+     *
+     * @param lowColumn column
+     * @return nullable
+     */
     public boolean isNullable(SqlCommon.Column lowColumn) {
         var nullableOpt = findNullable(lowColumn);
         return nullableOpt.orElse(true);
     }
 
+    /**
+     * Whether the column type is varying.
+     *
+     * @param lowColumn column
+     * @return varying
+     */
     public boolean isVarying(SqlCommon.Column lowColumn) {
         var varyingOpt = findVarying(lowColumn);
         return varyingOpt.orElse(true);
     }
 
     /**
-     * Get length for data types.
+     * Get length for column.
      *
      * @param lowColumn column
      * @return length
@@ -351,7 +440,7 @@ public class TsurugiJdbcSqlTypeUtil {
     }
 
     /**
-     * Get precision for decimal types.
+     * Get precision for column.
      *
      * @param lowColumn column
      * @return precision
@@ -373,7 +462,7 @@ public class TsurugiJdbcSqlTypeUtil {
     }
 
     /**
-     * Get scale for decimal types.
+     * Get scale for column.
      *
      * @param lowColumn column
      * @return scale
@@ -434,6 +523,9 @@ public class TsurugiJdbcSqlTypeUtil {
         }
     }
 
+    /**
+     * Type info values list.
+     */
     public static final List<Object[]> TYPE_INFO_VALUES_LIST;
     static {
         var list = new ArrayList<TsurugiJdbcTypeInfo>();

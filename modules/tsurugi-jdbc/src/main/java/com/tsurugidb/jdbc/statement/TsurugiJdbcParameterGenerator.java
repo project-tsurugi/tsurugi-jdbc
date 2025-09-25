@@ -41,19 +41,37 @@ import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 import com.tsurugidb.sql.proto.SqlRequest.Parameter;
 import com.tsurugidb.tsubakuro.sql.Parameters;
 
+/**
+ * Tsurugi JDBC Parameter Generator.
+ */
 public class TsurugiJdbcParameterGenerator {
 
     private final TsurugiJdbcPreparedStatement ownerPreparedStatement;
     private TsurugiJdbcConvertUtil convertUtil = null;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param ownerPreparedStatement prepared statement
+     */
     public TsurugiJdbcParameterGenerator(TsurugiJdbcPreparedStatement ownerPreparedStatement) {
         this.ownerPreparedStatement = ownerPreparedStatement;
     }
 
+    /**
+     * Set convert utility.
+     *
+     * @param convertUtil convert utility
+     */
     public void setConvertUtil(@Nonnull TsurugiJdbcConvertUtil convertUtil) {
         this.convertUtil = Objects.requireNonNull(convertUtil);
     }
 
+    /**
+     * Get convert utility.
+     *
+     * @return convert utility
+     */
     protected TsurugiJdbcConvertUtil getConvertUtil() {
         if (this.convertUtil == null) {
             this.convertUtil = getFactory().createConvertUtil(ownerPreparedStatement);
@@ -61,42 +79,116 @@ public class TsurugiJdbcParameterGenerator {
         return this.convertUtil;
     }
 
+    /**
+     * Get factory.
+     *
+     * @return factory
+     */
     protected TsurugiJdbcFactory getFactory() {
         return ownerPreparedStatement.getFactory();
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value boolean value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, boolean value) throws SQLException {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value byte value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, byte value) throws SQLException {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value short value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, short value) throws SQLException {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value int value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, int value) throws SQLException {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value long value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, long value) throws SQLException {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value float value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, float value) throws SQLException {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value double value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, double value) throws SQLException {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value decimal value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, BigDecimal value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -104,6 +196,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value String value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, String value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -111,6 +211,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value byte[] value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, byte[] value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -118,6 +226,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value local date value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, LocalDate value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -126,6 +242,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value local time value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, LocalTime value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -134,6 +258,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value local date time value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, LocalDateTime value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -142,6 +274,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value offset time value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, OffsetTime value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -150,6 +290,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value offset date time value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, OffsetDateTime value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -158,6 +306,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, value);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value date value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, java.sql.Date value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -167,6 +323,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, x);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value time value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, java.sql.Time value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -176,6 +340,14 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, x);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value timestamp value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, java.sql.Timestamp value) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -185,6 +357,15 @@ public class TsurugiJdbcParameterGenerator {
         return Parameters.of(name, x);
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name   parameter name
+     * @param value  Reader value
+     * @param length length
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter createCharacterStream(String name, Reader value, int length) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -198,6 +379,15 @@ public class TsurugiJdbcParameterGenerator {
         }
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name   parameter name
+     * @param value  ascii InputStream value
+     * @param length length
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter createAsciiStream(String name, InputStream value, int length) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -212,6 +402,15 @@ public class TsurugiJdbcParameterGenerator {
         }
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name   parameter name
+     * @param value  unicode InputStream value
+     * @param length length
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter createUnicodeStream(String name, InputStream value, int length) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -226,6 +425,15 @@ public class TsurugiJdbcParameterGenerator {
         }
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name   parameter name
+     * @param value  binary InputStream value
+     * @param length length
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter createBinaryStream(String name, InputStream value, int length) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -239,6 +447,15 @@ public class TsurugiJdbcParameterGenerator {
         }
     }
 
+    /**
+     * Create parameter.
+     *
+     * @param name     parameter name
+     * @param value    parameter value
+     * @param atomType atom type
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
     public Parameter create(String name, Object value, AtomType atomType) throws SQLException {
         if (value == null) {
             return Parameters.ofNull(name);
@@ -316,6 +533,13 @@ public class TsurugiJdbcParameterGenerator {
         TYPE_MAP = map;
     }
 
+    /**
+     * Convert Java class to AtomType.
+     *
+     * @param type the Java class
+     * @return the corresponding AtomType
+     * @throws SQLException if the type is unsupported
+     */
     public AtomType toAtomType(Class<?> type) throws SQLException {
         var atomType = TYPE_MAP.get(type);
         if (atomType != null) {

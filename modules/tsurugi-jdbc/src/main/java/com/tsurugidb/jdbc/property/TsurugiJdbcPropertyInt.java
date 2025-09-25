@@ -20,6 +20,9 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
+/**
+ * Tsurugi JDBC Property (int).
+ */
 public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
 
     private OptionalInt value = OptionalInt.empty();
@@ -27,6 +30,11 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
     private IntSupplier defaultValueSupplier = null;
     private Consumer<OptionalInt> changeEventHandler;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param name property name
+     */
     public TsurugiJdbcPropertyInt(String name) {
         super(name);
     }
@@ -37,21 +45,44 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         return this;
     }
 
+    /**
+     * Set default value.
+     *
+     * @param defaultValue default value
+     * @return this
+     */
     public TsurugiJdbcPropertyInt defaultValue(int defaultValue) {
         this.defaultValue = OptionalInt.of(defaultValue);
         return this;
     }
 
+    /**
+     * Set default value supplier.
+     *
+     * @param supplier default value supplier
+     * @return this
+     */
     public TsurugiJdbcPropertyInt defaultValue(IntSupplier supplier) {
         this.defaultValueSupplier = supplier;
         return this;
     }
 
+    /**
+     * Set change event handler.
+     *
+     * @param handler change event handler
+     * @return this
+     */
     public TsurugiJdbcPropertyInt changeEvent(Consumer<OptionalInt> handler) {
         this.changeEventHandler = handler;
         return this;
     }
 
+    /**
+     * Set value.
+     *
+     * @param value value
+     */
     public void setValue(int value) {
         this.value = OptionalInt.of(value);
 
@@ -92,6 +123,11 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         return this.value.isPresent();
     }
 
+    /**
+     * Get value.
+     *
+     * @return value
+     */
     public OptionalInt value() {
         if (this.value.isEmpty()) {
             return defaultValue();
@@ -108,11 +144,21 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         return Integer.toString(v.getAsInt());
     }
 
+    /**
+     * If value is present, execute the specified action.
+     *
+     * @param action action
+     */
     public void ifPresent(IntConsumer action) {
         OptionalInt v = value();
         v.ifPresent(action);
     }
 
+    /**
+     * Get default value.
+     *
+     * @return default value
+     */
     protected OptionalInt defaultValue() {
         if (this.defaultValueSupplier != null) {
             return OptionalInt.of(defaultValueSupplier.getAsInt());

@@ -23,8 +23,25 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 
+/**
+ * Tsurugi JDBC Transaction Function.
+ *
+ * @param <R> return type
+ */
 @FunctionalInterface
 @TsurugiJdbcInternal
 public interface TsurugiJdbcTransactionFunction<R> {
+
+    /**
+     * Execute action.
+     *
+     * @param lowTransaction low-level transaction
+     * @return result
+     * @throws SQLException         if any error occurs
+     * @throws IOException          if exception was occurred while communicating to the server
+     * @throws InterruptedException if interrupted from other threads while waiting for response
+     * @throws ServerException      if exception was occurred while processing the request in the server
+     * @throws TimeoutException     if the wait time out
+     */
     public R execute(Transaction lowTransaction) throws SQLException, IOException, InterruptedException, ServerException, TimeoutException;
 }

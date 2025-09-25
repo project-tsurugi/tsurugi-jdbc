@@ -18,6 +18,9 @@ package com.tsurugidb.jdbc.connection;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.tsubakuro.common.ShutdownType;
 
+/**
+ * Tsurugi JDBC Shutdown Type.
+ */
 public enum TsurugiJdbcShutdownType {
     /** NOTHING */
     NOTHING(null),
@@ -34,6 +37,11 @@ public enum TsurugiJdbcShutdownType {
         this.lowType = lowType;
     }
 
+    /**
+     * Get low-level shutdown type.
+     *
+     * @return shutdown type
+     */
     @TsurugiJdbcInternal
     public ShutdownType getLowShutdownType() {
         return this.lowType;

@@ -56,8 +56,17 @@ import com.tsurugidb.sql.proto.SqlRequest.ReadArea;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionOption;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 
+/**
+ * Tsurugi JDBC Connection Configuration.
+ */
 public class TsurugiJdbcConnectionConfig {
 
+    /**
+     * Create connection configuration.
+     *
+     * @param from Tsurugi JDBC configuration
+     * @return connection configuration
+     */
     public static TsurugiJdbcConnectionConfig of(TsurugiConfig from) {
         var config = new TsurugiJdbcConnectionConfig(from.getEndpoint());
         config.properties.copyFrom(from.getInternalProperties());
@@ -91,7 +100,7 @@ public class TsurugiJdbcConnectionConfig {
 
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
-    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of( //
+    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
             transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, //
             autoCommit, commitType, autoDispose, //
             beginTimeout, commitTimeout, rollbackTimeout, //
@@ -100,18 +109,40 @@ public class TsurugiJdbcConnectionConfig {
             shutdownType, shutdownTimeout, //
             defaultTimeout);
 
+    /**
+     * Creates a new instance.
+     *
+     * @param endpoint endpoint
+     */
     public TsurugiJdbcConnectionConfig(String endpoint) {
         this.endpoint = endpoint;
     }
 
+    /**
+     * Get endpoint.
+     *
+     * @return endpoint
+     */
     public String getEndpoint() {
         return this.endpoint;
     }
 
+    /**
+     * Set client info property.
+     *
+     * @param key              key
+     * @param value            value
+     * @param failedProperties failed properties
+     */
     public void put(String key, String value, Map<String, ClientInfoStatus> failedProperties) {
         properties.putForClient(key, value, failedProperties);
     }
 
+    /**
+     * Get internal properties.
+     *
+     * @return properties
+     */
     @TsurugiJdbcInternal
     public TsurugiJdbcProperties getInternalProperties() {
         return this.properties;
@@ -119,54 +150,119 @@ public class TsurugiJdbcConnectionConfig {
 
     // Transaction
 
+    /**
+     * Set transaction type.
+     *
+     * @param type transaction type
+     */
     public void setTransactionType(TsurugiJdbcTransactionType type) {
         transactionType.setValue(type);
     }
 
+    /**
+     * Get transaction type.
+     *
+     * @return transaction type
+     */
     public TsurugiJdbcTransactionType getTransactionType() {
         return transactionType.value();
     }
 
-    public void setTranactionLabel(String label) {
-        transactionLabel.setStringValue(label);
+    /**
+     * Set transaction label.
+     *
+     * @param label transaction label
+     */
+    public void setTransactionLabel(String label) {
+        transactionLabel.setValue(label);
     }
 
+    /**
+     * Set LTX include DDL.
+     *
+     * @param include include DDL
+     */
     public void setIncludeDdl(boolean include) {
         includeDdl.setValue(include);
     }
 
+    /**
+     * Get LTX include DDL.
+     *
+     * @return include DDL
+     */
     public boolean getIncludeDdl() {
         return includeDdl.value();
     }
 
+    /**
+     * Set LTX write preserve.
+     *
+     * @param tableNames table names
+     */
     public void setWritePreserve(List<String> tableNames) {
         writePreserve.setValue(tableNames);
     }
 
+    /**
+     * Get LTX write preserve.
+     *
+     * @return table names
+     */
     public @Nullable List<String> getWritePreserve() {
         return writePreserve.value();
     }
 
+    /**
+     * Set LTX inclusive read area.
+     *
+     * @param tableNames table names
+     */
     public void setInclusiveReadArea(List<String> tableNames) {
         inclusiveReadArea.setValue(tableNames);
     }
 
+    /**
+     * Get LTX inclusive read area.
+     *
+     * @return table names
+     */
     public @Nullable List<String> getInclusiveReadArea() {
         return inclusiveReadArea.value();
     }
 
+    /**
+     * Set LTX exclusive read area.
+     *
+     * @param tableNames table names
+     */
     public void setExclusiveReadArea(List<String> tableNames) {
         exclusiveReadArea.setValue(tableNames);
     }
 
+    /**
+     * Get LTX exclusive read area.
+     *
+     * @return table names
+     */
     public @Nullable List<String> getExclusiveReadArea() {
         return exclusiveReadArea.value();
     }
 
+    /**
+     * Set RTX scan parallel.
+     *
+     * @param parallel scan parallel
+     */
     public void setScanParallel(int parallel) {
         scanParallel.setValue(parallel);
     }
 
+    /**
+     * Get RTX scan parallel.
+     *
+     * @return scan parallel
+     */
     public OptionalInt getScanParallel() {
         return scanParallel.value();
     }
@@ -175,6 +271,11 @@ public class TsurugiJdbcConnectionConfig {
         this.transactionOption = null;
     }
 
+    /**
+     * Get transaction option.
+     *
+     * @return transaction option
+     */
     public TransactionOption getTransactionOption() {
         if (this.transactionOption == null) {
             var builder = TransactionOption.newBuilder();
@@ -211,26 +312,56 @@ public class TsurugiJdbcConnectionConfig {
 
     // commit
 
+    /**
+     * Set auto commit.
+     *
+     * @param autoCommit auto commit
+     */
     public void setAutoCommit(boolean autoCommit) {
         this.autoCommit.setValue(autoCommit);
     }
 
+    /**
+     * Get auto commit.
+     *
+     * @return auto commit
+     */
     public boolean getAutoCommit() {
         return autoCommit.value();
     }
 
+    /**
+     * Set commit type.
+     *
+     * @param type commit type
+     */
     public void setCommitType(TsurugiJdbcCommitType type) {
         commitType.setValue(type);
     }
 
+    /**
+     * Get commit type.
+     *
+     * @return commit type
+     */
     public TsurugiJdbcCommitType getCommitType() {
         return commitType.value();
     }
 
+    /**
+     * Set automatically dispose upon commit.
+     *
+     * @param autoDispose automatically dispose
+     */
     public void setAutoDispose(boolean autoDispose) {
         this.autoDispose.setValue(autoDispose);
     }
 
+    /**
+     * Get automatically dispose upon commit.
+     *
+     * @return automatically dispose
+     */
     public boolean getAutoDispose() {
         return autoDispose.value();
     }
@@ -239,6 +370,11 @@ public class TsurugiJdbcConnectionConfig {
         this.commitOption = null;
     }
 
+    /**
+     * Get commit option.
+     *
+     * @return commit option
+     */
     public CommitOption getCommitOption() {
         if (this.commitOption == null) {
             var builder = CommitOption.newBuilder();
@@ -253,34 +389,60 @@ public class TsurugiJdbcConnectionConfig {
 
     // transaction timeout
 
+    /**
+     * Get transaction begin timeout.
+     *
+     * @return begin timeout [seconds]
+     */
     public int getBeginTimeout() {
         return beginTimeout.value().orElse(getDefaultTimeout());
     }
 
+    /**
+     * Get transaction commit timeout.
+     *
+     * @return commit timeout [seconds]
+     */
     public int getCommitTimeout() {
         return commitTimeout.value().orElse(getDefaultTimeout());
     }
 
+    /**
+     * Get transaction rollback timeout.
+     *
+     * @return rollback timeout [seconds]
+     */
     public int getRollbackTimeout() {
         return rollbackTimeout.value().orElse(getDefaultTimeout());
     }
 
     // Session
 
+    /**
+     * Get session shutdown type.
+     *
+     * @return shutdown type
+     */
     public TsurugiJdbcShutdownType getShutdownType() {
-        var type = shutdownType.value();
-        if (type != null) {
-            return type;
-        }
-        return TsurugiJdbcShutdownType.GRACEFUL;
+        return shutdownType.value();
     }
 
+    /**
+     * Get session shutdown timeout.
+     *
+     * @return shutdown timeout [seconds]
+     */
     public int getShutdownTimeout() {
         return shutdownTimeout.value().orElse(getDefaultTimeout());
     }
 
     // Common
 
+    /**
+     * Get default timeout.
+     *
+     * @return default timeout [seconds]
+     */
     public int getDefaultTimeout() {
         return defaultTimeout.value().orElse(0);
     }

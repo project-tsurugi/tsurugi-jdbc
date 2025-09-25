@@ -39,10 +39,16 @@ import com.tsurugidb.jdbc.util.SqlCloser;
 import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 
+/**
+ * Tsurugi JDBC Statement.
+ */
 public class TsurugiJdbcStatement implements Statement, HasFactory {
 
+    /** factory. */
     protected TsurugiJdbcFactory factory;
+    /** connection. */
     protected final TsurugiJdbcConnection connection;
+    /** statement configuration. */
     protected final TsurugiJdbcStatementConfig config;
 
     private TsurugiJdbcResultSet executingResultSet = null;
@@ -56,6 +62,13 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     private boolean closed = false;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param factory    factory
+     * @param connection connection
+     * @param config     statement configuration
+     */
     @TsurugiJdbcInternal
     public TsurugiJdbcStatement(TsurugiJdbcFactory factory, TsurugiJdbcConnection connection, TsurugiJdbcStatementConfig config) {
         this.factory = factory;
@@ -73,6 +86,11 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         return this.factory;
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
@@ -119,6 +137,11 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         return getUpdateCount(lowResult);
     }
 
+    /**
+     * Close the currently executing ResultSet.
+     *
+     * @throws SQLException if a database access error occurs
+     */
     protected void closeExecutingResultSet() throws SQLException {
         this.lowUpdateResult = null;
 
@@ -132,10 +155,20 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         }
     }
 
+    /**
+     * Set the currently executing ResultSet.
+     *
+     * @param rs ResultSet
+     */
     protected void setExecutingResultSet(TsurugiJdbcResultSet rs) {
         this.executingResultSet = rs;
     }
 
+    /**
+     * Set the result of the last update execution.
+     *
+     * @param result ExecuteResult
+     */
     protected void setLowUpdateResult(ExecuteResult result) {
         this.lowUpdateResult = result;
     }
@@ -274,6 +307,12 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         return getUpdateCount(lowResult);
     }
 
+    /**
+     * Get update count from ExecuteResult.
+     *
+     * @param lowResult ExecuteResult
+     * @return update count
+     */
     protected int getUpdateCount(@Nonnull ExecuteResult lowResult) {
         long count = 0;
         for (long c : lowResult.getCounters().values()) {

@@ -28,25 +28,49 @@ import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 
+/**
+ * {@link FixedResultSet} Meta Data.
+ */
 public class FixedResultSetMetaData implements ResultSetMetaData {
 
     private final FixedResultSet ownerResultSet;
     private final List<FixedResultSetColumn> columnList;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param ownerResultSet result set
+     * @param columnList     column list
+     */
     @TsurugiJdbcInternal
     public FixedResultSetMetaData(FixedResultSet ownerResultSet, List<FixedResultSetColumn> columnList) {
         this.ownerResultSet = ownerResultSet;
         this.columnList = columnList;
     }
 
+    /**
+     * Get factory.
+     *
+     * @return factory
+     */
     public TsurugiJdbcFactory getFactory() {
         return ownerResultSet.getFactory();
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
 
+    /**
+     * Get SQL type utility.
+     *
+     * @return SQL type utility
+     */
     protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
         return getFactory().getSqlTypeUtil();
     }
@@ -70,6 +94,13 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         return columnList.size();
     }
 
+    /**
+     * Get column.
+     *
+     * @param column column number (1-origin)
+     * @return column
+     * @throws SQLException if the column number is out of range
+     */
     @TsurugiJdbcInternal
     public FixedResultSetColumn getColumn(int column) throws SQLException {
         int index = column - 1;
@@ -80,6 +111,13 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         }
     }
 
+    /**
+     * Get JDBC type.
+     *
+     * @param column column number (1-origin)
+     * @return JDBC type
+     * @throws SQLException if the column number is out of range
+     */
     @TsurugiJdbcInternal
     public JDBCType getJdbcType(int column) throws SQLException {
         var rawColumn = getColumn(column);
@@ -186,6 +224,13 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         return "";
     }
 
+    /**
+     * Get length.
+     *
+     * @param column column number (1-origin)
+     * @return length
+     * @throws SQLException if the column number is out of range
+     */
     public int getLength(int column) throws SQLException {
         var rawColumn = getColumn(column);
         return rawColumn.length();
@@ -246,6 +291,13 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
         return type.getName();
     }
 
+    /**
+     * Get column class.
+     *
+     * @param column column number (1-origin)
+     * @return column class
+     * @throws SQLException if the column number is out of range
+     */
     protected Class<?> getColumnClass(int column) throws SQLException {
         var jdbcType = getJdbcType(column);
         switch (jdbcType) {

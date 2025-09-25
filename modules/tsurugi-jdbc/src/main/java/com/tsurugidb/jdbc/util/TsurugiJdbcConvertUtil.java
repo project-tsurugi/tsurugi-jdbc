@@ -38,22 +38,47 @@ import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.GetFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
+/**
+ * Tsurugi JDBC Convert Utility.
+ */
 public class TsurugiJdbcConvertUtil {
 
     private final GetFactory factoryHolder;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param factoryHolder factory holder
+     */
     public TsurugiJdbcConvertUtil(@Nonnull GetFactory factoryHolder) {
         this.factoryHolder = Objects.requireNonNull(factoryHolder);
     }
 
+    /**
+     * Get factory.
+     *
+     * @return factory
+     */
     protected TsurugiJdbcFactory getFactory() {
         return factoryHolder.getFactory();
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
 
+    /**
+     * Convert to boolean.
+     *
+     * @param value value
+     * @return boolean value
+     * @throws SQLException if data convert error occurs
+     */
     public boolean convertToBoolean(@Nonnull Object value) throws SQLException {
         try {
             return convertToBooleanMain(value);
@@ -64,6 +89,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to boolean.
+     *
+     * @param value value
+     * @return boolean value
+     * @throws Exception if data convert error occurs
+     */
     protected boolean convertToBooleanMain(@Nonnull Object value) throws Exception {
         if (value instanceof Boolean) {
             return (Boolean) value;
@@ -78,6 +110,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToBoolean unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to boolean from String.
+     *
+     * @param value value
+     * @return boolean value
+     * @throws SQLException if data convert error occurs
+     */
     protected boolean convertToBooleanFromString(@Nonnull String value) throws SQLException {
         String v = value.toUpperCase(Locale.ENGLISH);
         switch (v) {
@@ -90,6 +129,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to boolean from Number.
+     *
+     * @param value value
+     * @return boolean value
+     * @throws SQLException if data convert error occurs
+     */
     protected boolean convertToBooleanFromNumber(@Nonnull Number value) throws SQLException {
         double v = value.doubleValue();
         if (v == 1d) {
@@ -102,6 +148,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataException("Cannot cast to boolean", null);
     }
 
+    /**
+     * Convert to byte.
+     *
+     * @param value value
+     * @return byte value
+     * @throws SQLException if data convert error occurs
+     */
     public byte convertToByte(@Nonnull Object value) throws SQLException {
         try {
             return convertToByteMain(value);
@@ -112,6 +165,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to byte.
+     *
+     * @param value value
+     * @return byte value
+     * @throws Exception if data convert error occurs
+     */
     protected byte convertToByteMain(@Nonnull Object value) throws Exception {
         if (value instanceof Byte) {
             return (Byte) value;
@@ -126,6 +186,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToByte unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to short.
+     *
+     * @param value value
+     * @return short value
+     * @throws SQLException if data convert error occurs
+     */
     public short convertToShort(@Nonnull Object value) throws SQLException {
         try {
             return convertToShortMain(value);
@@ -136,6 +203,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to short.
+     *
+     * @param value value
+     * @return short value
+     * @throws Exception if data convert error occurs
+     */
     protected short convertToShortMain(@Nonnull Object value) throws Exception {
         if (value instanceof Short) {
             return (Short) value;
@@ -150,6 +224,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToShort unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to int.
+     *
+     * @param value value
+     * @return int value
+     * @throws SQLException if data convert error occurs
+     */
     public int convertToInt(@Nonnull Object value) throws SQLException {
         try {
             return convertToIntMain(value);
@@ -160,6 +241,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to int.
+     *
+     * @param value value
+     * @return int value
+     * @throws Exception if data convert error occurs
+     */
     protected int convertToIntMain(@Nonnull Object value) throws Exception {
         if (value instanceof Integer) {
             return (Integer) value;
@@ -174,6 +262,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToInt unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to long.
+     *
+     * @param value value
+     * @return long value
+     * @throws SQLException if data convert error occurs
+     */
     public long convertToLong(@Nonnull Object value) throws SQLException {
         try {
             return convertToLongMain(value);
@@ -184,6 +279,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to long.
+     *
+     * @param value value
+     * @return long value
+     * @throws Exception if data convert error occurs
+     */
     protected long convertToLongMain(@Nonnull Object value) throws Exception {
         if (value instanceof Long) {
             return (Long) value;
@@ -198,6 +300,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToLong unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to float.
+     *
+     * @param value value
+     * @return float value
+     * @throws SQLException if data convert error occurs
+     */
     public float convertToFloat(@Nonnull Object value) throws SQLException {
         try {
             return convertToFloatMain(value);
@@ -208,6 +317,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to float.
+     *
+     * @param value value
+     * @return float value
+     * @throws Exception if data convert error occurs
+     */
     protected float convertToFloatMain(@Nonnull Object value) throws Exception {
         if (value instanceof Float) {
             return (Float) value;
@@ -222,6 +338,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToFloat unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to double.
+     *
+     * @param value value
+     * @return double value
+     * @throws SQLException if data convert error occurs
+     */
     public double convertToDouble(@Nonnull Object value) throws SQLException {
         try {
             return convertToDoubleMain(value);
@@ -232,6 +355,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to double.
+     *
+     * @param value value
+     * @return double value
+     * @throws Exception if data convert error occurs
+     */
     protected double convertToDoubleMain(@Nonnull Object value) throws Exception {
         if (value instanceof Double) {
             return (Double) value;
@@ -246,6 +376,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToDouble unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to BigDecimal.
+     *
+     * @param value value
+     * @return BigDecimal value
+     * @throws SQLException if data convert error occurs
+     */
     public BigDecimal convertToDecimal(@Nonnull Object value) throws SQLException {
         try {
             return convertToDecimalMain(value);
@@ -256,6 +393,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to BigDecimal.
+     *
+     * @param value value
+     * @return BigDecimal value
+     * @throws Exception if data convert error occurs
+     */
     protected BigDecimal convertToDecimalMain(@Nonnull Object value) throws Exception {
         if (value instanceof BigDecimal) {
             return (BigDecimal) value;
@@ -282,6 +426,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToDecimal unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to String.
+     *
+     * @param value value
+     * @return String value
+     * @throws SQLException if data convert error occurs
+     */
     public String convertToString(@Nonnull Object value) throws SQLException {
         try {
             return convertToStringMain(value);
@@ -292,6 +443,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to String.
+     *
+     * @param value value
+     * @return String value
+     * @throws Exception if data convert error occurs
+     */
     protected String convertToStringMain(@Nonnull Object value) throws Exception {
         if (value instanceof String) {
             return (String) value;
@@ -319,6 +477,14 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToString unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to String.
+     *
+     * @param reader reader
+     * @param length length limit, -1 for no limit
+     * @return String value
+     * @throws SQLException if data convert error occurs
+     */
     public String convertToString(@Nonnull Reader reader, int length) throws SQLException {
         try (var br = new BufferedReader(reader)) {
             var sb = new StringBuilder();
@@ -346,6 +512,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to bytes.
+     *
+     * @param value value
+     * @return byte[] value
+     * @throws SQLException if data convert error occurs
+     */
     public byte[] convertToBytes(@Nonnull Object value) throws SQLException {
         try {
             return convertToBytesMain(value);
@@ -356,6 +529,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to bytes.
+     *
+     * @param value value
+     * @return byte[] value
+     * @throws Exception if data convert error occurs
+     */
     protected byte[] convertToBytesMain(@Nonnull Object value) throws Exception {
         if (value instanceof byte[]) {
             return (byte[]) value;
@@ -370,6 +550,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToBytes unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to date.
+     *
+     * @param value value
+     * @return date value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Date convertToDate(@Nonnull Object value) throws SQLException {
         try {
             return convertToDateMain(value);
@@ -380,6 +567,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to date.
+     *
+     * @param value value
+     * @return date value
+     * @throws Exception if data convert error occurs
+     */
     protected java.sql.Date convertToDateMain(@Nonnull Object value) throws Exception {
         if (value instanceof java.sql.Date) {
             return (java.sql.Date) value;
@@ -400,6 +594,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToDate unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to time.
+     *
+     * @param value value
+     * @return time value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Time convertToTime(@Nonnull Object value) throws SQLException {
         try {
             return convertToTimeMain(value);
@@ -410,6 +611,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to time.
+     *
+     * @param value value
+     * @return time value
+     * @throws Exception if data convert error occurs
+     */
     protected java.sql.Time convertToTimeMain(@Nonnull Object value) throws Exception {
         if (value instanceof java.sql.Time) {
             return (java.sql.Time) value;
@@ -433,6 +641,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToTime unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to timestamp.
+     *
+     * @param value value
+     * @return timestamp value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Timestamp convertToTimestamp(@Nonnull Object value) throws SQLException {
         try {
             return convertToTimestampMain(value);
@@ -443,6 +658,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to timestamp.
+     *
+     * @param value value
+     * @return timestamp value
+     * @throws Exception if data convert error occurs
+     */
     protected java.sql.Timestamp convertToTimestampMain(@Nonnull Object value) throws Exception {
         if (value instanceof java.sql.Timestamp) {
             return (java.sql.Timestamp) value;
@@ -462,6 +684,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToTimestamp unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to LocalDate.
+     *
+     * @param value value
+     * @return local date value
+     * @throws SQLException if data convert error occurs
+     */
     public LocalDate convertToLocalDate(@Nonnull Object value) throws SQLException {
         try {
             return convertToLocalDateMain(value);
@@ -472,6 +701,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to LocalDate.
+     *
+     * @param value value
+     * @return local date value
+     * @throws Exception if data convert error occurs
+     */
     protected LocalDate convertToLocalDateMain(@Nonnull Object value) throws Exception {
         if (value instanceof LocalDate) {
             return (LocalDate) value;
@@ -493,6 +729,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToLocalDate unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to LocalTime.
+     *
+     * @param value value
+     * @return local time value
+     * @throws SQLException if data convert error occurs
+     */
     public LocalTime convertToLocalTime(@Nonnull Object value) throws SQLException {
         try {
             return convertToLocalTimeMain(value);
@@ -503,6 +746,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to LocalTime.
+     *
+     * @param value value
+     * @return local time value
+     * @throws Exception if data convert error occurs
+     */
     protected LocalTime convertToLocalTimeMain(@Nonnull Object value) throws Exception {
         if (value instanceof LocalTime) {
             return (LocalTime) value;
@@ -527,6 +777,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToLocalTime unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to LocalDateTime.
+     *
+     * @param value value
+     * @return local date time value
+     * @throws SQLException if data convert error occurs
+     */
     public LocalDateTime convertToLocalDateTime(@Nonnull Object value) throws SQLException {
         try {
             return convertToLocalDateTimeMain(value);
@@ -537,6 +794,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to LocalDateTime.
+     *
+     * @param value value
+     * @return local date time value
+     * @throws Exception if data convert error occurs
+     */
     protected LocalDateTime convertToLocalDateTimeMain(@Nonnull Object value) throws Exception {
         if (value instanceof LocalDateTime) {
             return (LocalDateTime) value;
@@ -554,6 +818,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToLocalDateTime unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to OffsetTime.
+     *
+     * @param value value
+     * @return offset time value
+     * @throws SQLException if data convert error occurs
+     */
     public OffsetTime convertToOffsetTime(@Nonnull Object value) throws SQLException {
         try {
             return convertToOffsetTimeMain(value);
@@ -564,6 +835,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to OffsetTime.
+     *
+     * @param value value
+     * @return offset time value
+     * @throws Exception if data convert error occurs
+     */
     protected OffsetTime convertToOffsetTimeMain(@Nonnull Object value) throws Exception {
         if (value instanceof OffsetTime) {
             return (OffsetTime) value;
@@ -590,6 +868,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToOffsetTime unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to OffsetDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     * @throws SQLException if data convert error occurs
+     */
     public OffsetDateTime convertToOffsetDateTime(@Nonnull Object value) throws SQLException {
         try {
             return convertToOffsetDateTimeMain(value);
@@ -600,6 +885,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to OffsetDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     * @throws Exception if data convert error occurs
+     */
     protected OffsetDateTime convertToOffsetDateTimeMain(@Nonnull Object value) throws Exception {
         if (value instanceof OffsetDateTime) {
             return (OffsetDateTime) value;
@@ -625,6 +917,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToOffsetDateTime unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to Reader.
+     *
+     * @param value value
+     * @return Reader value
+     * @throws SQLException if data convert error occurs
+     */
     public Reader convertToReader(@Nonnull Object value) throws SQLException {
         try {
             return convertToReaderMain(value);
@@ -635,6 +934,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to Reader.
+     *
+     * @param value value
+     * @return Reader value
+     * @throws Exception if data convert error occurs
+     */
     protected Reader convertToReaderMain(@Nonnull Object value) throws Exception {
         if (value instanceof Reader) {
             return (Reader) value;
@@ -651,6 +957,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to InputStream.
+     *
+     * @param value value
+     * @return InputStream value
+     * @throws SQLException if data convert error occurs
+     */
     public InputStream convertToInputStream(@Nonnull Object value) throws SQLException {
         try {
             return convertToInputStreamMain(value);
@@ -661,6 +974,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to InputStream.
+     *
+     * @param value value
+     * @return InputStream value
+     * @throws Exception if data convert error occurs
+     */
     protected InputStream convertToInputStreamMain(@Nonnull Object value) throws Exception {
         if (value instanceof InputStream) {
             return (InputStream) value;
@@ -675,6 +995,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToInputStream unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to Blob.
+     *
+     * @param value value
+     * @return Blob value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Blob convertToBlob(@Nonnull Object value) throws SQLException {
         try {
             return convertToBlobMain(value);
@@ -685,6 +1012,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to Blob.
+     *
+     * @param value value
+     * @return Blob value
+     * @throws Exception if data convert error occurs
+     */
     protected java.sql.Blob convertToBlobMain(@Nonnull Object value) throws Exception {
         if (value instanceof java.sql.Blob) {
             return (java.sql.Blob) value;
@@ -693,6 +1027,13 @@ public class TsurugiJdbcConvertUtil {
         throw getExceptionHandler().dataTypeMismatchException("convertToBlob unsupported type", value.getClass());
     }
 
+    /**
+     * Convert to Clob.
+     *
+     * @param value value
+     * @return Clob value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Clob convertToClob(@Nonnull Object value) throws SQLException {
         try {
             return convertToClobMain(value);
@@ -703,6 +1044,13 @@ public class TsurugiJdbcConvertUtil {
         }
     }
 
+    /**
+     * Convert to Clob.
+     *
+     * @param value value
+     * @return Clob value
+     * @throws Exception if data convert error occurs
+     */
     protected java.sql.Clob convertToClobMain(@Nonnull Object value) throws Exception {
         if (value instanceof java.sql.Clob) {
             return (java.sql.Clob) value;

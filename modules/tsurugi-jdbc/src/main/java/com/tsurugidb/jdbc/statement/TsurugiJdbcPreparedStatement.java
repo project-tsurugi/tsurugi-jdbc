@@ -15,7 +15,6 @@
  */
 package com.tsurugidb.jdbc.statement;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -53,11 +52,13 @@ import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 import com.tsurugidb.sql.proto.SqlRequest.Parameter;
 import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
-import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 import com.tsurugidb.tsubakuro.sql.Parameters;
 import com.tsurugidb.tsubakuro.sql.Placeholders;
 
+/**
+ * Tsurugi JDBC Prepared Statement.
+ */
 public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implements PreparedStatement {
 
     private final String sql;
@@ -69,25 +70,55 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     private com.tsurugidb.tsubakuro.sql.PreparedStatement lowPreparedStatement = null;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param factory    factory
+     * @param connection connection
+     * @param config     statement configuration
+     * @param sql        SQL
+     */
+    @TsurugiJdbcInternal
     public TsurugiJdbcPreparedStatement(TsurugiJdbcFactory factory, TsurugiJdbcConnection connection, TsurugiJdbcStatementConfig config, String sql) {
         super(factory, connection, config);
         this.sql = sql;
         this.parameterGenerator = factory.createParameterGenerator(this);
     }
 
+    /**
+     * Set convert utility.
+     *
+     * @param convertUtil convert utility
+     */
     public void setConvertUtil(@Nonnull TsurugiJdbcConvertUtil convertUtil) {
         parameterGenerator.setConvertUtil(convertUtil);
     }
 
+    /**
+     * Get SQL type utility.
+     *
+     * @return SQL type utility
+     */
     protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
         return getFactory().getSqlTypeUtil();
     }
 
+    /**
+     * Get low-level placeholder list.
+     *
+     * @return low-level placeholder list
+     */
     @TsurugiJdbcInternal
     public List<Placeholder> getLowPlaceholderList() {
         return this.lowPlaceholderList;
     }
 
+    /**
+     * Get low-level prepared statement.
+     *
+     * @return low-level prepared statement
+     * @throws SQLException if a database access error occurs
+     */
     protected com.tsurugidb.tsubakuro.sql.PreparedStatement getLowPreparedStatement() throws SQLException {
         if (this.lowPreparedStatement == null) {
             var sqlClient = connection.getLowSqlClient();
@@ -142,6 +173,14 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         public Parameter generate(String name) throws SQLException;
     }
 
+    /**
+     * Set parameter.
+     *
+     * @param parameterIndex     parameter index (1-origin)
+     * @param atomType           AtomType
+     * @param parameterGenerator parameter generator
+     * @throws SQLException if data convert error occurs
+     */
     protected void setParameter(int parameterIndex, AtomType atomType, ParameterGenerator parameterGenerator) throws SQLException {
         String name = placeholderName(parameterIndex);
 
@@ -152,21 +191,54 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         Parameter lowParameter;
         try {
             lowParameter = parameterGenerator.generate(name);
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             throw getExceptionHandler().sqlException("setParameter error", e);
         }
         setLowParameter(parameterIndex, lowParameter);
     }
 
+    /**
+     * Create placeholder name.
+     *
+     * @param parameterIndex parameter index
+     * @return placeholder name
+     */
     protected String placeholderName(int parameterIndex) {
         return Integer.toString(parameterIndex);
     }
 
+    /**
+     * Set placeholder.
+     *
+     * @param parameterIndex parameter index (1-origin)
+     * @param sqlType        SQL Type (java.sql.Types)
+     * @throws SQLException if SQL type is not supported
+     */
+    public void setPlaceholder(int parameterIndex, int sqlType) throws SQLException {
+        var util = getSqlTypeUtil();
+        var atomType = util.toLowAtomType(sqlType);
+        setLowPlaceholder(parameterIndex, atomType);
+    }
+
+    /**
+     * Set placeholder.
+     *
+     * @param parameterIndex parameter index (1-origin)
+     * @param atomType       AtomType
+     */
+    @TsurugiJdbcInternal
     public void setLowPlaceholder(int parameterIndex, AtomType atomType) {
         String name = placeholderName(parameterIndex);
         setLowPlaceholder(parameterIndex, name, atomType);
     }
 
+    /**
+     * Set placeholder.
+     *
+     * @param parameterIndex parameter index (1-origin)
+     * @param parameterName  parameter name
+     * @param atomType       AtomType
+     */
     protected void setLowPlaceholder(int parameterIndex, String parameterName, AtomType atomType) {
         int index = parameterIndex - 1;
         while (index >= lowPlaceholderList.size()) {
@@ -181,6 +253,12 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         }
     }
 
+    /**
+     * Set parameter.
+     *
+     * @param parameterIndex parameter index (1-origin)
+     * @param lowParameter   parameter
+     */
     public void setLowParameter(int parameterIndex, Parameter lowParameter) {
         int index = parameterIndex - 1;
         while (index >= lowParameterList.size()) {
@@ -203,6 +281,13 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         }
     }
 
+    /**
+     * Set null parameter.
+     *
+     * @param parameterIndex parameter index (1-origin)
+     * @param atomType       AtomType
+     * @throws SQLException if data convert error occurs
+     */
     public void setNull(int parameterIndex, AtomType atomType) throws SQLException {
         setParameter(parameterIndex, atomType, Parameters::ofNull);
     }
@@ -554,6 +639,13 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         setCharacterStream(parameterIndex, reader, intLength);
     }
 
+    /**
+     * Convert length to int.
+     *
+     * @param length length
+     * @return int length
+     * @throws SQLException if the length overflows an int
+     */
     protected int toIntLength(long length) throws SQLException {
         try {
             return Math.toIntExact(length);
@@ -611,9 +703,12 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
             super.close();
         };
 
-        try (superCloser; var ps = lowPreparedStatement) {
-            // close only
-        } catch (ServerException | IOException | InterruptedException e) {
+        try (superCloser) {
+            var ps = this.lowPreparedStatement;
+            if (ps != null) {
+                ps.close();
+            }
+        } catch (Exception e) {
             throw getExceptionHandler().sqlException("PreparedStatement close error", e);
         }
     }

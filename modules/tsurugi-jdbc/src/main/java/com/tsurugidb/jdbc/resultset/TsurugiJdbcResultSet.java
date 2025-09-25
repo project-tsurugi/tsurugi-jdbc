@@ -15,7 +15,6 @@
  */
 package com.tsurugidb.jdbc.resultset;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.HashMap;
@@ -29,11 +28,13 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.SqlCloser;
-import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 import com.tsurugidb.tsubakuro.sql.ResultSetMetadata;
 import com.tsurugidb.tsubakuro.util.FutureResponse;
 
+/**
+ * Tsurugi JDBC Result Set.
+ */
 @NotThreadSafe
 public class TsurugiJdbcResultSet extends AbstractResultSet {
 
@@ -52,6 +53,15 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
     private boolean isAfterLast = false;
     private boolean finished = false;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param statement       statement
+     * @param transaction     transaction
+     * @param resultSetFuture future of ResultSet
+     * @param config          configuration
+     */
+    @TsurugiJdbcInternal
     public TsurugiJdbcResultSet(TsurugiJdbcStatement statement, TsurugiJdbcTransaction transaction, FutureResponse<com.tsurugidb.tsubakuro.sql.ResultSet> resultSetFuture,
             TsurugiJdbcResultSetConfig config) {
         super(statement);
@@ -61,15 +71,33 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
         this.config = config;
     }
 
+    /**
+     * Set low PreparedStatement for dispose.
+     *
+     * @param lowPs low PreparedStatement
+     */
+    @TsurugiJdbcInternal
     public void setLowPreparedStatement(PreparedStatement lowPs) {
         this.lowPreparedStatement = lowPs;
     }
 
+    /**
+     * Get transaction.
+     *
+     * @return transaction
+     */
     @TsurugiJdbcInternal
     public TsurugiJdbcTransaction getTransaction() {
         return this.transaction;
     }
 
+    /**
+     * Get low ResultSet.
+     *
+     * @return low ResultSet
+     * @throws SQLException if a database access error occurs
+     */
+    @TsurugiJdbcInternal
     protected com.tsurugidb.tsubakuro.sql.ResultSet getLowResultSet() throws SQLException {
         if (this.lowResultSet == null) {
             int timeout = config.getQueryTimeout();
@@ -85,6 +113,14 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
         return this.lowResultSet;
     }
 
+    /**
+     * Get low ResultSet metadata.
+     *
+     * @param lowRs low ResultSet
+     * @return low ResultSet metadata
+     * @throws SQLException if a database access error occurs
+     */
+    @TsurugiJdbcInternal
     protected ResultSetMetadata getLowResultSetMetadata(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {
         try {
             return lowRs.getMetadata();
@@ -266,7 +302,7 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
     public boolean relative(int rows) throws SQLException {
         switch (rows) {
         case 0:
-            return true;
+            return (this.currentRowNumber >= 1) && !this.isAfterLast;
         case 1:
             return next();
         default:
@@ -331,13 +367,21 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
         SqlCloser commit = this::finish; // commit when AutoCommit
 
         // The lowResultSet must be closed before commit.
-        try (statement; var ps = lowPreparedStatement; commit; var f = resultSetFuture; var rs = lowResultSet) {
-            // close only
-        } catch (ServerException | IOException | InterruptedException e) {
+        try (statement; var ps = lowPreparedStatement; commit; var f = resultSetFuture) {
+            var rs = this.lowResultSet;
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (Exception e) {
             throw getExceptionHandler().sqlException("ResultSet close error", e);
         }
     }
 
+    /**
+     * Finish processing.
+     *
+     * @throws SQLException if a database access error occurs
+     */
     protected void finish() throws SQLException {
         if (!finished) {
             this.finished = true;

@@ -60,6 +60,9 @@ import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 
+/**
+ * Tsurugi JDBC Connection.
+ */
 public class TsurugiJdbcConnection implements Connection, HasFactory {
     private static final Logger LOG = Logger.getLogger(TsurugiJdbcConnection.class.getName());
 
@@ -72,6 +75,13 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     private TsurugiJdbcTransaction transaction = null;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param factory    factory
+     * @param lowSession low-level session
+     * @param config     connection configuration
+     */
     @TsurugiJdbcInternal
     public TsurugiJdbcConnection(TsurugiJdbcFactory factory, Session lowSession, TsurugiJdbcConnectionConfig config) {
         this.factory = factory;
@@ -90,10 +100,20 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         return this.factory;
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
 
+    /**
+     * Get configuration.
+     *
+     * @return connection configuration
+     */
     @TsurugiJdbcInternal
     public TsurugiJdbcConnectionConfig getConfig() {
         return this.config;
@@ -134,64 +154,149 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         return sql;
     }
 
+    /**
+     * Get low-level session.
+     *
+     * @return low-level session
+     */
     @TsurugiJdbcInternal
     public Session getLowSession() {
         return this.lowSession;
     }
 
+    /**
+     * Get low-level SQL client.
+     *
+     * @return low-level SQL client
+     */
     @TsurugiJdbcInternal
     public SqlClient getLowSqlClient() {
         return this.lowSqlClient;
     }
 
+    /**
+     * Set transaction type.
+     *
+     * @param type transaction type
+     */
     public void setTransactionType(TsurugiJdbcTransactionType type) {
         config.setTransactionType(type);
     }
 
+    /**
+     * Get transaction type.
+     *
+     * @return transaction type
+     */
     public TsurugiJdbcTransactionType getTransactionType() {
         return config.getTransactionType();
     }
 
+    /**
+     * Set transaction label.
+     *
+     * @param transactionLabel transaction label
+     */
+    public void setTransactionLabel(String transactionLabel) {
+        config.setTransactionLabel(transactionLabel);
+    }
+
+    /**
+     * Set LTX include DDL.
+     *
+     * @param include include DDL
+     */
     public void setTransactionIncludeDdl(boolean include) {
         config.setIncludeDdl(include);
     }
 
+    /**
+     * Get LTX include DDL.
+     *
+     * @return true if include DDL, false otherwise
+     */
     public boolean getTransactionIncludeDdl() {
         return config.getIncludeDdl();
     }
 
+    /**
+     * Set LTX write preserve.
+     *
+     * @param tableNames table names
+     */
     public void setWritePreserve(List<String> tableNames) {
         config.setWritePreserve(tableNames);
     }
 
+    /**
+     * Get LTX write preserve.
+     *
+     * @return table names
+     */
     public @Nullable List<String> getWritePreserve() {
         return config.getWritePreserve();
     }
 
+    /**
+     * Set LTX inclusive read area.
+     *
+     * @param tableNames table names
+     */
     public void setInclusiveReadArea(List<String> tableNames) {
         config.setInclusiveReadArea(tableNames);
     }
 
+    /**
+     * Get LTX inclusive read area.
+     *
+     * @return table names
+     */
     public @Nullable List<String> getInclusiveReadArea() {
         return config.getInclusiveReadArea();
     }
 
+    /**
+     * Set LTX exclusive read area.
+     *
+     * @param tableNames table names
+     */
     public void setExclusiveReadArea(List<String> tableNames) {
         config.setExclusiveReadArea(tableNames);
     }
 
+    /**
+     * Get LTX exclusive read area.
+     *
+     * @return table names
+     */
     public @Nullable List<String> getExclusiveReadArea() {
         return config.getExclusiveReadArea();
     }
 
-    public void setTransactionScanParallel(int parallel) {
-        config.setScanParallel(parallel);
+    /**
+     * Set RTX scan parallel.
+     *
+     * @param scanParallel scan parallel
+     */
+    public void setTransactionScanParallel(int scanParallel) {
+        config.setScanParallel(scanParallel);
     }
 
+    /**
+     * Get RTX scan parallel.
+     *
+     * @return scan parallel
+     */
     public OptionalInt getTransactionScanParallel() {
         return config.getScanParallel();
     }
 
+    /**
+     * Get or create transaction.
+     *
+     * @return transaction
+     * @throws SQLException if a database access error occurs
+     */
     @TsurugiJdbcInternal
     public synchronized TsurugiJdbcTransaction getTransaction() throws SQLException {
         var transaction = getFieldTransaction();
@@ -217,10 +322,21 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         return transaction;
     }
 
+    /**
+     * Get transaction option.
+     *
+     * @return transaction option
+     */
     protected SqlRequest.TransactionOption getTransactionOption() {
         return config.getTransactionOption();
     }
 
+    /**
+     * Check transaction active.
+     *
+     * @return transaction
+     * @throws SQLException if transaction is not active
+     */
     protected TsurugiJdbcTransaction checkTransactionActive() throws SQLException {
         var transaction = getFieldTransaction();
         if (transaction == null) {
@@ -229,6 +345,11 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         return transaction;
     }
 
+    /**
+     * Check transaction inactive.
+     *
+     * @throws SQLException if transaction is active
+     */
     protected void checkTransactionInactive() throws SQLException {
         var transaction = getFieldTransaction();
         if (transaction != null) {
@@ -255,18 +376,38 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         return config.getAutoCommit();
     }
 
+    /**
+     * Set commit type.
+     *
+     * @param type commit type
+     */
     public void setCommitType(TsurugiJdbcCommitType type) {
         config.setCommitType(type);
     }
 
+    /**
+     * Get commit type.
+     *
+     * @return commit type
+     */
     public TsurugiJdbcCommitType getCommitType() {
         return config.getCommitType();
     }
 
+    /**
+     * Set automatically dispose upon commit.
+     *
+     * @param autoDispose automatically dispose
+     */
     public void setCommitAutoDispose(boolean autoDispose) {
         config.setAutoDispose(autoDispose);
     }
 
+    /**
+     * Get automatically dispose upon commit.
+     *
+     * @return true if automatically dispose, false otherwise
+     */
     public boolean getCommitAutoDispose() {
         return config.getAutoDispose();
     }

@@ -27,20 +27,42 @@ import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
 import com.tsurugidb.tsubakuro.sql.BlobReference;
 
+/**
+ * Tsurugi JDBC Blob Reference.
+ */
 public class TsurugiJdbcBlobReference implements Blob {
 
     private final TsurugiJdbcResultSet ownerResultSet;
     private final BlobReference lowBlob;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param ownerResultSet result set
+     * @param lowBlob        low-level blob reference
+     */
     public TsurugiJdbcBlobReference(TsurugiJdbcResultSet ownerResultSet, BlobReference lowBlob) {
         this.ownerResultSet = ownerResultSet;
         this.lowBlob = lowBlob;
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return ownerResultSet.getFactory().getExceptionHandler();
     }
 
+    /**
+     * Open InputStream.
+     *
+     * @param timeout timeout
+     * @param unit    time unit of timeout
+     * @return InputStream
+     * @throws SQLException if a database access error occurs
+     */
     public InputStream openInputStream(long timeout, TimeUnit unit) throws SQLException {
         var transaction = ownerResultSet.getTransaction().getLowTransaction();
         try {

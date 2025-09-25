@@ -22,8 +22,17 @@ import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyInt;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementConfig;
 
+/**
+ * Tsurugi JDBC ResultSet Configuration.
+ */
 public class TsurugiJdbcResultSetConfig {
 
+    /**
+     * Create result set configuration.
+     *
+     * @param from statement configuration
+     * @return result set configuration
+     */
     public static TsurugiJdbcResultSetConfig of(TsurugiJdbcStatementConfig from) {
         var config = new TsurugiJdbcResultSetConfig();
         config.properties.copyFrom(from.getInternalProperties());
@@ -33,16 +42,26 @@ public class TsurugiJdbcResultSetConfig {
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
-    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of( //
+    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
             queryTimeout, //
             defaultTimeout);
 
+    /**
+     * Get SELECT timeout.
+     *
+     * @return SELECT timeout [seconds]
+     */
     public int getQueryTimeout() {
         return queryTimeout.value().orElse(getDefaultTimeout());
     }
 
     // Common
 
+    /**
+     * Get default timeout.
+     *
+     * @return default timeout [seconds]
+     */
     public int getDefaultTimeout() {
         return defaultTimeout.value().orElse(0);
     }

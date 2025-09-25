@@ -15,6 +15,9 @@
  */
 package com.tsurugidb.jdbc.exception;
 
+/**
+ * SQL State.
+ */
 public enum SqlState {
     /** 08001: SQL-client unable to establish SQL-connection */
     S08001_UNABLE_TO_CONNECTION("08001", "SQL-client unable to establish SQL-connection"),
@@ -60,10 +63,20 @@ public enum SqlState {
         this.message = message;
     }
 
+    /**
+     * Get SQL state code.
+     *
+     * @return SQL state code
+     */
     public String code() {
         return this.code;
     }
 
+    /**
+     * Get message.
+     *
+     * @return message
+     */
     public String message() {
         return this.message;
     }

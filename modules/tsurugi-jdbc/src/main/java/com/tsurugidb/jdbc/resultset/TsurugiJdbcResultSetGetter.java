@@ -27,7 +27,10 @@ import com.tsurugidb.sql.proto.SqlCommon.Column;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 
-public class TsurugiJdbcResultSetGetter {
+/**
+ * Tsurugi JDBC ResultSet Getter.
+ */
+public final class TsurugiJdbcResultSetGetter {
 
     private static final Map<AtomType, TsurugiJdbcResultSetGetter> ATOM_TYPE_GETTER_MAP;
     static {
@@ -64,6 +67,12 @@ public class TsurugiJdbcResultSetGetter {
         return new TsurugiJdbcClobReference(ownerResultSet, lowClob);
     }
 
+    /**
+     * Create getter.
+     *
+     * @param lowColumn column
+     * @return getter
+     */
     public static TsurugiJdbcResultSetGetter of(Column lowColumn) {
         var atomType = lowColumn.getAtomType();
         var getter = ATOM_TYPE_GETTER_MAP.get(atomType);
@@ -84,6 +93,16 @@ public class TsurugiJdbcResultSetGetter {
         this.getter = getter;
     }
 
+    /**
+     * Fetch value.
+     *
+     * @param ownerResultSet result set
+     * @param lowRs          low-level result set
+     * @return value
+     * @throws IOException          if I/O error was occurred while extracting the column data
+     * @throws InterruptedException if interrupted while extracting the column data
+     * @throws ServerException      if server error was occurred while retrieving this relation
+     */
     public Object fetchValue(TsurugiJdbcResultSet ownerResultSet, ResultSet lowRs) throws IOException, InterruptedException, ServerException {
         if (lowRs.isNull()) {
             return null;

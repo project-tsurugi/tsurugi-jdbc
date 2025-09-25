@@ -36,8 +36,18 @@ import com.tsurugidb.tsubakuro.sql.exception.CcException;
 import com.tsurugidb.tsubakuro.sql.exception.CompileException;
 import com.tsurugidb.tsubakuro.sql.exception.ConstraintViolationException;
 
+/**
+ * Tsurugi JDBC Exception Handler.
+ */
 public class TsurugiJdbcExceptionHandler {
 
+    /**
+     * Convert exception to SQLException.
+     *
+     * @param baseMessage base message
+     * @param e           exception
+     * @return SQLException
+     */
     public SQLException sqlException(String baseMessage, Exception e) {
         if (e instanceof SQLException) {
             return sqlException(baseMessage, (SQLException) e);
@@ -59,6 +69,13 @@ public class TsurugiJdbcExceptionHandler {
         return new SQLException(message, e);
     }
 
+    /**
+     * Create message.
+     *
+     * @param baseMessage base message
+     * @param e           exception
+     * @return message
+     */
     protected String message(String baseMessage, Exception e) {
         if (e != null) {
             String causeMessage = e.getMessage();
@@ -69,26 +86,61 @@ public class TsurugiJdbcExceptionHandler {
         return baseMessage;
     }
 
+    /**
+     * Convert SQLException to new SQLException.
+     *
+     * @param baseMessage base message
+     * @param e           SQLException
+     * @return SQLException
+     */
     public SQLException sqlException(String baseMessage, SQLException e) {
         String message = message(baseMessage, e);
         return new SQLException(message, e.getSQLState(), e.getErrorCode(), e);
     }
 
+    /**
+     * Convert IOException to SQLException.
+     *
+     * @param baseMessage base message
+     * @param e           exception
+     * @return SQLException
+     */
     public SQLException sqlException(String baseMessage, IOException e) {
         String message = message(baseMessage, e);
         return new SQLException(message, e);
     }
 
+    /**
+     * Convert InterruptedException to SQLException.
+     *
+     * @param baseMessage base message
+     * @param e           exception
+     * @return SQLException
+     */
     public SQLException sqlException(String baseMessage, InterruptedException e) {
         String message = message(baseMessage, e);
         return new SQLException(message, e);
     }
 
+    /**
+     * Convert TimeoutException to SQLException.
+     *
+     * @param baseMessage base message
+     * @param e           exception
+     * @return SQLException
+     */
     public SQLException sqlException(String baseMessage, TimeoutException e) {
         String message = message(baseMessage, e);
         return new SQLTimeoutException(message, e);
     }
 
+    /**
+     * Convert ServerException to SQLException.
+     *
+     * @param baseMessage base message
+     * @param e           exception
+     * @return SQLException
+     */
     public SQLException sqlException(String baseMessage, ServerException e) {
         var diagnosticCode = e.getDiagnosticCode();
 
@@ -100,6 +152,12 @@ public class TsurugiJdbcExceptionHandler {
         return sqlException(baseMessage, vendorCode, e);
     }
 
+    /**
+     * Get server error category.
+     *
+     * @param code diagnostic code
+     * @return category code
+     */
     protected int serverErrorCategory(DiagnosticCode code) {
         String structuredCode = code.getStructuredCode();
         int n = structuredCode.indexOf('-');
@@ -115,10 +173,26 @@ public class TsurugiJdbcExceptionHandler {
         }
     }
 
+    /**
+     * Create vendor code.
+     *
+     * @param prefix     prefix
+     * @param category   category
+     * @param codeNumber code number
+     * @return vendor code
+     */
     protected int vendorCode(int prefix, int category, int codeNumber) {
         return (prefix * 100 + category) * 100_000 + codeNumber;
     }
 
+    /**
+     * Convert ServerException to SQLException.
+     *
+     * @param baseMessage base message
+     * @param vendorCode  vendor code
+     * @param e           exception
+     * @return SQLException
+     */
     protected SQLException sqlException(String baseMessage, int vendorCode, ServerException e) {
         String message = String.format("%s. %s: %s", baseMessage, e.getDiagnosticCode(), e.getMessage());
 
@@ -142,16 +216,36 @@ public class TsurugiJdbcExceptionHandler {
 
     // Data
 
+    /**
+     * Create data exception.
+     *
+     * @param baseMessage base message
+     * @param e           exception
+     * @return SQLException
+     */
     public SQLException dataException(String baseMessage, Exception e) {
         String message = message(baseMessage, e);
         return new SQLDataException(message, SqlState.S22005_ERRPR_IN_ASSIGNMENT.code(), e);
     }
 
+    /**
+     * Create SQLException for "data null value no indicator parameter".
+     *
+     * @param baseMessage base message
+     * @return SQLException
+     */
     public SQLException dataNullValueNoIndicatorParameterException(String baseMessage) {
         String message = baseMessage;
         return new SQLDataException(message, SqlState.S22002_NULL_VALUE_NO_INDICATOR_PARAMETER.code());
     }
 
+    /**
+     * Create SQLException for "data type mismatch".
+     *
+     * @param baseMessage base message
+     * @param type        from type
+     * @return SQLException
+     */
     public SQLException dataTypeMismatchException(String baseMessage, Class<?> type) {
         String message = MessageFormat.format("{0}. fromType={1}", baseMessage, type.getSimpleName());
         return new SQLDataException(message, SqlState.S2200G_TYPE_MISMATCH.code());
@@ -159,11 +253,24 @@ public class TsurugiJdbcExceptionHandler {
 
     // Common
 
+    /**
+     * Create SQLException for unwrap failure.
+     *
+     * @param iface interface
+     * @return SQLException
+     */
     public SQLException unwrapException(Class<?> iface) {
         String message = MessageFormat.format("Not a wrapper for {0}", iface.getName());
         return new SQLException(message, SqlState.HY000_CLI_SPECIFIC_CONDITION.code());
     }
 
+    /**
+     * Create SQLException for property convert failure.
+     *
+     * @param key property key
+     * @param e   exception
+     * @return SQLException
+     */
     public SQLException propertyConvertException(String key, Exception e) {
         String message = message(MessageFormat.format("Invalid value. key={0}", key), e);
         var state = SqlState.HY024_INVALID_ATTRIBUTE_VALUE;
@@ -172,11 +279,22 @@ public class TsurugiJdbcExceptionHandler {
 
     // Driver
 
+    /**
+     * Create SQLException for "url is null".
+     *
+     * @return SQLException
+     */
     public SQLException jdbcUrlNullException() {
         String message = "url is null";
         return new SQLNonTransientConnectionException(message, SqlState.S08001_UNABLE_TO_CONNECTION.code());
     }
 
+    /**
+     * Create SQLException for "credential file load error".
+     *
+     * @param e exception
+     * @return SQLException
+     */
     public SQLException credentialFileLoadException(IOException e) {
         String message = message("Credential file load error", e);
         return new SQLInvalidAuthorizationSpecException(message, SqlState.S28000_INVALID_AUTHORIZATION_SPECIFICATION.code(), e);
@@ -184,6 +302,13 @@ public class TsurugiJdbcExceptionHandler {
 
     // Connection
 
+    /**
+     * Create SQLClientInfoException.
+     *
+     * @param e                exception
+     * @param failedProperties failed properties
+     * @return SQLException
+     */
     public SQLClientInfoException clientInfoException(Exception e, Map<String, ClientInfoStatus> failedProperties) {
         String message = message("setClientInfo error", e);
         return new SQLClientInfoException(message, failedProperties, e);
@@ -191,11 +316,21 @@ public class TsurugiJdbcExceptionHandler {
 
     // Transaction
 
+    /**
+     * Create SQLException for "transaction not found".
+     *
+     * @return SQLException
+     */
     public SQLException transactionNotFoundException() {
         String message = "Transaction not found";
         return new SQLException(message, SqlState.S25000_INVALID_TRANSACTION_STATE.code());
     }
 
+    /**
+     * Create SQLException for "transaction exists".
+     *
+     * @return SQLException
+     */
     public SQLException transactionFoundException() {
         String message = "Transaction exists";
         return new SQLException(message, SqlState.S25001_ACTIVE_TRANSACTION.code());
@@ -203,6 +338,12 @@ public class TsurugiJdbcExceptionHandler {
 
     // ResultSet
 
+    /**
+     * Create SQLException for "column not found".
+     *
+     * @param message message
+     * @return SQLException
+     */
     public SQLException undefinedColumnNameException(String message) {
         return new SQLSyntaxErrorException(message, SqlState.S42703_UNDEFINED_COLUMN_NAME.code());
     }

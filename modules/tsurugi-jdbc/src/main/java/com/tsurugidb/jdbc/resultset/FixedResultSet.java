@@ -24,6 +24,9 @@ import java.util.Objects;
 
 import com.tsurugidb.jdbc.factory.GetFactory;
 
+/**
+ * Tsurugi JDBC Fixed ResultSet.
+ */
 public class FixedResultSet extends AbstractResultSet {
 
     private final List<FixedResultSetColumn> columnList;
@@ -36,6 +39,13 @@ public class FixedResultSet extends AbstractResultSet {
 
     private int currentRowNumber = 0;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param owner      factory holder
+     * @param columnList column list
+     * @param valuesList values list
+     */
     public FixedResultSet(GetFactory owner, List<FixedResultSetColumn> columnList, List<Object[]> valuesList) {
         super(owner);
         this.columnList = Objects.requireNonNull(columnList);

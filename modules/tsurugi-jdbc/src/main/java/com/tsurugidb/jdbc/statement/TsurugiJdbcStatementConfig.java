@@ -24,8 +24,17 @@ import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionConfig;
 import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyInt;
 
+/**
+ * Tsurugi JDBC Statement Configuration.
+ */
 public class TsurugiJdbcStatementConfig {
 
+    /**
+     * Create statement configuration.
+     *
+     * @param from connection configuration
+     * @return statement configuration
+     */
     public static TsurugiJdbcStatementConfig of(TsurugiJdbcConnectionConfig from) {
         var config = new TsurugiJdbcStatementConfig();
         config.properties.copyFrom(from.getInternalProperties());
@@ -36,30 +45,55 @@ public class TsurugiJdbcStatementConfig {
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
-    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of( //
+    private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
             executeTimeout, //
             queryTimeout, //
             defaultTimeout);
 
+    /**
+     * Get internal properties.
+     *
+     * @return properties
+     */
     @TsurugiJdbcInternal
     public TsurugiJdbcProperties getInternalProperties() {
         return this.properties;
     }
 
+    /**
+     * Get execute timeout.
+     *
+     * @return execute timeout [seconds]
+     */
     public int getExecuteTimeout() {
         return executeTimeout.value().orElse(getDefaultTimeout());
     }
 
+    /**
+     * Set SELECT timeout.
+     *
+     * @param timeout SELECT timeout [seconds]
+     */
     public void setQueryTimeout(int timeout) {
         queryTimeout.setValue(timeout);
     }
 
+    /**
+     * Get SELECT timeout.
+     *
+     * @return SELECT timeout [seconds]
+     */
     public int getQueryTimeout() {
         return queryTimeout.value().orElse(getDefaultTimeout());
     }
 
     // Common
 
+    /**
+     * Set default timeout.
+     *
+     * @return default timeout [seconds]
+     */
     public int getDefaultTimeout() {
         return defaultTimeout.value().orElse(0);
     }

@@ -18,6 +18,9 @@ package com.tsurugidb.jdbc.transaction;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.sql.proto.SqlRequest.CommitStatus;
 
+/**
+ * Tsurugi JDBC Commit Type.
+ */
 public enum TsurugiJdbcCommitType {
     /** DEFAULT */
     DEFAULT(CommitStatus.COMMIT_STATUS_UNSPECIFIED),
@@ -38,6 +41,11 @@ public enum TsurugiJdbcCommitType {
         this.lowType = lowType;
     }
 
+    /**
+     * Get low-level commit status.
+     *
+     * @return commit status
+     */
     @TsurugiJdbcInternal
     public CommitStatus getLowCommitStatus() {
         return this.lowType;

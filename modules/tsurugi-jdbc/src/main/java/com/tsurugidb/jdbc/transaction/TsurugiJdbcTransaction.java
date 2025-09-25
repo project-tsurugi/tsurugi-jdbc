@@ -26,6 +26,9 @@ import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 
+/**
+ * Tsurugi JDBC Transaction.
+ */
 @TsurugiJdbcInternal
 public class TsurugiJdbcTransaction implements AutoCloseable {
     private static final Logger LOG = Logger.getLogger(TsurugiJdbcTransaction.class.getName());
@@ -38,6 +41,14 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
     private final AtomicBoolean executed = new AtomicBoolean(false);
     private boolean closed = false;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param factory        factory
+     * @param lowTransaction low-level transaction
+     * @param autoCommit     auto commit
+     * @param propertes      connection properties
+     */
     public TsurugiJdbcTransaction(TsurugiJdbcFactory factory, Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionConfig propertes) {
         this.factory = factory;
         this.lowTransaction = lowTransaction;
@@ -45,18 +56,38 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         this.propertes = propertes;
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return factory.getExceptionHandler();
     }
 
+    /**
+     * Get low-level transaction.
+     *
+     * @return low-level transaction
+     */
     public Transaction getLowTransaction() {
         return this.lowTransaction;
     }
 
+    /**
+     * Get auto commit.
+     *
+     * @return auto commit
+     */
     public boolean isAutoCommit() {
         return this.autoCommit;
     }
 
+    /**
+     * Check if the transaction has already been executed.
+     *
+     * @throws SQLException if transaction statement already executed
+     */
     protected void checkExecuted() throws SQLException {
         boolean alreadyExecuted = this.executed.getAndSet(true);
 
@@ -66,12 +97,28 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         }
     }
 
+    /**
+     * Execute action.
+     *
+     * @param <R>    return type
+     * @param action action
+     * @return result
+     * @throws SQLException if a database access error occurs
+     */
     public <R> R executeOnly(TsurugiJdbcTransactionFunction<R> action) throws SQLException {
         checkExecuted();
 
         return execute(action);
     }
 
+    /**
+     * Execute action and auto commit.
+     *
+     * @param <R>    return type
+     * @param action action
+     * @return result
+     * @throws SQLException if a database access error occurs
+     */
     public <R> R executeAndAutoCommit(TsurugiJdbcTransactionFunction<R> action) throws SQLException {
         checkExecuted();
 
@@ -94,6 +141,14 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         return result;
     }
 
+    /**
+     * Execute action.
+     *
+     * @param <R>    return type
+     * @param action action
+     * @return result
+     * @throws SQLException if a database access error occurs
+     */
     protected <R> R execute(TsurugiJdbcTransactionFunction<R> action) throws SQLException {
         try {
             R result = action.execute(lowTransaction);
@@ -103,6 +158,11 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         }
     }
 
+    /**
+     * Commit transaction.
+     *
+     * @throws SQLException if a database access error occurs
+     */
     public void commit() throws SQLException {
         try {
             var commitOption = propertes.getCommitOption();
@@ -128,6 +188,11 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         close();
     }
 
+    /**
+     * Rollback transaction.
+     *
+     * @throws SQLException if a database access error occurs
+     */
     public void rollback() throws SQLException {
         try {
             int timeout = propertes.getRollbackTimeout();
@@ -161,6 +226,11 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         }
     }
 
+    /**
+     * Check if the transaction is closed.
+     *
+     * @return true if the transaction is closed
+     */
     public boolean isClosed() {
         return this.closed;
     }

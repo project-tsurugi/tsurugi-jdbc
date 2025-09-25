@@ -17,12 +17,20 @@ package com.tsurugidb.jdbc.property;
 
 import java.util.function.Consumer;
 
+/**
+ * Tsurugi JDBC Property (String).
+ */
 public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
 
     private String value;
     private String defaultValue;
     private Consumer<String> changeEventHandler;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param name property name
+     */
     public TsurugiJdbcPropertyString(String name) {
         super(name);
     }
@@ -33,16 +41,33 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
         return this;
     }
 
+    /**
+     * Set default value.
+     *
+     * @param defaultValue default value
+     * @return this
+     */
     public TsurugiJdbcPropertyString defaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
 
+    /**
+     * Set change event handler.
+     *
+     * @param handler change event handler
+     * @return this
+     */
     public TsurugiJdbcPropertyString changeEvent(Consumer<String> handler) {
         this.changeEventHandler = handler;
         return this;
     }
 
+    /**
+     * Set value.
+     *
+     * @param value value
+     */
     public void setValue(String value) {
         this.value = value;
 
@@ -74,6 +99,11 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
         return this.value != null;
     }
 
+    /**
+     * Get value.
+     *
+     * @return value
+     */
     public String value() {
         if (this.value == null) {
             return this.defaultValue;
@@ -86,10 +116,15 @@ public class TsurugiJdbcPropertyString extends TsurugiJdbcProperty {
         return value();
     }
 
-    public void ifPresent(Consumer<String> consumer) {
+    /**
+     * If value is present, execute the specified action.
+     *
+     * @param action action
+     */
+    public void ifPresent(Consumer<String> action) {
         String v = value();
         if (v != null) {
-            consumer.accept(v);
+            action.accept(v);
         }
     }
 

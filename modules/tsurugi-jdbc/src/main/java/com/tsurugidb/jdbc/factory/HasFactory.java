@@ -17,8 +17,16 @@ package com.tsurugidb.jdbc.factory;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 
+/**
+ * Interface for setting/getting factory.
+ */
 @TsurugiJdbcInternal
 public interface HasFactory extends GetFactory {
 
+    /**
+     * Set factory.
+     *
+     * @param factory factory
+     */
     public void setFactory(TsurugiJdbcFactory factory);
 }

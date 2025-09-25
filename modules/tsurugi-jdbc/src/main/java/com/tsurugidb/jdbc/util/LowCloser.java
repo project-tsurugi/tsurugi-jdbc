@@ -20,6 +20,9 @@ import java.util.concurrent.TimeoutException;
 
 import com.tsurugidb.tsubakuro.exception.ServerException;
 
+/**
+ * Closeable with ServerException.
+ */
 @FunctionalInterface
 public interface LowCloser extends AutoCloseable {
     @Override

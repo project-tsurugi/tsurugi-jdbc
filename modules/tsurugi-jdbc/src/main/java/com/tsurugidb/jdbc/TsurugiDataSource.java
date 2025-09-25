@@ -34,16 +34,27 @@ import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 
+/**
+ * Tsurugi JDBC DataSource.
+ */
 public class TsurugiDataSource implements DataSource, HasFactory {
     private static final Logger PARENT_LOGGER = Logger.getLogger(TsurugiDataSource.class.getPackageName());
 
     private TsurugiJdbcFactory factory = TsurugiJdbcFactory.getDefaultFactory();
     private final TsurugiConfig config;
 
+    /**
+     * Creates a new instance.
+     */
     public TsurugiDataSource() {
         this(new TsurugiConfig());
     }
 
+    /**
+     * Creates a new instance.
+     *
+     * @param config configuration
+     */
     public TsurugiDataSource(TsurugiConfig config) {
         this.config = config;
     }
@@ -58,6 +69,11 @@ public class TsurugiDataSource implements DataSource, HasFactory {
         return this.factory;
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
@@ -81,128 +97,274 @@ public class TsurugiDataSource implements DataSource, HasFactory {
         return iface.isInstance(this);
     }
 
+    /**
+     * Get configuration.
+     *
+     * @return configuration
+     */
     public TsurugiConfig getConfig() {
         return this.config;
     }
 
+    /**
+     * Set JDBC URL.
+     *
+     * @param url JDBC URL
+     * @throws SQLException if the url is null
+     */
     public void setJdbcUrl(String url) throws SQLException {
         this.config.setJdbcUrl(getFactory(), url);
     }
 
     // Session
 
+    /**
+     * Set endpoint.
+     *
+     * @param endpoint endpoint
+     */
     public void setEndpoint(String endpoint) {
         config.setEndpoint(endpoint);
     }
 
-    public void setUser(String user) throws SQLException {
+    /**
+     * Set user.
+     *
+     * @param user user name
+     */
+    public void setUser(String user) {
         config.setUser(user);
     }
 
-    public void setPassword(String password) throws SQLException {
+    /**
+     * Set password.
+     *
+     * @param password password
+     */
+    public void setPassword(String password) {
         config.setPassword(password);
     }
 
-    public void setAuthToken(String authToken) throws SQLException {
+    /**
+     * Set authentication token.
+     *
+     * @param authToken authentication token
+     */
+    public void setAuthToken(String authToken) {
         config.setAuthToken(authToken);
     }
 
-    public void setCredentials(String path) throws SQLException {
+    /**
+     * Set credentials.
+     *
+     * @param path credential file path
+     */
+    public void setCredentials(String path) {
         config.setCredentials(path);
     }
 
+    /**
+     * Set application name.
+     *
+     * @param applicationName application name
+     */
     public void setApplicationName(String applicationName) {
         config.setApplicationName(applicationName);
     }
 
+    /**
+     * Set session label.
+     *
+     * @param sessionLabel session label
+     */
     public void setSessionLabel(String sessionLabel) {
         config.setSessionLabel(sessionLabel);
     }
 
+    /**
+     * Set session keep alive.
+     *
+     * @param keepAlive keep alive
+     */
     public void setKeepAlive(boolean keepAlive) {
         config.setKeepAlive(keepAlive);
     }
 
+    /**
+     * Set connect timeout.
+     *
+     * @param seconds connect timeout [seconds]
+     */
     public void setConnectTimeout(int seconds) {
         config.setConnectTimeout(seconds);
     }
 
+    /**
+     * Set session shutdown type.
+     *
+     * @param shutdownType shutdown type
+     */
     public void setShutdownType(TsurugiJdbcShutdownType shutdownType) {
         config.setShutdownType(shutdownType);
     }
 
+    /**
+     * Set session shutdown timeout.
+     *
+     * @param seconds shutdown timeout [seconds]
+     */
     public void setShutdownTimeout(int seconds) {
         config.setShutdownTimeout(seconds);
     }
 
     // Transaction
 
+    /**
+     * Set transaction type.
+     *
+     * @param transactionType transaction type
+     */
     public void setTransactionType(TsurugiJdbcTransactionType transactionType) {
         config.setTransactionType(transactionType);
     }
 
+    /**
+     * Set transaction label.
+     *
+     * @param transactionLabel transaction label
+     */
     public void setTransactionLabel(String transactionLabel) {
         config.setTransactionLabel(transactionLabel);
     }
 
+    /**
+     * Set transaction include DDL.
+     *
+     * @param includeDdl include DDL
+     */
     public void setTransactionIncludeDdl(boolean includeDdl) {
         config.setTransactionIncludeDdl(includeDdl);
     }
 
+    /**
+     * Set LTX write preserve.
+     *
+     * @param tableNames table names
+     */
     public void setWritePreserve(List<String> tableNames) {
         config.setWritePreserve(tableNames);
     }
 
+    /**
+     * Set LTX inclusive read area.
+     *
+     * @param tableNames table names
+     */
     public void setInclusiveReadArea(List<String> tableNames) {
         config.setInclusiveReadArea(tableNames);
     }
 
+    /**
+     * Set LTX exclusive read area.
+     *
+     * @param tableNames table names
+     */
     public void setExclusiveReadArea(List<String> tableNames) {
         config.setExclusiveReadArea(tableNames);
     }
 
+    /**
+     * Set RTX scan parallel.
+     *
+     * @param scanParallel scan parallel
+     */
     public void setTransactionScanParallel(int scanParallel) {
         config.setTransactionScanParallel(scanParallel);
     }
 
+    /**
+     * Set auto commit.
+     *
+     * @param autoCommit auto commit
+     */
     public void setAutoCommit(boolean autoCommit) {
         config.setAutoCommit(autoCommit);
     }
 
+    /**
+     * Set commit type.
+     *
+     * @param commitType commit type
+     */
     public void setCommitType(TsurugiJdbcCommitType commitType) {
         config.setCommitType(commitType);
     }
 
+    /**
+     * Set automatically dispose upon commit.
+     *
+     * @param autoDispose automatically dispose
+     */
     public void setCommitAutoDispose(boolean autoDispose) {
         config.setCommitAutoDispose(autoDispose);
     }
 
+    /**
+     * Set transaction begin timeout.
+     *
+     * @param seconds begin timeout [seconds]
+     */
     public void setBeginTimeout(int seconds) {
         config.setBeginTimeout(seconds);
     }
 
+    /**
+     * Set transaction commit timeout.
+     *
+     * @param seconds commit timeout [seconds]
+     */
     public void setCommitTimeout(int seconds) {
         config.setCommitTimeout(seconds);
     }
 
+    /**
+     * Set transaction rollback timeout.
+     *
+     * @param seconds rollback timeout [seconds]
+     */
     public void setRollbackTimeout(int seconds) {
         config.setRollbackTimeout(seconds);
     }
 
     // Statement
 
+    /**
+     * Set execute timeout.
+     *
+     * @param seconds execute timeout [seconds]
+     */
     public void setExecuteTimeout(int seconds) {
         config.setExecuteTimeout(seconds);
     }
 
     // ResultSet
 
+    /**
+     * Set SELECT timeout.
+     *
+     * @param seconds SELECT timeout [seconds]
+     */
     public void setQueryTimeout(int seconds) {
         config.setQueryTimeout(seconds);
     }
 
     // Common
 
+    /**
+     * Set default timeout.
+     *
+     * @param seconds default timeout [seconds]
+     */
     public void setDefaultTimeout(int seconds) {
         config.setDefaultTimeout(seconds);
     }

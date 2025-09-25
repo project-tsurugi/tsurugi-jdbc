@@ -41,10 +41,18 @@ import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
 
+/**
+ * Tsurugi JDBC Database Meta Data.
+ */
 public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory {
 
     private final TsurugiJdbcConnection ownerConnection;
 
+    /**
+     * Create a new instance.
+     *
+     * @param ownerConnection connection
+     */
     public TsurugiJdbcDatabaseMetaData(TsurugiJdbcConnection ownerConnection) {
         this.ownerConnection = ownerConnection;
     }
@@ -54,14 +62,29 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         return ownerConnection.getFactory();
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
 
+    /**
+     * Get configuration.
+     *
+     * @return configuration
+     */
     protected TsurugiJdbcConnectionConfig getConfig() {
         return ownerConnection.getConfig();
     }
 
+    /**
+     * Get SQL type utility.
+     *
+     * @return SQL type utility
+     */
     protected TsurugiJdbcSqlTypeUtil getSqlTypeUtil() {
         return getFactory().getSqlTypeUtil();
     }
@@ -93,7 +116,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
     @Override
     public String getURL() throws SQLException {
         String endpoint = ownerConnection.getConfig().getEndpoint();
-        return TsurugiJdbcUrlParser.getJdbcUrl(endpoint);
+        return TsurugiJdbcUrlParser.createJdbcUrl(endpoint);
     }
 
     @Override
@@ -162,7 +185,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
 
     @Override
     public int getDriverMinorVersion() {
-        return TsurugiDriver.DRIVER_VERSION_MINAR;
+        return TsurugiDriver.DRIVER_VERSION_MINOR;
     }
 
     @Override
@@ -692,7 +715,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         throw new SQLFeatureNotSupportedException("getProcedureColumns not supported");
     }
 
-    private static final List<FixedResultSetColumn> TABLES_COLUMN_LIST = List.of( //
+    private static final List<FixedResultSetColumn> TABLES_COLUMN_LIST = List.of(//
             FixedResultSetColumn.ofStringNullable("TABLE_CAT"), //
             FixedResultSetColumn.ofStringNullable("TABLE_SCHEM"), //
             FixedResultSetColumn.ofString("TABLE_NAME"), //
@@ -754,7 +777,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         throw new SQLFeatureNotSupportedException("getCatalogs not supported");
     }
 
-    private static final List<FixedResultSetColumn> TABLE_TYPES_COLUMN_LIST = List.of( //
+    private static final List<FixedResultSetColumn> TABLE_TYPES_COLUMN_LIST = List.of(//
             FixedResultSetColumn.ofString("TABLE_TYPE") //
     );
 
@@ -765,7 +788,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         return new FixedResultSet(this, TABLE_TYPES_COLUMN_LIST, valuesList);
     }
 
-    private static final List<FixedResultSetColumn> COLUMNS_COLUMN_LIST = List.of( //
+    private static final List<FixedResultSetColumn> COLUMNS_COLUMN_LIST = List.of(//
             FixedResultSetColumn.ofStringNullable("TABLE_CAT"), //
             FixedResultSetColumn.ofStringNullable("TABLE_SCHEM"), //
             FixedResultSetColumn.ofString("TABLE_NAME"), //
@@ -896,7 +919,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         throw new SQLFeatureNotSupportedException("getVersionColumns not supported");
     }
 
-    private static final List<FixedResultSetColumn> PRIMARY_KEYS_COLUMN_LIST = List.of( //
+    private static final List<FixedResultSetColumn> PRIMARY_KEYS_COLUMN_LIST = List.of(//
             FixedResultSetColumn.ofStringNullable("TABLE_CAT"), //
             FixedResultSetColumn.ofStringNullable("TABLE_SCHEM"), //
             FixedResultSetColumn.ofString("TABLE_NAME"), //
@@ -958,7 +981,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         throw new SQLFeatureNotSupportedException("getCrossReference not supported");
     }
 
-    private static final List<FixedResultSetColumn> TYPE_INFO_COLUMN_LIST = List.of( //
+    private static final List<FixedResultSetColumn> TYPE_INFO_COLUMN_LIST = List.of(//
             FixedResultSetColumn.ofString("TYPE_NAME"), //
             FixedResultSetColumn.ofInt("DATA_TYPE"), //
             FixedResultSetColumn.ofInt("PRECISION"), //
@@ -1167,7 +1190,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         return true;
     }
 
-    private static final List<FixedResultSetColumn> PROPERTIES_COLUMN_LIST = List.of( //
+    private static final List<FixedResultSetColumn> PROPERTIES_COLUMN_LIST = List.of(//
             FixedResultSetColumn.ofString("NAME"), //
             FixedResultSetColumn.ofInt("MAX_LEN"), //
             FixedResultSetColumn.ofStringNullable("DEFAULT_VALUE"), //
@@ -1202,7 +1225,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         throw new SQLFeatureNotSupportedException("getFunctions not supported");
     }
 
-    private static final List<FixedResultSetColumn> PSEUDO_COLUMNS_COLUMN_LIST = List.of( //
+    private static final List<FixedResultSetColumn> PSEUDO_COLUMNS_COLUMN_LIST = List.of(//
             FixedResultSetColumn.ofStringNullable("TABLE_CAT"), //
             FixedResultSetColumn.ofStringNullable("TABLE_SCHEM"), //
             FixedResultSetColumn.ofString("TABLE_NAME"), //

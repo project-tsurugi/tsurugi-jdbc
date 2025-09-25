@@ -18,6 +18,9 @@ package com.tsurugidb.jdbc.transaction;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 
+/**
+ * Tsurugi JDBC Transaction Type.
+ */
 public enum TsurugiJdbcTransactionType {
     /** OCC */
     OCC(TransactionType.SHORT),
@@ -34,6 +37,11 @@ public enum TsurugiJdbcTransactionType {
         this.lowType = lowType;
     }
 
+    /**
+     * Get low-level transaction type.
+     *
+     * @return transaction type
+     */
     @TsurugiJdbcInternal
     public TransactionType getLowTransactionType() {
         return this.lowType;

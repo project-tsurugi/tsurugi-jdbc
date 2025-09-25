@@ -19,12 +19,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Tsurugi JDBC Property (list of string).
+ */
 public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
 
     private List<String> value;
     private List<String> defaultValue;
     private Consumer<List<String>> changeEventHandler;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param name property name
+     */
     public TsurugiJdbcPropertyStringList(String name) {
         super(name);
     }
@@ -35,16 +43,33 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
         return this;
     }
 
+    /**
+     * Set default value.
+     *
+     * @param defaultValue default value
+     * @return this
+     */
     public TsurugiJdbcPropertyStringList defaultValue(List<String> defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
 
+    /**
+     * Set change event handler.
+     *
+     * @param handler change event handler
+     * @return this
+     */
     public TsurugiJdbcPropertyStringList changeEvent(Consumer<List<String>> handler) {
         this.changeEventHandler = handler;
         return this;
     }
 
+    /**
+     * Set value.
+     *
+     * @param value value
+     */
     public void setValue(List<String> value) {
         this.value = value;
 
@@ -90,6 +115,11 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
         return this.value != null;
     }
 
+    /**
+     * Get value.
+     *
+     * @return value
+     */
     public List<String> value() {
         if (this.value == null) {
             return this.defaultValue;
@@ -106,10 +136,15 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
         return v.toString();
     }
 
-    public void ifPresent(Consumer<List<String>> consumer) {
+    /**
+     * If value is present, execute the specified action.
+     *
+     * @param action action
+     */
+    public void ifPresent(Consumer<List<String>> action) {
         List<String> v = value();
         if (v != null) {
-            consumer.accept(v);
+            action.accept(v);
         }
     }
 

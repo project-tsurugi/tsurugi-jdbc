@@ -29,20 +29,42 @@ import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
 import com.tsurugidb.tsubakuro.sql.ClobReference;
 
+/**
+ * Tsurugi JDBC Clob Reference.
+ */
 public class TsurugiJdbcClobReference implements Clob {
 
     private final TsurugiJdbcResultSet ownerResultSet;
     private final ClobReference lowClob;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param ownerResultSet result set
+     * @param lowClob        low-level clob reference
+     */
     public TsurugiJdbcClobReference(TsurugiJdbcResultSet ownerResultSet, ClobReference lowClob) {
         this.ownerResultSet = ownerResultSet;
         this.lowClob = lowClob;
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return ownerResultSet.getFactory().getExceptionHandler();
     }
 
+    /**
+     * Open Reader.
+     *
+     * @param timeout timeout
+     * @param unit    time unit of timeout
+     * @return Reader
+     * @throws SQLException if a database access error occurs
+     */
     public Reader openReader(long timeout, TimeUnit unit) throws SQLException {
         var transaction = ownerResultSet.getTransaction().getLowTransaction();
         try {

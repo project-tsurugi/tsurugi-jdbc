@@ -17,6 +17,9 @@ package com.tsurugidb.jdbc.util;
 
 import java.sql.SQLException;
 
+/**
+ * Closeable with SQLException.
+ */
 @FunctionalInterface
 public interface SqlCloser extends AutoCloseable {
     @Override

@@ -40,31 +40,61 @@ import com.tsurugidb.jdbc.resultset.type.TsurugiJdbcClobReference;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 
 /**
+ * Tsurugi JDBC ResultSet Converter.
+ * <p>
  * Convert Tsubakuro value to specified value.
+ * </p>
  */
 public class TsurugiJdbcResultSetConverter {
 
     private final GetFactory ownerResultSet;
     private TsurugiJdbcConvertUtil convertUtil;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param ownerResultSet result set
+     */
     public TsurugiJdbcResultSetConverter(GetFactory ownerResultSet) {
         this.ownerResultSet = ownerResultSet;
         var factory = ownerResultSet.getFactory();
         this.convertUtil = factory.createConvertUtil(ownerResultSet);
     }
 
+    /**
+     * Set convert utility.
+     *
+     * @param convertUtil convert utility
+     */
     public void setConvertUtil(@Nonnull TsurugiJdbcConvertUtil convertUtil) {
         this.convertUtil = Objects.requireNonNull(convertUtil);
     }
 
+    /**
+     * Get factory.
+     *
+     * @return factory
+     */
     protected TsurugiJdbcFactory getFactory() {
         return ownerResultSet.getFactory();
     }
 
+    /**
+     * Get exception handler.
+     *
+     * @return exception handler
+     */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
     }
 
+    /**
+     * Convert to String.
+     *
+     * @param value value
+     * @return String value
+     * @throws SQLException if data convert error occurs
+     */
     public String convertToString(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -73,6 +103,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToString(value);
     }
 
+    /**
+     * Convert to boolean.
+     *
+     * @param value value
+     * @return boolean value
+     * @throws SQLException if data convert error occurs
+     */
     public boolean convertToBoolean(Object value) throws SQLException {
         if (value == null) {
             return false;
@@ -81,6 +118,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToBoolean(value);
     }
 
+    /**
+     * Convert to byte.
+     *
+     * @param value value
+     * @return byte value
+     * @throws SQLException if data convert error occurs
+     */
     public byte convertToByte(Object value) throws SQLException {
         if (value == null) {
             return 0;
@@ -89,6 +133,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToByte(value);
     }
 
+    /**
+     * Convert to short.
+     *
+     * @param value value
+     * @return short value
+     * @throws SQLException if data convert error occurs
+     */
     public short convertToShort(Object value) throws SQLException {
         if (value == null) {
             return 0;
@@ -97,6 +148,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToShort(value);
     }
 
+    /**
+     * Convert to int.
+     *
+     * @param value value
+     * @return int value
+     * @throws SQLException if data convert error occurs
+     */
     public int convertToInt(Object value) throws SQLException {
         if (value == null) {
             return 0;
@@ -105,6 +163,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToInt(value);
     }
 
+    /**
+     * Convert to long.
+     *
+     * @param value value
+     * @return long value
+     * @throws SQLException if data convert error occurs
+     */
     public long convertToLong(Object value) throws SQLException {
         if (value == null) {
             return 0;
@@ -113,6 +178,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToLong(value);
     }
 
+    /**
+     * Convert to float.
+     *
+     * @param value value
+     * @return float value
+     * @throws SQLException if data convert error occurs
+     */
     public float convertToFloat(Object value) throws SQLException {
         if (value == null) {
             return 0;
@@ -121,6 +193,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToFloat(value);
     }
 
+    /**
+     * Convert to double.
+     *
+     * @param value value
+     * @return double value
+     * @throws SQLException if data convert error occurs
+     */
     public double convertToDouble(Object value) throws SQLException {
         if (value == null) {
             return 0;
@@ -129,11 +208,26 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToDouble(value);
     }
 
+    /**
+     * Convert to decimal.
+     *
+     * @param value value
+     * @param scale scale
+     * @return decimal value
+     * @throws SQLException if data convert error occurs
+     */
     public BigDecimal convertToDecimal(Object value, int scale) throws SQLException {
         BigDecimal result = convertToDecimal(value);
         return result.setScale(scale);
     }
 
+    /**
+     * Convert to decimal.
+     *
+     * @param value value
+     * @return decimal value
+     * @throws SQLException if data convert error occurs
+     */
     public BigDecimal convertToDecimal(Object value) throws SQLException {
         if (value == null) {
             return BigDecimal.ZERO;
@@ -142,6 +236,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToDecimal(value);
     }
 
+    /**
+     * Convert to bytes.
+     *
+     * @param value value
+     * @return byte[] value
+     * @throws SQLException if data convert error occurs
+     */
     public byte[] convertToBytes(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -150,6 +251,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToBytes(value);
     }
 
+    /**
+     * Convert to Date.
+     *
+     * @param value value
+     * @return date value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Date convertToDate(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -158,6 +266,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToDate(value);
     }
 
+    /**
+     * Convert to Time.
+     *
+     * @param value value
+     * @return time value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Time convertToTime(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -166,6 +281,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToTime(value);
     }
 
+    /**
+     * Convert to Timestamp.
+     *
+     * @param value value
+     * @return timestamp value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Timestamp convertToTimestamp(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -174,6 +296,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToTimestamp(value);
     }
 
+    /**
+     * Convert to LocalDate.
+     *
+     * @param value value
+     * @return local date value
+     * @throws SQLException if data convert error occurs
+     */
     public LocalDate convertToLocalDate(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -182,6 +311,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToLocalDate(value);
     }
 
+    /**
+     * Convert to LocalTime.
+     *
+     * @param value value
+     * @return local time value
+     * @throws SQLException if data convert error occurs
+     */
     public LocalTime convertToLocalTime(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -190,6 +326,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToLocalTime(value);
     }
 
+    /**
+     * Convert to LocalDateTime.
+     *
+     * @param value value
+     * @return local date time value
+     * @throws SQLException if data convert error occurs
+     */
     public LocalDateTime convertToLocalDateTime(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -198,6 +341,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToLocalDateTime(value);
     }
 
+    /**
+     * Convert to OffsetTime.
+     *
+     * @param value value
+     * @return offset time value
+     * @throws SQLException if data convert error occurs
+     */
     public OffsetTime convertToOffsetTime(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -206,6 +356,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToOffsetTime(value);
     }
 
+    /**
+     * Convert to OffsetDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     * @throws SQLException if data convert error occurs
+     */
     public OffsetDateTime convertToOffsetDateTime(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -214,6 +371,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToOffsetDateTime(value);
     }
 
+    /**
+     * Convert to CharacterStream.
+     *
+     * @param value value
+     * @return Reader value
+     * @throws SQLException if data convert error occurs
+     */
     public Reader convertToCharacterStream(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -222,6 +386,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToReader(value);
     }
 
+    /**
+     * Convert to AsciiStream.
+     *
+     * @param value value
+     * @return ascii InputStream value
+     * @throws SQLException if data convert error occurs
+     */
     public InputStream convertToAsciiStream(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -232,6 +403,13 @@ public class TsurugiJdbcResultSetConverter {
         return new ByteArrayInputStream(bytes);
     }
 
+    /**
+     * Convert to UnicodeStream.
+     *
+     * @param value value
+     * @return unicode InputStream value
+     * @throws SQLException if data convert error occurs
+     */
     public InputStream convertToUnicodeStream(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -242,6 +420,13 @@ public class TsurugiJdbcResultSetConverter {
         return new ByteArrayInputStream(bytes);
     }
 
+    /**
+     * Convert to BinaryStream.
+     *
+     * @param value value
+     * @return binary InputStream value
+     * @throws SQLException if data convert error occurs
+     */
     public InputStream convertToBinaryStream(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -250,6 +435,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToInputStream(value);
     }
 
+    /**
+     * Convert to Blob.
+     *
+     * @param value value
+     * @return blob value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Blob convertToBlob(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -258,6 +450,13 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToBlob(value);
     }
 
+    /**
+     * Convert to Clob.
+     *
+     * @param value value
+     * @return clob value
+     * @throws SQLException if data convert error occurs
+     */
     public java.sql.Clob convertToClob(Object value) throws SQLException {
         if (value == null) {
             return null;
@@ -266,6 +465,15 @@ public class TsurugiJdbcResultSetConverter {
         return convertUtil.convertToClob(value);
     }
 
+    /**
+     * Convert to specified type.
+     *
+     * @param <T>   target type
+     * @param value value
+     * @param type  target type
+     * @return converted value
+     * @throws SQLException if data convert error occurs
+     */
     public <T> T convertToType(Object value, Class<T> type) throws SQLException {
         var converter = findConveter(type); // First, check the type
         assert converter != null;
@@ -322,6 +530,13 @@ public class TsurugiJdbcResultSetConverter {
         CONVERTER_MAP = map;
     }
 
+    /**
+     * Get converter.
+     *
+     * @param type target type
+     * @return converter
+     * @throws SQLException if type is not supported
+     */
     protected Converter findConveter(Class<?> type) throws SQLException {
         var converter = CONVERTER_MAP.get(type);
         if (converter != null) {

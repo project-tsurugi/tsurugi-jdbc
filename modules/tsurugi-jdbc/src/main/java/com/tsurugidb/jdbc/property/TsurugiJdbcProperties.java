@@ -27,9 +27,18 @@ import javax.annotation.Nullable;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
+/**
+ * Tsurugi JDBC Properties.
+ */
 @TsurugiJdbcInternal
 public class TsurugiJdbcProperties {
 
+    /**
+     * Create properties.
+     *
+     * @param properties source properties
+     * @return properties
+     */
     public static TsurugiJdbcProperties of(TsurugiJdbcProperty... properties) {
         var map = new LinkedHashMap<String, TsurugiJdbcProperty>(properties.length);
         for (var property : properties) {
@@ -38,12 +47,25 @@ public class TsurugiJdbcProperties {
         return new TsurugiJdbcProperties(map);
     }
 
-    private final Map<String, TsurugiJdbcProperty> map;
+    private final Map<String, TsurugiJdbcProperty> propertyMap;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param map property map
+     */
     public TsurugiJdbcProperties(Map<String, TsurugiJdbcProperty> map) {
-        this.map = map;
+        this.propertyMap = map;
     }
 
+    /**
+     * Set property value.
+     *
+     * @param factory factory
+     * @param key     key
+     * @param value   value
+     * @throws SQLException if property value convert error occurs
+     */
     public void put(TsurugiJdbcFactory factory, String key, String value) throws SQLException {
         var property = getProperty(key);
         if (property == null) {
@@ -58,6 +80,13 @@ public class TsurugiJdbcProperties {
         }
     }
 
+    /**
+     * Set property value from client info.
+     *
+     * @param key              key
+     * @param value            value
+     * @param failedProperties failed properties
+     */
     public void putForClient(String key, String value, Map<String, ClientInfoStatus> failedProperties) {
         var property = getProperty(key);
         if (property == null) {
@@ -73,6 +102,13 @@ public class TsurugiJdbcProperties {
         }
     }
 
+    /**
+     * Set all property values.
+     *
+     * @param factory factory
+     * @param info    properties
+     * @throws SQLException if property value convert error occurs
+     */
     public void putAll(TsurugiJdbcFactory factory, Properties info) throws SQLException {
         if (info != null) {
             for (var entry : info.entrySet()) {
@@ -81,8 +117,13 @@ public class TsurugiJdbcProperties {
         }
     }
 
+    /**
+     * Copy property values from other properties.
+     *
+     * @param fromProperties source properties
+     */
     public void copyFrom(TsurugiJdbcProperties fromProperties) {
-        for (var entry : map.entrySet()) {
+        for (var entry : propertyMap.entrySet()) {
             String key = entry.getKey();
             var from = fromProperties.getProperty(key);
             if (from != null) {
@@ -92,8 +133,13 @@ public class TsurugiJdbcProperties {
         }
     }
 
+    /**
+     * Copy property values from other properties if present.
+     *
+     * @param fromProperties source properties
+     */
     public void copyIfPresentFrom(TsurugiJdbcProperties fromProperties) {
-        for (var entry : map.entrySet()) {
+        for (var entry : propertyMap.entrySet()) {
             String key = entry.getKey();
             var from = fromProperties.getProperty(key);
             if (from != null && from.isPresent()) {
@@ -103,11 +149,22 @@ public class TsurugiJdbcProperties {
         }
     }
 
+    /**
+     * Get property.
+     *
+     * @param key key
+     * @return property or null if not found
+     */
     public @Nullable TsurugiJdbcProperty getProperty(String key) {
-        return map.get(key);
+        return propertyMap.get(key);
     }
 
+    /**
+     * Get all properties.
+     *
+     * @return properties
+     */
     public Collection<TsurugiJdbcProperty> getProperties() {
-        return map.values();
+        return propertyMap.values();
     }
 }
