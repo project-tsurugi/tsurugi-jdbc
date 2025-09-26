@@ -49,12 +49,12 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
     private final TsurugiJdbcConnection ownerConnection;
 
     /**
-     * Create a new instance.
+     * Creates a new instance.
      *
-     * @param ownerConnection connection
+     * @param connection connection
      */
-    public TsurugiJdbcDatabaseMetaData(TsurugiJdbcConnection ownerConnection) {
-        this.ownerConnection = ownerConnection;
+    public TsurugiJdbcDatabaseMetaData(TsurugiJdbcConnection connection) {
+        this.ownerConnection = connection;
     }
 
     @Override
