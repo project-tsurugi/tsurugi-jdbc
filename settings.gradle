@@ -5,6 +5,7 @@ plugins {
 rootProject.name = 'tsurugi-jdbc'
 
 include 'tsurugi-jdbc'
+include 'tsurugi-jdbc-dbtest'
 include 'tsurugi-jdbc-examples'
 
 rootProject.children.each { project ->
