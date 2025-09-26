@@ -10,7 +10,7 @@ group = 'com.tsurugidb.jdbc'
 version = '0.1.0-SNAPSHOT'
 
 ext {
-    tsubakuroVersion = '1.11.0-SNAPSHOT'
+    tsubakuroVersion = '1.12.0-SNAPSHOT'
     isReleaseVersion = !version.endsWith("SNAPSHOT")
     isSignEnabled = project.hasProperty('enableSign')
 }
