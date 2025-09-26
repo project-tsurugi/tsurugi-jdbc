@@ -20,6 +20,12 @@ jobs:
     env:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
 
+    services:
+      tsurugi:
+        image: ghcr.io/project-tsurugi/tsurugidb:snapshot
+        env:
+          GLOG_v: 30
+
     steps:
       - name: Setup_Java
         uses: actions/setup-java@v4
@@ -36,7 +42,7 @@ jobs:
 
       - name: Check
         run: |
-          ./gradlew -i check --continue --warning-mode all
+          ./gradlew -i check --continue --warning-mode all -Pdbtest.endpoint=tcp://tsurugi:12345
 
       - name: Verify
         uses: project-tsurugi/tsurugi-annotations-action@v1
