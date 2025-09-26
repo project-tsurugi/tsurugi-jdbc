@@ -111,7 +111,7 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
     }
 
     @Override
-    public boolean isPresent() {
+    public boolean isPresentValue() {
         return this.value != null;
     }
 
@@ -130,10 +130,15 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
     @Override
     public String getStringValue() {
         List<String> v = value();
-        if (v == null) {
+        return toString(v);
+    }
+
+    private String toString(List<String> list) {
+        if (list == null) {
             return null;
         }
-        return v.toString();
+
+        return String.join(", ", list);
     }
 
     /**
@@ -150,10 +155,7 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
 
     @Override
     public String getStringDefaultValue() {
-        if (this.defaultValue == null) {
-            return null;
-        }
-        return this.defaultValue.toString();
+        return toString(this.defaultValue);
     }
 
     @Override

@@ -86,7 +86,7 @@ public abstract class TsurugiJdbcProperty {
      *
      * @return true: present, false: not present
      */
-    public abstract boolean isPresent();
+    public abstract boolean isPresentValue();
 
     /**
      * Get string value.

@@ -103,7 +103,7 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
     }
 
     @Override
-    public boolean isPresent() {
+    public boolean isPresentValue() {
         return this.value != null;
     }
 

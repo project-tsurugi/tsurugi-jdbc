@@ -115,7 +115,7 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
     }
 
     @Override
-    public boolean isPresent() {
+    public boolean isPresentValue() {
         return this.value != null;
     }
 

@@ -142,7 +142,7 @@ public class TsurugiJdbcProperties {
         for (var entry : propertyMap.entrySet()) {
             String key = entry.getKey();
             var from = fromProperties.getProperty(key);
-            if (from != null && from.isPresent()) {
+            if (from != null && from.isPresentValue()) {
                 var property = entry.getValue();
                 property.setFrom(from);
             }
