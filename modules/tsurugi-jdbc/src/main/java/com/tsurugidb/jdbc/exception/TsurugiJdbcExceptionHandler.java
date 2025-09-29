@@ -97,6 +97,25 @@ public class TsurugiJdbcExceptionHandler {
      */
     public SQLException sqlException(String baseMessage, SQLException e) {
         String message = message(baseMessage, e);
+
+        if (e instanceof SQLTransactionRollbackException) {
+            return new SQLTransactionRollbackException(message, e.getSQLState(), e.getErrorCode(), e);
+        }
+        if (e instanceof SQLInvalidAuthorizationSpecException) {
+            return new SQLInvalidAuthorizationSpecException(message, e.getSQLState(), e.getErrorCode(), e);
+        }
+        if (e instanceof SQLTimeoutException) {
+            return new SQLTimeoutException(message, e.getSQLState(), e.getErrorCode(), e);
+        }
+        if (e instanceof SQLSyntaxErrorException) {
+            return new SQLSyntaxErrorException(message, e.getSQLState(), e.getErrorCode(), e);
+        }
+        if (e instanceof SQLIntegrityConstraintViolationException) {
+            return new SQLIntegrityConstraintViolationException(message, e.getSQLState(), e.getErrorCode(), e);
+        }
+        if (e instanceof SQLDataException) {
+            return new SQLDataException(message, e.getSQLState(), e.getErrorCode(), e);
+        }
         return new SQLException(message, e.getSQLState(), e.getErrorCode(), e);
     }
 
