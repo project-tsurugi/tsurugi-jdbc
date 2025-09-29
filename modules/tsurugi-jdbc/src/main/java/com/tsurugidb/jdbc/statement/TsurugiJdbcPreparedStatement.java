@@ -37,7 +37,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -124,7 +123,8 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
             var sqlClient = connection.getLowSqlClient();
             try {
                 int timeout = config.getDefaultTimeout();
-                this.lowPreparedStatement = sqlClient.prepare(sql, lowPlaceholderList).await(timeout, TimeUnit.SECONDS);
+                var io = getIoUtil();
+                this.lowPreparedStatement = io.get(sqlClient.prepare(sql, lowPlaceholderList), timeout);
             } catch (Exception e) {
                 throw getExceptionHandler().sqlException("LowPreparedStatement create error", e);
             }
@@ -158,7 +158,8 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
         var transaction = connection.getTransaction();
         ExecuteResult result = transaction.executeAndAutoCommit(lowTransaction -> {
-            return lowTransaction.executeStatement(lowPs, lowParameterList).await(timeout, TimeUnit.SECONDS);
+            var io = getIoUtil();
+            return io.get(lowTransaction.executeStatement(lowPs, lowParameterList), timeout);
         });
 
         long count = 0;
@@ -430,7 +431,8 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         } else {
             int timeout = config.getExecuteTimeout();
             ExecuteResult lowResult = transaction.executeAndAutoCommit(lowTransaction -> {
-                return lowTransaction.executeStatement(lowPs, lowParameterList).await(timeout, TimeUnit.SECONDS);
+                var io = getIoUtil();
+                return io.get(lowTransaction.executeStatement(lowPs, lowParameterList), timeout);
             });
 
             setLowUpdateResult(lowResult);
@@ -480,7 +482,8 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
             int i = 0;
             for (List<Parameter> parameter : parameterList) {
-                var er = lowTransaction.executeStatement(lowPs, parameter).await(timeout, TimeUnit.SECONDS);
+                var io = getIoUtil();
+                var er = io.get(lowTransaction.executeStatement(lowPs, parameter), timeout);
                 count[i++] = getUpdateCount(er);
             }
 

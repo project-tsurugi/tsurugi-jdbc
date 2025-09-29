@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
+import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.tsubakuro.sql.BlobReference;
 
 /**
@@ -56,6 +57,15 @@ public class TsurugiJdbcBlobReference implements Blob {
     }
 
     /**
+     * Get I/O utility.
+     *
+     * @return I/O utility
+     */
+    protected TsurugiJdbcIoUtil getIoUtil() {
+        return ownerResultSet.getFactory().getIoUtil();
+    }
+
+    /**
      * Open InputStream.
      *
      * @param timeout timeout
@@ -66,7 +76,8 @@ public class TsurugiJdbcBlobReference implements Blob {
     public InputStream openInputStream(long timeout, TimeUnit unit) throws SQLException {
         var transaction = ownerResultSet.getTransaction().getLowTransaction();
         try {
-            return transaction.openInputStream(lowBlob).await(timeout, unit);
+            var io = getIoUtil();
+            return io.get(transaction.openInputStream(lowBlob), timeout, unit);
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("BLOB open error", e);
         }

@@ -34,6 +34,7 @@ import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementConfig;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
+import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
@@ -67,6 +68,7 @@ public class TsurugiJdbcFactory {
 
     private TsurugiJdbcExceptionHandler exceptionHandler = new TsurugiJdbcExceptionHandler();
     private TsurugiJdbcSqlTypeUtil sqlTypeUtil = new TsurugiJdbcSqlTypeUtil();
+    private TsurugiJdbcIoUtil ioUtil = new TsurugiJdbcIoUtil(this);
 
     /**
      * Set exception handler.
@@ -252,5 +254,14 @@ public class TsurugiJdbcFactory {
      */
     public TsurugiJdbcConvertUtil createConvertUtil(GetFactory factoryHolder) {
         return new TsurugiJdbcConvertUtil(factoryHolder);
+    }
+
+    /**
+     * Create I/O utility.
+     *
+     * @return I/O utility
+     */
+    public TsurugiJdbcIoUtil getIoUtil() {
+        return this.ioUtil;
     }
 }

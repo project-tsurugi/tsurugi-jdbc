@@ -40,7 +40,6 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
@@ -56,6 +55,7 @@ import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 import com.tsurugidb.jdbc.util.LowCloser;
+import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.sql.proto.SqlRequest;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.sql.SqlClient;
@@ -108,6 +108,15 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
      */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
+    }
+
+    /**
+     * Get I/O utility.
+     *
+     * @return I/O utility
+     */
+    protected TsurugiJdbcIoUtil getIoUtil() {
+        return getFactory().getIoUtil();
     }
 
     /**
@@ -322,7 +331,8 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
         Transaction lowTransaction;
         try {
-            lowTransaction = lowSqlClient.createTransaction(option).await(timeout, TimeUnit.SECONDS);
+            var io = getIoUtil();
+            lowTransaction = io.get(lowSqlClient.createTransaction(option), timeout);
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("Transaction create error", e);
         }
@@ -782,7 +792,8 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
                 LOG.config(() -> String.format("shutdownTimeout=%d [seconds]", timeout));
 
                 shutdown = () -> {
-                    lowSession.shutdown(lowShutdownType).await(timeout, TimeUnit.SECONDS);
+                    var io = getIoUtil();
+                    io.get(lowSession.shutdown(lowShutdownType), timeout);
                 };
             } else {
                 shutdown = null;

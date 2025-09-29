@@ -23,7 +23,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -36,6 +35,7 @@ import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
 import com.tsurugidb.jdbc.util.SqlCloser;
+import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 import com.tsurugidb.tsubakuro.sql.PreparedStatement;
 
@@ -95,6 +95,15 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         return getFactory().getExceptionHandler();
     }
 
+    /**
+     * Get I/O utility.
+     *
+     * @return I/O utility
+     */
+    protected TsurugiJdbcIoUtil getIoUtil() {
+        return getFactory().getIoUtil();
+    }
+
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         try {
@@ -131,7 +140,8 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
         var transaction = connection.getTransaction();
         ExecuteResult lowResult = transaction.executeAndAutoCommit(lowTransaction -> {
-            return lowTransaction.executeStatement(sql).await(timeout, TimeUnit.SECONDS);
+            var io = getIoUtil();
+            return io.get(lowTransaction.executeStatement(sql), timeout);
         });
 
         return getUpdateCount(lowResult);
@@ -249,7 +259,8 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
             var sqlClient = connection.getLowSqlClient();
             try {
                 int timeout = config.getDefaultTimeout();
-                lowPs = sqlClient.prepare(sql, List.of()).await(timeout, TimeUnit.SECONDS);
+                var io = getIoUtil();
+                lowPs = io.get(sqlClient.prepare(sql, List.of()), timeout);
             } catch (Exception e) {
                 throw getExceptionHandler().sqlException("LowPreparedStatement create error", e);
             }
@@ -283,7 +294,8 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
             } else {
                 int timeout = config.getExecuteTimeout();
                 ExecuteResult lowResult = transaction.executeAndAutoCommit(lowTransaction -> {
-                    return lowTransaction.executeStatement(lowPs, List.of()).await(timeout, TimeUnit.SECONDS);
+                    var io = getIoUtil();
+                    return io.get(lowTransaction.executeStatement(lowPs, List.of()), timeout);
                 });
 
                 setLowUpdateResult(lowResult);
@@ -396,7 +408,8 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
             int i = 0;
             for (String sql : sqlList) {
-                var er = lowTransaction.executeStatement(sql).await(timeout, TimeUnit.SECONDS);
+                var io = getIoUtil();
+                var er = io.get(lowTransaction.executeStatement(sql), timeout);
                 count[i++] = getUpdateCount(er);
             }
 

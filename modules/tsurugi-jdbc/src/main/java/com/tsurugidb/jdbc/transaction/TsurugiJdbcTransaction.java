@@ -17,7 +17,6 @@ package com.tsurugidb.jdbc.transaction;
 
 import java.sql.SQLException;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
@@ -25,6 +24,7 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionConfig;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
+import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 
 /**
@@ -64,6 +64,15 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
      */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return factory.getExceptionHandler();
+    }
+
+    /**
+     * Get I/O utility.
+     *
+     * @return I/O utility
+     */
+    protected TsurugiJdbcIoUtil getIoUtil() {
+        return factory.getIoUtil();
     }
 
     /**
@@ -173,7 +182,8 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
             LOG.config(() -> String.format("commitTimeout=%d [seconds]", timeout));
 
             try {
-                lowTransaction.commit(commitOption).await(timeout, TimeUnit.SECONDS);
+                var io = getIoUtil();
+                io.get(lowTransaction.commit(commitOption), timeout);
             } catch (Exception e) {
                 throw getExceptionHandler().sqlException("Transaction commit error", e);
             }
@@ -200,7 +210,8 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
             LOG.config(() -> String.format("rollbackTimeout=%d [seconds]", timeout));
 
             try {
-                lowTransaction.rollback().await(timeout, TimeUnit.SECONDS);
+                var io = getIoUtil();
+                io.get(lowTransaction.rollback(), timeout);
             } catch (Exception e) {
                 throw getExceptionHandler().sqlException("Transaction rollback error", e);
             }

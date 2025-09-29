@@ -25,7 +25,6 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import com.tsurugidb.jdbc.TsurugiDriver;
@@ -37,6 +36,7 @@ import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.resultset.FixedResultSet;
 import com.tsurugidb.jdbc.resultset.FixedResultSetColumn;
 import com.tsurugidb.jdbc.util.TableNameMatcher;
+import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
@@ -69,6 +69,15 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
      */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
+    }
+
+    /**
+     * Get I/O utility.
+     *
+     * @return I/O utility
+     */
+    protected TsurugiJdbcIoUtil getIoUtil() {
+        return getFactory().getIoUtil();
     }
 
     /**
@@ -124,7 +133,8 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
         var lowSession = ownerConnection.getLowSession();
         int timeout = getConfig().getDefaultTimeout();
         try {
-            Optional<String> userName = lowSession.getUserName().await(timeout, TimeUnit.SECONDS);
+            var io = getIoUtil();
+            Optional<String> userName = io.get(lowSession.getUserName(), timeout);
             return userName.orElse(null);
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("getUserName error", e);
@@ -736,7 +746,8 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
             var lowSqlClient = ownerConnection.getLowSqlClient();
 
             int timeout = ownerConnection.getConfig().getDefaultTimeout();
-            var lowTableList = lowSqlClient.listTables().await(timeout, TimeUnit.SECONDS);
+            var io = getIoUtil();
+            var lowTableList = io.get(lowSqlClient.listTables(), timeout);
             List<String> tableNames = lowTableList.getTableNames();
 
             var valuesList = new ArrayList<Object[]>(tableNames.size());
@@ -825,7 +836,8 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
             var lowSqlClient = ownerConnection.getLowSqlClient();
 
             int timeout = ownerConnection.getConfig().getDefaultTimeout();
-            var lowTableList = lowSqlClient.listTables().await(timeout, TimeUnit.SECONDS);
+            var io = getIoUtil();
+            var lowTableList = io.get(lowSqlClient.listTables(), timeout);
             List<String> tableNames = lowTableList.getTableNames();
 
             for (String tableName : tableNames) {
@@ -833,7 +845,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
                     continue;
                 }
 
-                var lowMetadata = lowSqlClient.getTableMetadata(tableName).await(timeout, TimeUnit.SECONDS);
+                var lowMetadata = io.get(lowSqlClient.getTableMetadata(tableName), timeout);
                 var lowColumnList = lowMetadata.getColumns();
                 int position = 1;
                 for (var lowColumn : lowColumnList) {
@@ -937,7 +949,8 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
             TableMetadata lowTableMetadata;
             try {
                 int timeout = ownerConnection.getConfig().getDefaultTimeout();
-                lowTableMetadata = lowSqlClient.getTableMetadata(table).await(timeout, TimeUnit.SECONDS);
+                var io = getIoUtil();
+                lowTableMetadata = io.get(lowSqlClient.getTableMetadata(table), timeout);
             } catch (TargetNotFoundException e) {
                 return new FixedResultSet(this, PRIMARY_KEYS_COLUMN_LIST, List.of());
             }

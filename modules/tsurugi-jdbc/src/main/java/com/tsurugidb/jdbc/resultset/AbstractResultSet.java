@@ -45,6 +45,7 @@ import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.GetFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
+import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 
 /**
  * Tsurugi JDBC Abstract ResultSet.
@@ -106,6 +107,15 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
      */
     protected TsurugiJdbcExceptionHandler getExceptionHandler() {
         return getFactory().getExceptionHandler();
+    }
+
+    /**
+     * Get I/O utility.
+     *
+     * @return I/O utility
+     */
+    protected TsurugiJdbcIoUtil getIoUtil() {
+        return getFactory().getIoUtil();
     }
 
     @Override

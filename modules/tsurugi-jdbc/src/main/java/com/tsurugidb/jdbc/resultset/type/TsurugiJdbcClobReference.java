@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
+import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.tsubakuro.sql.ClobReference;
 
 /**
@@ -58,6 +59,15 @@ public class TsurugiJdbcClobReference implements Clob {
     }
 
     /**
+     * Get I/O utility.
+     *
+     * @return I/O utility
+     */
+    protected TsurugiJdbcIoUtil getIoUtil() {
+        return ownerResultSet.getFactory().getIoUtil();
+    }
+
+    /**
      * Open Reader.
      *
      * @param timeout timeout
@@ -68,7 +78,8 @@ public class TsurugiJdbcClobReference implements Clob {
     public Reader openReader(long timeout, TimeUnit unit) throws SQLException {
         var transaction = ownerResultSet.getTransaction().getLowTransaction();
         try {
-            return transaction.openReader(lowClob).await(timeout, unit);
+            var io = getIoUtil();
+            return io.get(transaction.openReader(lowClob), timeout, unit);
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("CLOB open error", e);
         }

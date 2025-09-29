@@ -11,8 +11,11 @@
       <Bug pattern="IS2_INCONSISTENT_SYNC" />
       <Bug pattern="EI_EXPOSE_STATIC_REP2" />
       <Bug pattern="MS_EXPOSE_REP" />
-      <Bug pattern="NP_BOOLEAN_RETURN_NULL" />
     </Or>
+  </Match>
+  <Match>
+    <Class name="com.tsurugidb.jdbc.connection.TsurugiJdbcDatabaseMetaData" />
+    <Bug pattern="REC_CATCH_EXCEPTION" />
   </Match>
   <Match>
     <Class name="com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement" />
