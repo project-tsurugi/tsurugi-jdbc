@@ -20,6 +20,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
@@ -64,6 +65,10 @@ public class JdbcDbTestConnector {
 
     public static Properties getConnectProperties() {
         return getCredential().toProperties();
+    }
+
+    public static void setCredentialTo(TsurugiJdbcCredentialSetter config) {
+        getCredential().setTo(config);
     }
 
     private static JdbcDbTestCredential getCredential() {

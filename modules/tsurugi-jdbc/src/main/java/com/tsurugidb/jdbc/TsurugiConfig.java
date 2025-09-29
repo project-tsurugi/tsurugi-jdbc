@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
@@ -44,7 +45,7 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
 /**
  * Tsurugi JDBC Configuration.
  */
-public class TsurugiConfig {
+public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     // Session
     /** user */
     public static final String USER = "user";
@@ -240,6 +241,7 @@ public class TsurugiConfig {
      *
      * @param user user
      */
+    @Override
     public void setUser(String user) {
         this.user.setValue(user);
     }
@@ -258,6 +260,7 @@ public class TsurugiConfig {
      *
      * @param password password
      */
+    @Override
     public void setPassword(String password) {
         this.password.setValue(password);
     }
@@ -276,6 +279,7 @@ public class TsurugiConfig {
      *
      * @param authToken authentication token
      */
+    @Override
     public void setAuthToken(String authToken) {
         this.authToken.setValue(authToken);
     }
@@ -294,6 +298,7 @@ public class TsurugiConfig {
      *
      * @param path credential file path
      */
+    @Override
     public void setCredentials(String path) {
         this.credentials.setValue(path);
     }

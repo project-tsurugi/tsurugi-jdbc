@@ -13,44 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tsurugidb.jdbc.test.driver;
+package com.tsurugidb.jdbc.test.datasource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
-import java.sql.DriverManager;
 import java.sql.SQLInvalidAuthorizationSpecException;
-import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.iceaxe.TsurugiConnector;
 import com.tsurugidb.iceaxe.exception.TsurugiIOException;
+import com.tsurugidb.jdbc.TsurugiConfig;
+import com.tsurugidb.jdbc.TsurugiDataSource;
 import com.tsurugidb.jdbc.test.util.JdbcDbTestConnector;
-import com.tsurugidb.jdbc.test.util.JdbcDbTestCredential;
 import com.tsurugidb.jdbc.test.util.JdbcDbTester;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
 
 /**
- * TsurugiDriver connect test.
+ * TsurugiDataSource connect test.
  */
-public class JdbcDbDriverManagerTest extends JdbcDbTester {
+public class JdbcDbDataSourceTest extends JdbcDbTester {
 
     @Test
     void connect() throws Exception {
-        String url = JdbcDbTestConnector.getJdbcUrlWithCredential();
-        try (var connection = DriverManager.getConnection(url)) {
+        var ds = new TsurugiDataSource();
+        ds.setEndpoint(JdbcDbTestConnector.getEndPoint());
+        JdbcDbTestConnector.setCredentialTo(ds);
+
+        try (var connection = ds.getConnection()) {
         }
     }
 
     @Test
-    void connectProperties() throws Exception {
-        String url = JdbcDbTestConnector.getJdbcUrl();
-        Properties info = JdbcDbTestConnector.getConnectProperties();
-        try (var connection = DriverManager.getConnection(url, info)) {
+    void connectConfig() throws Exception {
+        var config = new TsurugiConfig();
+        config.setEndpoint(JdbcDbTestConnector.getEndPoint());
+        JdbcDbTestConnector.setCredentialTo(config);
+        var ds = new TsurugiDataSource(config);
+
+        try (var connection = ds.getConnection()) {
         }
     }
 
@@ -58,28 +63,18 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
     void nullCredential() throws Exception {
         boolean enableNullCredential = enableNullCredential();
 
-        String url = JdbcDbTestConnector.getJdbcUrl();
-        if (enableNullCredential) {
-            try (var connection = DriverManager.getConnection(url)) {
-            }
+        var ds = new TsurugiDataSource();
+        ds.setEndpoint(JdbcDbTestConnector.getEndPoint());
 
-            try (var connection = DriverManager.getConnection(url, new Properties())) {
+        if (enableNullCredential) {
+            try (var connection = ds.getConnection()) {
             }
         } else {
-            {
-                var e = assertThrows(SQLInvalidAuthorizationSpecException.class, () -> {
-                    try (var connection = DriverManager.getConnection(url)) {
-                    }
-                });
-                assertEquals("28000", e.getSQLState());
-            }
-            {
-                var e = assertThrows(SQLInvalidAuthorizationSpecException.class, () -> {
-                    try (var connection = DriverManager.getConnection(url, new Properties())) {
-                    }
-                });
-                assertEquals("28000", e.getSQLState());
-            }
+            var e = assertThrows(SQLInvalidAuthorizationSpecException.class, () -> {
+                try (var connection = ds.getConnection()) {
+                }
+            });
+            assertEquals("28000", e.getSQLState());
         }
     }
 
@@ -103,18 +98,15 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
         assumeTrue(user != null, "user is not specified");
         String password = JdbcDbTestConnector.getPassword();
 
-        String url = JdbcDbTestConnector.getJdbcUrl();
-        try (var connection = DriverManager.getConnection(url, user, password)) {
+        var ds = new TsurugiDataSource();
+        ds.setEndpoint(JdbcDbTestConnector.getEndPoint());
+
+        try (var connection = ds.getConnection(user, password)) {
         }
 
-        var credential = new JdbcDbTestCredential();
-        credential.setUser(user);
-        credential.setPassword(password);
-
-        try (var connection = DriverManager.getConnection(url + credential.toQueryString())) {
-        }
-
-        try (var connection = DriverManager.getConnection(url, credential.toProperties())) {
+        ds.setUser(user);
+        ds.setPassword(password);
+        try (var connection = ds.getConnection()) {
         }
     }
 
@@ -123,15 +115,11 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
         String token = JdbcDbTestConnector.getAuthToken();
         assumeTrue(token != null, "authToken is not specified");
 
-        String url = JdbcDbTestConnector.getJdbcUrl();
+        var ds = new TsurugiDataSource();
+        ds.setEndpoint(JdbcDbTestConnector.getEndPoint());
+        ds.setAuthToken(token);
 
-        var credential = new JdbcDbTestCredential();
-        credential.setAuthToken(token);
-
-        try (var connection = DriverManager.getConnection(url + credential.toQueryString())) {
-        }
-
-        try (var connection = DriverManager.getConnection(url, credential.toProperties())) {
+        try (var connection = ds.getConnection()) {
         }
     }
 
@@ -140,15 +128,12 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
         String path = JdbcDbTestConnector.getCredentials();
         assumeTrue(path != null, "credentials is not specified");
 
-        String url = JdbcDbTestConnector.getJdbcUrl();
+        var ds = new TsurugiDataSource();
+        ds.setEndpoint(JdbcDbTestConnector.getEndPoint());
+        ds.setCredentials(path);
+        ;
 
-        var credential = new JdbcDbTestCredential();
-        credential.setCredentials(path);
-
-        try (var connection = DriverManager.getConnection(url + credential.toQueryString())) {
-        }
-
-        try (var connection = DriverManager.getConnection(url, credential.toProperties())) {
+        try (var connection = ds.getConnection()) {
         }
     }
 }

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.tsurugidb.jdbc.TsurugiConfig;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
 
 public class JdbcDbTestCredential {
 
@@ -110,5 +111,27 @@ public class JdbcDbTestCredential {
         }
 
         return properties;
+    }
+
+    public void setTo(TsurugiJdbcCredentialSetter config) {
+        String user = JdbcDbTestConnector.getUser();
+        if (user != null) {
+            config.setUser(user);
+            String password = JdbcDbTestConnector.getPassword();
+            config.setPassword(password);
+        } else {
+            String token = JdbcDbTestConnector.getAuthToken();
+            if (token != null) {
+                config.setAuthToken(token);
+            } else {
+                String path = JdbcDbTestConnector.getCredentials();
+                if (path != null) {
+                    config.setCredentials(path);
+                } else {
+                    config.setUser("tsurugi");
+                    config.setPassword("password");
+                }
+            }
+        }
     }
 }

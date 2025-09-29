@@ -16,6 +16,7 @@
 package com.tsurugidb.jdbc.transaction;
 
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
@@ -50,7 +51,7 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
      * @param propertes      connection properties
      */
     public TsurugiJdbcTransaction(TsurugiJdbcFactory factory, Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionConfig propertes) {
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory, "factory is null");
         this.lowTransaction = lowTransaction;
         this.autoCommit = autoCommit;
         this.propertes = propertes;

@@ -30,6 +30,8 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
+import com.tsurugidb.tsubakuro.exception.CoreServiceException;
 import com.tsurugidb.tsubakuro.exception.DiagnosticCode;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.exception.CcException;
@@ -210,6 +212,13 @@ public class TsurugiJdbcExceptionHandler {
         }
 
         // TODO convert ServerException to SQLException
+
+        if (e instanceof CoreServiceException) {
+            var diagnosticCode = e.getDiagnosticCode();
+            if (diagnosticCode == CoreServiceCode.AUTHENTICATION_ERROR) {
+                return new SQLInvalidAuthorizationSpecException(message, SqlState.S28000_INVALID_AUTHORIZATION_SPECIFICATION.code(), vendorCode, e);
+            }
+        }
 
         return new SQLException(message, null, vendorCode, e);
     }

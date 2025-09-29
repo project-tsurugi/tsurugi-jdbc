@@ -85,7 +85,7 @@ public class TsurugiDriver implements Driver, HasFactory {
 
     @Override
     public void setFactory(TsurugiJdbcFactory factory) {
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory, "factory is null");
     }
 
     @Override

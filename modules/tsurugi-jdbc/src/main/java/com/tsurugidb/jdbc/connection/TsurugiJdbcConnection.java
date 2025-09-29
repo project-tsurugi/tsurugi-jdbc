@@ -84,7 +84,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
      */
     @TsurugiJdbcInternal
     public TsurugiJdbcConnection(TsurugiJdbcFactory factory, Session lowSession, TsurugiJdbcConnectionConfig config) {
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory, "factory is null");
         this.lowSession = Objects.requireNonNull(lowSession);
         this.lowSqlClient = SqlClient.attach(lowSession);
         this.config = config;
@@ -92,7 +92,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public void setFactory(TsurugiJdbcFactory factory) {
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory, "factory is null");
     }
 
     @Override

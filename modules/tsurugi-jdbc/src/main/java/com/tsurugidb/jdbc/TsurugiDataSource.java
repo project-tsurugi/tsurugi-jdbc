@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -28,6 +29,7 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
@@ -37,7 +39,7 @@ import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 /**
  * Tsurugi JDBC DataSource.
  */
-public class TsurugiDataSource implements DataSource, HasFactory {
+public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCredentialSetter {
     private static final Logger PARENT_LOGGER = Logger.getLogger(TsurugiDataSource.class.getPackageName());
 
     private TsurugiJdbcFactory factory = TsurugiJdbcFactory.getDefaultFactory();
@@ -61,7 +63,7 @@ public class TsurugiDataSource implements DataSource, HasFactory {
 
     @Override
     public void setFactory(TsurugiJdbcFactory factory) {
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory, "factory is null");
     }
 
     @Override
@@ -132,6 +134,7 @@ public class TsurugiDataSource implements DataSource, HasFactory {
      *
      * @param user user name
      */
+    @Override
     public void setUser(String user) {
         config.setUser(user);
     }
@@ -141,6 +144,7 @@ public class TsurugiDataSource implements DataSource, HasFactory {
      *
      * @param password password
      */
+    @Override
     public void setPassword(String password) {
         config.setPassword(password);
     }
@@ -150,6 +154,7 @@ public class TsurugiDataSource implements DataSource, HasFactory {
      *
      * @param authToken authentication token
      */
+    @Override
     public void setAuthToken(String authToken) {
         config.setAuthToken(authToken);
     }
@@ -159,6 +164,7 @@ public class TsurugiDataSource implements DataSource, HasFactory {
      *
      * @param path credential file path
      */
+    @Override
     public void setCredentials(String path) {
         config.setCredentials(path);
     }

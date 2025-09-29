@@ -71,14 +71,14 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
      */
     @TsurugiJdbcInternal
     public TsurugiJdbcStatement(TsurugiJdbcFactory factory, TsurugiJdbcConnection connection, TsurugiJdbcStatementConfig config) {
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory, "factory is null");
         this.connection = connection;
         this.config = config;
     }
 
     @Override
     public void setFactory(TsurugiJdbcFactory factory) {
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory, "factory is null");
     }
 
     @Override
