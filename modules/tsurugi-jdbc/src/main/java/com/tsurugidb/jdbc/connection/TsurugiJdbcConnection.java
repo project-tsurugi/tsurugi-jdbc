@@ -771,10 +771,20 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         throw new SQLFeatureNotSupportedException("getNetworkTimeout not supported");
     }
 
+    /**
+     * Set default timeout.
+     *
+     * @param seconds default timeout [seconds]
+     */
     public void setDefaultTimeout(int seconds) {
         config.setDefaultTimeout(seconds);
     }
 
+    /**
+     * Get default timeout.
+     *
+     * @return default timeout [seconds]
+     */
     public int getDefaultTimeout() {
         return config.getDefaultTimeout();
     }
