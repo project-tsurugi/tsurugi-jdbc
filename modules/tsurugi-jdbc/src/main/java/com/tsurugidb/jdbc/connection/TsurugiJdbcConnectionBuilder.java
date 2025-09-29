@@ -32,7 +32,23 @@ import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
  */
 public class TsurugiJdbcConnectionBuilder implements ConnectionBuilder {
 
-    private final TsurugiConfig config = new TsurugiConfig();
+    private final TsurugiConfig config;
+
+    /**
+     * Creates a new instance.
+     */
+    public TsurugiJdbcConnectionBuilder() {
+        this(new TsurugiConfig());
+    }
+
+    /**
+     * Creates a new instance.
+     *
+     * @param config configuration
+     */
+    public TsurugiJdbcConnectionBuilder(TsurugiConfig config) {
+        this.config = Objects.requireNonNull(config, "config is null");
+    }
 
     // Session
 

@@ -419,6 +419,7 @@ public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCre
 
     @Override
     public TsurugiJdbcConnectionBuilder createConnectionBuilder() throws SQLException {
-        return new TsurugiJdbcConnectionBuilder();
+        var newConfig = TsurugiConfig.copyOf(this.config);
+        return new TsurugiJdbcConnectionBuilder(newConfig);
     }
 }

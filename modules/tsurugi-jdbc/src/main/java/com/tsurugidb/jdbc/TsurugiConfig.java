@@ -46,6 +46,20 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
  * Tsurugi JDBC Configuration.
  */
 public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
+
+    /**
+     * Returns new configuration.
+     *
+     * @param fromConfig source configuration
+     * @return configuration
+     */
+    public static TsurugiConfig copyOf(TsurugiConfig fromConfig) {
+        var config = new TsurugiConfig();
+        config.setEndpoint(fromConfig.getEndpoint());
+        config.getInternalProperties().copyFrom(fromConfig.getInternalProperties());
+        return config;
+    }
+
     // Session
     /** user */
     public static final String USER = "user";
