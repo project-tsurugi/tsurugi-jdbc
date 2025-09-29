@@ -178,6 +178,15 @@ public class TsurugiJdbcConnectionConfig {
     }
 
     /**
+     * Get transaction label.
+     *
+     * @return transaction label
+     */
+    public String getTransactionLabel() {
+        return transactionLabel.value();
+    }
+
+    /**
      * Set LTX include DDL.
      *
      * @param include include DDL
@@ -276,7 +285,7 @@ public class TsurugiJdbcConnectionConfig {
      *
      * @return transaction option
      */
-    public TransactionOption getTransactionOption() {
+    public TransactionOption getLowTransactionOption() {
         if (this.transactionOption == null) {
             var builder = TransactionOption.newBuilder();
 
@@ -375,7 +384,7 @@ public class TsurugiJdbcConnectionConfig {
      *
      * @return commit option
      */
-    public CommitOption getCommitOption() {
+    public CommitOption getLowCommitOption() {
         if (this.commitOption == null) {
             var builder = CommitOption.newBuilder();
 

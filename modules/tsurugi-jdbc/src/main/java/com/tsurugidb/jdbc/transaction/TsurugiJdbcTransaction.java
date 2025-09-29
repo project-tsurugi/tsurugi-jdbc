@@ -37,7 +37,7 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
     private TsurugiJdbcFactory factory;
     private final Transaction lowTransaction;
     private final boolean autoCommit;
-    private final TsurugiJdbcConnectionConfig propertes;
+    private final TsurugiJdbcConnectionConfig config;
 
     private final AtomicBoolean executed = new AtomicBoolean(false);
     private boolean closed = false;
@@ -48,13 +48,13 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
      * @param factory        factory
      * @param lowTransaction low-level transaction
      * @param autoCommit     auto commit
-     * @param propertes      connection properties
+     * @param config         connection properties
      */
-    public TsurugiJdbcTransaction(TsurugiJdbcFactory factory, Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionConfig propertes) {
+    public TsurugiJdbcTransaction(TsurugiJdbcFactory factory, Transaction lowTransaction, boolean autoCommit, TsurugiJdbcConnectionConfig config) {
         this.factory = Objects.requireNonNull(factory, "factory is null");
         this.lowTransaction = lowTransaction;
         this.autoCommit = autoCommit;
-        this.propertes = propertes;
+        this.config = config;
     }
 
     /**
@@ -166,10 +166,10 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
      */
     public void commit() throws SQLException {
         try {
-            var commitOption = propertes.getCommitOption();
+            var commitOption = config.getLowCommitOption();
             LOG.config(() -> String.format("commitOption=%s", commitOption));
 
-            int timeout = propertes.getCommitTimeout();
+            int timeout = config.getCommitTimeout();
             LOG.config(() -> String.format("commitTimeout=%d [seconds]", timeout));
 
             try {
@@ -196,7 +196,7 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
      */
     public void rollback() throws SQLException {
         try {
-            int timeout = propertes.getRollbackTimeout();
+            int timeout = config.getRollbackTimeout();
             LOG.config(() -> String.format("rollbackTimeout=%d [seconds]", timeout));
 
             try {

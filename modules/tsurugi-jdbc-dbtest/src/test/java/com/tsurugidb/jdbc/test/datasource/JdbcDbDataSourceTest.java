@@ -34,7 +34,7 @@ import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
 
 /**
- * TsurugiDataSource connect test.
+ * {@link TsurugiDataSource} connect test.
  */
 public class JdbcDbDataSourceTest extends JdbcDbTester {
 

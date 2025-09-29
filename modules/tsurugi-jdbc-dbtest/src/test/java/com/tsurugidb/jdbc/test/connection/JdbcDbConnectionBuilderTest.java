@@ -27,13 +27,14 @@ import org.junit.jupiter.api.Test;
 import com.tsurugidb.iceaxe.TsurugiConnector;
 import com.tsurugidb.iceaxe.exception.TsurugiIOException;
 import com.tsurugidb.jdbc.TsurugiDataSource;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
 import com.tsurugidb.jdbc.test.util.JdbcDbTestConnector;
 import com.tsurugidb.jdbc.test.util.JdbcDbTester;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
 
 /**
- * TsurugiJdbcConnectionBuilder connect test.
+ * {@link TsurugiJdbcConnectionBuilder} connect test.
  */
 public class JdbcDbConnectionBuilderTest extends JdbcDbTester {
 

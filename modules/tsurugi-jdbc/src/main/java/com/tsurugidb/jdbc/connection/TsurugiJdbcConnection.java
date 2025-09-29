@@ -202,6 +202,15 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     /**
+     * Get transaction label.
+     *
+     * @return transaction label
+     */
+    public String getTransactionLabel() {
+        return config.getTransactionLabel();
+    }
+
+    /**
      * Set LTX include DDL.
      *
      * @param include include DDL
@@ -304,7 +313,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
             return transaction;
         }
 
-        var option = getTransactionOption();
+        var option = getLowTransactionOption();
         LOG.config(() -> String.format("transactionOption=%s", option));
 
         int timeout = config.getBeginTimeout();
@@ -327,8 +336,8 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
      *
      * @return transaction option
      */
-    protected SqlRequest.TransactionOption getTransactionOption() {
-        return config.getTransactionOption();
+    protected SqlRequest.TransactionOption getLowTransactionOption() {
+        return config.getLowTransactionOption();
     }
 
     /**
@@ -700,6 +709,9 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         for (var property : properties) {
             String key = property.name();
             String value = property.getStringValue();
+            if (value == null) {
+                value = "";
+            }
             result.setProperty(key, value);
         }
         return result;

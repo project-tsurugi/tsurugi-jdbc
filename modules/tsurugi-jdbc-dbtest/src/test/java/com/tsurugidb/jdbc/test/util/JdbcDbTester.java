@@ -16,6 +16,8 @@
 package com.tsurugidb.jdbc.test.util;
 
 import java.lang.reflect.Method;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,8 @@ import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 
 public class JdbcDbTester {
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
@@ -98,5 +102,10 @@ public class JdbcDbTester {
             return m + "() " + d;
         }
         return d;
+    }
+
+    protected TsurugiJdbcConnection createConnection() throws SQLException {
+        String url = JdbcDbTestConnector.getJdbcUrlWithCredential();
+        return DriverManager.getConnection(url).unwrap(TsurugiJdbcConnection.class);
     }
 }

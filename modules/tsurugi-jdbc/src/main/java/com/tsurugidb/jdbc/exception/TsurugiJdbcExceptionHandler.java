@@ -80,6 +80,10 @@ public class TsurugiJdbcExceptionHandler {
      */
     protected String message(String baseMessage, Exception e) {
         if (e != null) {
+            if (e instanceof NumberFormatException) {
+                return baseMessage + " (NumberFormatException: " + e.getMessage() + ")";
+            }
+
             String causeMessage = e.getMessage();
             if (causeMessage != null && !causeMessage.isEmpty()) {
                 return baseMessage + " (" + causeMessage + ")";

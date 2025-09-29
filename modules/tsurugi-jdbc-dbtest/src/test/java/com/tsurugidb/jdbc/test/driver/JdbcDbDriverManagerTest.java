@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.iceaxe.TsurugiConnector;
 import com.tsurugidb.iceaxe.exception.TsurugiIOException;
+import com.tsurugidb.jdbc.TsurugiDriver;
 import com.tsurugidb.jdbc.test.util.JdbcDbTestConnector;
 import com.tsurugidb.jdbc.test.util.JdbcDbTestCredential;
 import com.tsurugidb.jdbc.test.util.JdbcDbTester;
@@ -35,7 +36,7 @@ import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
 
 /**
- * TsurugiDriver connect test.
+ * {@link TsurugiDriver} connect test.
  */
 public class JdbcDbDriverManagerTest extends JdbcDbTester {
 
