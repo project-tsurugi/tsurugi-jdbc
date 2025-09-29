@@ -409,7 +409,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
     @Override
     public TsurugiJdbcConnection getConnection() throws SQLException {
-        return connection;
+        return this.connection;
     }
 
     @Override

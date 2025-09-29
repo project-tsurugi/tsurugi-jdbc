@@ -42,12 +42,12 @@ import com.tsurugidb.sql.proto.SqlRequest.TransactionType;
 import com.tsurugidb.sql.proto.SqlRequest.WritePreserve;
 
 /**
- * {@link TsurugiJdbcConnection} connect test.
+ * {@link TsurugiJdbcConnection} test.
  */
 public class JdbcDbConnectionTest extends JdbcDbTester {
 
     @Test
-    void setTransactionType() throws Exception {
+    void setTransactionType() throws SQLException {
         try (var connection = createConnection()) {
             assertEquals(TsurugiJdbcTransactionType.OCC, connection.getTransactionType());
             assertEquals(TransactionType.SHORT, connection.getConfig().getLowTransactionOption().getType());
@@ -59,7 +59,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setTransactionLabel() throws Exception {
+    void setTransactionLabel() throws SQLException {
         try (var connection = createConnection()) {
             assertNull(connection.getTransactionLabel());
             assertEquals("", connection.getConfig().getLowTransactionOption().getLabel());
@@ -71,7 +71,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setTransactionIncludeDdl() throws Exception {
+    void setTransactionIncludeDdl() throws SQLException {
         try (var connection = createConnection()) {
             assertFalse(connection.getTransactionIncludeDdl());
             assertFalse(connection.getConfig().getLowTransactionOption().getModifiesDefinitions());
@@ -83,7 +83,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setWritePreserve() throws Exception {
+    void setWritePreserve() throws SQLException {
         try (var connection = createConnection()) {
             assertNull(connection.getWritePreserve());
             assertEquals(List.of(), connection.getConfig().getLowTransactionOption().getWritePreservesList());
@@ -95,7 +95,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setInclusiveReadArea() throws Exception {
+    void setInclusiveReadArea() throws SQLException {
         try (var connection = createConnection()) {
             assertNull(connection.getInclusiveReadArea());
             assertEquals(List.of(), connection.getConfig().getLowTransactionOption().getInclusiveReadAreasList());
@@ -107,7 +107,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setExclusiveReadArea() throws Exception {
+    void setExclusiveReadArea() throws SQLException {
         try (var connection = createConnection()) {
             assertNull(connection.getExclusiveReadArea());
             assertEquals(List.of(), connection.getConfig().getLowTransactionOption().getExclusiveReadAreasList());
@@ -119,7 +119,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setTransactionScanParallel() throws Exception {
+    void setTransactionScanParallel() throws SQLException {
         try (var connection = createConnection()) {
             assertEquals(OptionalInt.empty(), connection.getTransactionScanParallel());
             assertEquals(0, connection.getConfig().getLowTransactionOption().getScanParallel());
@@ -131,7 +131,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setAutoCommit() throws Exception {
+    void setAutoCommit() throws SQLException {
         try (var connection = createConnection()) {
             assertTrue(connection.getAutoCommit());
 
@@ -141,7 +141,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setCommitType() throws Exception {
+    void setCommitType() throws SQLException {
         try (var connection = createConnection()) {
             assertEquals(TsurugiJdbcCommitType.DEFAULT, connection.getCommitType());
             assertEquals(CommitStatus.COMMIT_STATUS_UNSPECIFIED, connection.getConfig().getLowCommitOption().getNotificationType());
@@ -153,7 +153,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setCommitAutoDispose() throws Exception {
+    void setCommitAutoDispose() throws SQLException {
         try (var connection = createConnection()) {
             assertFalse(connection.getCommitAutoDispose());
             assertFalse(connection.getConfig().getLowCommitOption().getAutoDispose());
@@ -165,7 +165,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void commit_noTransaction() throws Exception {
+    void commit_noTransaction() throws SQLException {
         try (var connection = createConnection()) {
             var e = assertThrows(SQLException.class, () -> {
                 connection.commit();
@@ -175,7 +175,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void rollback_noTransaction() throws Exception {
+    void rollback_noTransaction() throws SQLException {
         try (var connection = createConnection()) {
             var e = assertThrows(SQLException.class, () -> {
                 connection.rollback();
@@ -185,7 +185,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setReadOnly() throws Exception {
+    void setReadOnly() throws SQLException {
         try (var connection = createConnection()) {
             assertFalse(connection.isReadOnly());
             assertEquals(TsurugiJdbcTransactionType.OCC, connection.getTransactionType());
@@ -199,7 +199,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setClientInfo() throws Exception {
+    void setClientInfo() throws SQLException {
         try (var connection = createConnection()) {
             connection.setClientInfo(TsurugiConfig.TRANSACTION_TYPE, "LTX");
             connection.setClientInfo(TsurugiConfig.TRANSACTION_LABEL, "test");
@@ -231,7 +231,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setClientInfo_error() throws Exception {
+    void setClientInfo_error() throws SQLException {
         try (var connection = createConnection()) {
             {
                 var e = assertThrows(SQLClientInfoException.class, () -> {
@@ -255,7 +255,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setClientInfo_properties() throws Exception {
+    void setClientInfo_properties() throws SQLException {
         try (var connection = createConnection()) {
             var properties = new Properties();
             properties.setProperty(TsurugiConfig.TRANSACTION_TYPE, "LTX");
@@ -289,7 +289,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setClientInfo_properties_error() throws Exception {
+    void setClientInfo_properties_error() throws SQLException {
         try (var connection = createConnection()) {
             {
                 var properties = new Properties();
@@ -322,7 +322,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void setClientInfo_properties_failure() throws Exception {
+    void setClientInfo_properties_failure() throws SQLException {
         try (var connection = createConnection()) {
             var properties = new Properties();
             properties.setProperty(TsurugiConfig.TRANSACTION_TYPE, "LTX");
@@ -340,7 +340,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     }
 
     @Test
-    void close() throws Exception {
+    void close() throws SQLException {
         try (var connection = createConnection()) {
             assertFalse(connection.isClosed());
             assertTrue(connection.isValid(0));

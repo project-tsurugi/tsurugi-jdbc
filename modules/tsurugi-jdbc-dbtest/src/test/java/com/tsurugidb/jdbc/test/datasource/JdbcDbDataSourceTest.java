@@ -19,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.sql.SQLException;
 import java.sql.SQLInvalidAuthorizationSpecException;
 
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
 public class JdbcDbDataSourceTest extends JdbcDbTester {
 
     @Test
-    void connect() throws Exception {
+    void connect() throws SQLException {
         var ds = new TsurugiDataSource();
         ds.setEndpoint(JdbcDbTestConnector.getEndPoint());
         JdbcDbTestConnector.setCredentialTo(ds);
@@ -49,7 +50,7 @@ public class JdbcDbDataSourceTest extends JdbcDbTester {
     }
 
     @Test
-    void connectConfig() throws Exception {
+    void connectConfig() throws SQLException {
         var config = new TsurugiConfig();
         config.setEndpoint(JdbcDbTestConnector.getEndPoint());
         JdbcDbTestConnector.setCredentialTo(config);
@@ -60,7 +61,7 @@ public class JdbcDbDataSourceTest extends JdbcDbTester {
     }
 
     @Test
-    void nullCredential() throws Exception {
+    void nullCredential() throws SQLException {
         boolean enableNullCredential = enableNullCredential();
 
         var ds = new TsurugiDataSource();
@@ -78,7 +79,7 @@ public class JdbcDbDataSourceTest extends JdbcDbTester {
         }
     }
 
-    private boolean enableNullCredential() throws IOException, InterruptedException {
+    private boolean enableNullCredential() {
         String endpoint = JdbcDbTestConnector.getEndPoint();
         var connector = TsurugiConnector.of(endpoint, NullCredential.INSTANCE);
         try (var session = connector.createSession()) {
@@ -88,12 +89,16 @@ public class JdbcDbDataSourceTest extends JdbcDbTester {
             if (e.getDiagnosticCode() == CoreServiceCode.AUTHENTICATION_ERROR) {
                 return false;
             }
+            throw new UncheckedIOException(e.getMessage(), e);
+        } catch (RuntimeException e) {
             throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Test
-    void userPassword() throws Exception {
+    void userPassword() throws SQLException {
         String user = JdbcDbTestConnector.getUser();
         assumeTrue(user != null, "user is not specified");
         String password = JdbcDbTestConnector.getPassword();
@@ -111,7 +116,7 @@ public class JdbcDbDataSourceTest extends JdbcDbTester {
     }
 
     @Test
-    void authToken() throws Exception {
+    void authToken() throws SQLException {
         String token = JdbcDbTestConnector.getAuthToken();
         assumeTrue(token != null, "authToken is not specified");
 
@@ -124,7 +129,7 @@ public class JdbcDbDataSourceTest extends JdbcDbTester {
     }
 
     @Test
-    void credentialFile() throws Exception {
+    void credentialFile() throws SQLException {
         String path = JdbcDbTestConnector.getCredentials();
         assumeTrue(path != null, "credentials is not specified");
 

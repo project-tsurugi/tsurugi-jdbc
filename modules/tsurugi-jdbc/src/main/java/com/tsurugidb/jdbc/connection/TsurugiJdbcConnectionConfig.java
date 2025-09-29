@@ -448,6 +448,15 @@ public class TsurugiJdbcConnectionConfig {
     // Common
 
     /**
+     * Set default timeout.
+     *
+     * @param timeout default timeout [seconds]
+     */
+    public void setDefaultTimeout(int timeout) {
+        defaultTimeout.setValue(timeout);
+    }
+
+    /**
      * Get default timeout.
      *
      * @return default timeout [seconds]

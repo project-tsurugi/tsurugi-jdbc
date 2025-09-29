@@ -19,8 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.SQLInvalidAuthorizationSpecException;
 import java.util.Properties;
 
@@ -41,14 +42,14 @@ import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
 public class JdbcDbDriverManagerTest extends JdbcDbTester {
 
     @Test
-    void connect() throws Exception {
+    void connect() throws SQLException {
         String url = JdbcDbTestConnector.getJdbcUrlWithCredential();
         try (var connection = DriverManager.getConnection(url)) {
         }
     }
 
     @Test
-    void connectProperties() throws Exception {
+    void connectProperties() throws SQLException {
         String url = JdbcDbTestConnector.getJdbcUrl();
         Properties info = JdbcDbTestConnector.getConnectProperties();
         try (var connection = DriverManager.getConnection(url, info)) {
@@ -56,7 +57,7 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
     }
 
     @Test
-    void nullCredential() throws Exception {
+    void nullCredential() throws SQLException {
         boolean enableNullCredential = enableNullCredential();
 
         String url = JdbcDbTestConnector.getJdbcUrl();
@@ -84,7 +85,7 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
         }
     }
 
-    private boolean enableNullCredential() throws IOException, InterruptedException {
+    private boolean enableNullCredential() {
         String endpoint = JdbcDbTestConnector.getEndPoint();
         var connector = TsurugiConnector.of(endpoint, NullCredential.INSTANCE);
         try (var session = connector.createSession()) {
@@ -94,12 +95,16 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
             if (e.getDiagnosticCode() == CoreServiceCode.AUTHENTICATION_ERROR) {
                 return false;
             }
+            throw new UncheckedIOException(e.getMessage(), e);
+        } catch (RuntimeException e) {
             throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Test
-    void userPassword() throws Exception {
+    void userPassword() throws SQLException {
         String user = JdbcDbTestConnector.getUser();
         assumeTrue(user != null, "user is not specified");
         String password = JdbcDbTestConnector.getPassword();
@@ -120,7 +125,7 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
     }
 
     @Test
-    void authToken() throws Exception {
+    void authToken() throws SQLException {
         String token = JdbcDbTestConnector.getAuthToken();
         assumeTrue(token != null, "authToken is not specified");
 
@@ -137,7 +142,7 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
     }
 
     @Test
-    void credentialFile() throws Exception {
+    void credentialFile() throws SQLException {
         String path = JdbcDbTestConnector.getCredentials();
         assumeTrue(path != null, "credentials is not specified");
 

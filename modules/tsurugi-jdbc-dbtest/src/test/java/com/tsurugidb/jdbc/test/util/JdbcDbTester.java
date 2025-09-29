@@ -104,8 +104,10 @@ public class JdbcDbTester {
         return d;
     }
 
-    protected TsurugiJdbcConnection createConnection() throws SQLException {
+    protected static TsurugiJdbcConnection createConnection() throws SQLException {
         String url = JdbcDbTestConnector.getJdbcUrlWithCredential();
-        return DriverManager.getConnection(url).unwrap(TsurugiJdbcConnection.class);
+        var connection = DriverManager.getConnection(url).unwrap(TsurugiJdbcConnection.class);
+        connection.setDefaultTimeout(5); // TODO remove default timeout
+        return connection;
     }
 }

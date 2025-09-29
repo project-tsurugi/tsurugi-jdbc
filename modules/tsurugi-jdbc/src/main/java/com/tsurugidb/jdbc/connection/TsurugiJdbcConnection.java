@@ -50,6 +50,7 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
+import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
@@ -139,7 +140,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql) throws SQLException {
+    public TsurugiJdbcPreparedStatement prepareStatement(String sql) throws SQLException {
         return factory.createPreparedStatement(this, config, sql);
     }
 
@@ -758,6 +759,14 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     @TsurugiJdbcNotSupported
     public int getNetworkTimeout() throws SQLException {
         throw new SQLFeatureNotSupportedException("getNetworkTimeout not supported");
+    }
+
+    public void setDefaultTimeout(int seconds) {
+        config.setDefaultTimeout(seconds);
+    }
+
+    public int getDefaultTimeout() {
+        return config.getDefaultTimeout();
     }
 
     @Override
