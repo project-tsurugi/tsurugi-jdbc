@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.UncheckedIOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLInvalidAuthorizationSpecException;
@@ -27,14 +26,10 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 
-import com.tsurugidb.iceaxe.TsurugiConnector;
-import com.tsurugidb.iceaxe.exception.TsurugiIOException;
 import com.tsurugidb.jdbc.TsurugiDriver;
 import com.tsurugidb.jdbc.test.util.JdbcDbTestConnector;
 import com.tsurugidb.jdbc.test.util.JdbcDbTestCredential;
 import com.tsurugidb.jdbc.test.util.JdbcDbTester;
-import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
-import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
 
 /**
  * {@link TsurugiDriver} connect test.
@@ -58,7 +53,7 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
 
     @Test
     void nullCredential() throws SQLException {
-        boolean enableNullCredential = enableNullCredential();
+        boolean enableNullCredential = JdbcDbTestConnector.enableNullCredential();
 
         String url = JdbcDbTestConnector.getJdbcUrl();
         if (enableNullCredential) {
@@ -82,24 +77,6 @@ public class JdbcDbDriverManagerTest extends JdbcDbTester {
                 });
                 assertEquals("28000", e.getSQLState());
             }
-        }
-    }
-
-    private boolean enableNullCredential() {
-        String endpoint = JdbcDbTestConnector.getEndPoint();
-        var connector = TsurugiConnector.of(endpoint, NullCredential.INSTANCE);
-        try (var session = connector.createSession()) {
-            session.getLowSession();
-            return true;
-        } catch (TsurugiIOException e) {
-            if (e.getDiagnosticCode() == CoreServiceCode.AUTHENTICATION_ERROR) {
-                return false;
-            }
-            throw new UncheckedIOException(e.getMessage(), e);
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 

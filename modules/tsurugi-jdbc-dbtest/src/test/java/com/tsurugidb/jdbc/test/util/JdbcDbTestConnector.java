@@ -20,12 +20,16 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import com.tsurugidb.iceaxe.TsurugiConnector;
+import com.tsurugidb.iceaxe.exception.TsurugiIOException;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
+import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.RememberMeCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredential;
+import com.tsurugidb.tsubakuro.exception.CoreServiceCode;
 
 public class JdbcDbTestConnector {
 
@@ -137,5 +141,23 @@ public class JdbcDbTestConnector {
             return null;
         }
         return value;
+    }
+
+    public static boolean enableNullCredential() {
+        String endpoint = getEndPoint();
+        var connector = TsurugiConnector.of(endpoint, NullCredential.INSTANCE);
+        try (var session = connector.createSession()) {
+            session.getLowSession();
+            return true;
+        } catch (TsurugiIOException e) {
+            if (e.getDiagnosticCode() == CoreServiceCode.AUTHENTICATION_ERROR) {
+                return false;
+            }
+            throw new UncheckedIOException(e.getMessage(), e);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
