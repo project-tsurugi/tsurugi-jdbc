@@ -146,6 +146,9 @@ public class TsurugiDriver implements Driver, HasFactory {
     protected SessionBuilder createLowSessionBuilder(TsurugiConfig config) throws SQLException {
         String endpoint = config.getEndpoint();
         LOG.config(() -> String.format("endpoint=%s", endpoint));
+        if (endpoint == null) {
+            throw new IllegalArgumentException("endpoint not specified");
+        }
         var builder = SessionBuilder.connect(endpoint);
 
         Credential credential = config.getCredential(factory);
@@ -183,11 +186,11 @@ public class TsurugiDriver implements Driver, HasFactory {
             return new DriverPropertyInfo[0];
         }
 
-        var values = config.getInternalProperties().getProperties();
-        var result = new DriverPropertyInfo[values.size()];
+        var properties = config.getInternalProperties().getProperties();
+        var result = new DriverPropertyInfo[properties.size()];
 
         int i = 0;
-        for (var property : values) {
+        for (var property : properties) {
             result[i++] = toDriverPropertyInfo(property);
         }
 

@@ -695,9 +695,9 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public Properties getClientInfo() throws SQLException {
-        var values = config.getInternalProperties().getProperties();
-        var result = new Properties(values.size());
-        for (var property : values) {
+        var properties = config.getInternalProperties().getProperties();
+        var result = new Properties(properties.size());
+        for (var property : properties) {
             String key = property.name();
             String value = property.getStringValue();
             result.setProperty(key, value);
