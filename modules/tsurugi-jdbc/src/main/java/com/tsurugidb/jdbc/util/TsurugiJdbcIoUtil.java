@@ -82,7 +82,7 @@ public class TsurugiJdbcIoUtil implements GetFactory {
      * @param <V>     the result value type
      * @param future  FutureResponse
      * @param timeout timeout
-     * @param unit    timeout unit
+     * @param unit    time unit
      * @return return value
      * @throws IOException          if exception was occurred while communicating to the server
      * @throws InterruptedException if interrupted from other threads while waiting for response
@@ -90,9 +90,6 @@ public class TsurugiJdbcIoUtil implements GetFactory {
      * @throws TimeoutException     if the wait time out
      */
     public <V> V get(FutureResponse<V> future, long timeout, TimeUnit unit) throws IOException, InterruptedException, ServerException, TimeoutException {
-        if (timeout <= 0) {
-            timeout = Long.MAX_VALUE; // TODO WORKAROUND: remove timeout MAX_VALUE
-        }
         return future.await(timeout, unit);
     }
 
