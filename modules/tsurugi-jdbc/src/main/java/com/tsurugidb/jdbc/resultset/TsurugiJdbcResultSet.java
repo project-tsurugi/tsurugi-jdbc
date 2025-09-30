@@ -132,25 +132,30 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
 
     @Override
     public boolean next() throws SQLException {
-        var lowRs = getLowResultSet();
-        if (nextRow(lowRs)) {
-            this.currentRowNumber++;
-            this.isAfterLast = false;
+        try {
+            var lowRs = getLowResultSet();
+            if (nextRow(lowRs)) {
+                this.currentRowNumber++;
+                this.isAfterLast = false;
 
-            initializeBuffer(lowRs);
-            for (int i = 0; nextLowColumn(lowRs); i++) {
-                var getter = getters[i];
-                values[i] = fetchLowValue(lowRs, getter);
+                initializeBuffer(lowRs);
+                for (int i = 0; nextLowColumn(lowRs); i++) {
+                    var getter = getters[i];
+                    values[i] = fetchLowValue(lowRs, getter);
+                }
+                return true;
             }
-            return true;
-        } else {
-            this.isAfterLast = true;
-
-            if (transaction.isAutoCommit()) {
-                close(); // commit
-            }
-            return false;
+        } catch (Throwable e) {
+            transaction.setExceptionOccurs();
+            throw e;
         }
+
+        this.isAfterLast = true;
+
+        if (transaction.isAutoCommit()) {
+            close(); // commit
+        }
+        return false;
     }
 
     private boolean nextRow(com.tsurugidb.tsubakuro.sql.ResultSet lowRs) throws SQLException {

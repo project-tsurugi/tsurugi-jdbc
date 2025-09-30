@@ -41,6 +41,7 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
     private final TsurugiJdbcConnectionConfig config;
 
     private final AtomicBoolean executed = new AtomicBoolean(false);
+    private volatile boolean executeException = false;
     private boolean closed = false;
 
     /**
@@ -74,15 +75,6 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
      */
     protected TsurugiJdbcIoUtil getIoUtil() {
         return factory.getIoUtil();
-    }
-
-    /**
-     * Get low-level transaction.
-     *
-     * @return low-level transaction
-     */
-    public Transaction getLowTransaction() {
-        return this.lowTransaction;
     }
 
     /**
@@ -165,8 +157,19 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
             R result = action.execute(lowTransaction);
             return result;
         } catch (Exception e) {
+            this.executeException = true;
             throw getExceptionHandler().sqlException("Transaction execute error", e);
+        } catch (Throwable e) {
+            this.executeException = true;
+            throw e;
         }
+    }
+
+    /**
+     * Set exception occurs.
+     */
+    public void setExceptionOccurs() {
+        this.executeException = true;
     }
 
     /**
@@ -175,8 +178,12 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
      * @throws SQLException if a database access error occurs
      */
     public void commitIfNormalStatus() throws SQLException {
-        var e = getSqlServiceException();
-        if (e == null) {
+        if (this.executeException) {
+            var e = getSqlServiceException();
+            if (e == null) {
+                commit();
+            }
+        } else {
             commit();
         }
     }

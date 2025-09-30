@@ -76,10 +76,12 @@ public class TsurugiJdbcClobReference implements Clob {
      * @throws SQLException if a database access error occurs
      */
     public Reader openReader(long timeout, TimeUnit unit) throws SQLException {
-        var transaction = ownerResultSet.getTransaction().getLowTransaction();
+        var transaction = ownerResultSet.getTransaction();
         try {
-            var io = getIoUtil();
-            return io.get(transaction.openReader(lowClob), timeout, unit);
+            return transaction.executeOnly(tx -> {
+                var io = getIoUtil();
+                return io.get(tx.openReader(lowClob), timeout, unit);
+            });
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("CLOB open error", e);
         }
