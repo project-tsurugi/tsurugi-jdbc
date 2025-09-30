@@ -369,8 +369,9 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
 
         // The lowResultSet must be closed before commit.
         try (statement; var ps = lowPreparedStatement; commit) {
+            int timeout = config.getDefaultTimeout();
             var io = getIoUtil();
-            io.close(this.resultSetFuture, this.lowResultSet);
+            io.close(this.resultSetFuture, this.lowResultSet, timeout);
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("ResultSet close error", e);
         }

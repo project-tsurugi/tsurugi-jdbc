@@ -28,6 +28,8 @@ import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.util.FutureResponse;
+import com.tsurugidb.tsubakuro.util.Timeout;
+import com.tsurugidb.tsubakuro.util.Timeout.Policy;
 
 /**
  * Tsurugi JDBC I/O utility.
@@ -98,18 +100,23 @@ public class TsurugiJdbcIoUtil implements GetFactory {
      *
      * @param resultSetFuture FutureResponse of ResultSet
      * @param lowResultSet    ResultSet
+     * @param timeout         timeout [seconds]
      * @throws IOException          if exception was occurred while communicating to the server
      * @throws InterruptedException if interrupted from other threads while waiting for response
      * @throws ServerException      if exception was occurred while processing the request in the server
+     * @throws TimeoutException     if the wait time out
      */
-    public void close(@Nullable FutureResponse<ResultSet> resultSetFuture, @Nullable ResultSet lowResultSet) throws IOException, InterruptedException, ServerException {
+    public void close(@Nullable FutureResponse<ResultSet> resultSetFuture, @Nullable ResultSet lowResultSet, int timeout) throws IOException, InterruptedException, ServerException, TimeoutException {
         if (lowResultSet == null) {
             if (resultSetFuture != null) {
-                resultSetFuture.await().close(); // TODO WORKAROUND: remove future.await()
+                // TODO WORKAROUND: remove future.await()
+                try (var rs = resultSetFuture.await(timeout, TimeUnit.SECONDS)) {
+                    rs.setCloseTimeout(new Timeout(timeout, TimeUnit.SECONDS, Policy.ERROR));
+                }
             }
         } else {
-            try (resultSetFuture) {
-                lowResultSet.close();
+            try (resultSetFuture; lowResultSet) {
+                lowResultSet.setCloseTimeout(new Timeout(timeout, TimeUnit.SECONDS, Policy.ERROR));
             }
         }
     }
