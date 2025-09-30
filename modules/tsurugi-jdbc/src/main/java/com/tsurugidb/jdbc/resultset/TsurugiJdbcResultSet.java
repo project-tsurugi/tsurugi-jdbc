@@ -386,7 +386,7 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
             this.finished = true;
 
             if (transaction.isAutoCommit()) {
-                transaction.commit();
+                transaction.commitIfNormalStatus();
             }
         }
     }

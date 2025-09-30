@@ -25,6 +25,7 @@ import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionConfig;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
+import com.tsurugidb.tsubakuro.sql.SqlServiceException;
 import com.tsurugidb.tsubakuro.sql.Transaction;
 
 /**
@@ -145,7 +146,7 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
         }
 
         if (autoCommit) {
-            commit();
+            commitIfNormalStatus();
         }
 
         return result;
@@ -165,6 +166,34 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
             return result;
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("Transaction execute error", e);
+        }
+    }
+
+    /**
+     * Commit transaction if status is normal.
+     *
+     * @throws SQLException if a database access error occurs
+     */
+    public void commitIfNormalStatus() throws SQLException {
+        var e = getSqlServiceException();
+        if (e == null) {
+            commit();
+        }
+    }
+
+    /**
+     * Get transaction exception.
+     *
+     * @return exception
+     * @throws SQLException if a database access error occurs
+     */
+    protected SqlServiceException getSqlServiceException() throws SQLException {
+        int timeout = config.getDefaultTimeout();
+        try {
+            var io = getIoUtil();
+            return io.get(lowTransaction.getSqlServiceException(), timeout);
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("getSqlServiceException error", e);
         }
     }
 
