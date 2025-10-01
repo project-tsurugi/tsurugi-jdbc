@@ -15,11 +15,9 @@
  */
 package com.tsurugidb.jdbc.resultset;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -230,7 +228,7 @@ public class TsurugiJdbcResultSetConverter {
      */
     public BigDecimal convertToDecimal(Object value) throws SQLException {
         if (value == null) {
-            return BigDecimal.ZERO;
+            return null;
         }
 
         return convertUtil.convertToDecimal(value);
@@ -383,7 +381,7 @@ public class TsurugiJdbcResultSetConverter {
             return null;
         }
 
-        return convertUtil.convertToReader(value);
+        return convertUtil.convertToCharacterStream(value);
     }
 
     /**
@@ -398,9 +396,7 @@ public class TsurugiJdbcResultSetConverter {
             return null;
         }
 
-        String s = convertToString(value);
-        byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
-        return new ByteArrayInputStream(bytes);
+        return convertUtil.convertToAsciiStream(value);
     }
 
     /**
@@ -415,9 +411,7 @@ public class TsurugiJdbcResultSetConverter {
             return null;
         }
 
-        String s = convertToString(value);
-        byte[] bytes = s.getBytes(StandardCharsets.UTF_16);
-        return new ByteArrayInputStream(bytes);
+        return convertUtil.convertToUnicodeStream(value);
     }
 
     /**
@@ -432,7 +426,7 @@ public class TsurugiJdbcResultSetConverter {
             return null;
         }
 
-        return convertUtil.convertToInputStream(value);
+        return convertUtil.convertToBinaryStream(value);
     }
 
     /**

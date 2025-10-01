@@ -868,6 +868,9 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
                         isNullable = "";
                     }
                     int length = util.getLength(lowColumn);
+                    Integer bufferLength = util.getBufferLength(lowColumn);
+                    Integer numPrecRadix = util.getNumPrecRadix(lowColumn);
+                    Integer charOctetLength = util.getOctetLength(lowColumn);
 
                     if (matcher.matchesColumnName(columnName)) {
                         Object[] values = { //
@@ -878,15 +881,15 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
                                 jdbcType.getVendorTypeNumber(), // DATA_TYPE
                                 typeName, // TYPE_NAME
                                 length, // COLUMN_SIZE
-                                null, // BUFFER_LENGTH
+                                bufferLength, // BUFFER_LENGTH
                                 null, // DECIMAL_DIGITS
-                                10, // NUM_PREC_RADIX
+                                numPrecRadix, // NUM_PREC_RADIX
                                 nullable, // NULLABLE
                                 lowColumn.getDescription(), // REMARKS
                                 null, // COLUMN_DEF
                                 null, // SQL_DATA_TYPE
                                 null, // SQL_DATETIME_SUB
-                                length, // CHAR_OCTET_LENGTH
+                                charOctetLength, // CHAR_OCTET_LENGTH
                                 position, // ORDINAL_POSITION
                                 isNullable, // IS_NULLABLE
                                 null, // SCOPE_CATALOG

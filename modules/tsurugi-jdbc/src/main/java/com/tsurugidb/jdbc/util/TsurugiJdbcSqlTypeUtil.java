@@ -343,18 +343,119 @@ public class TsurugiJdbcSqlTypeUtil {
      *
      * @param lowColumn column
      * @return length
+     * @throws SQLException if atom type is not supported
      */
-    public int getLength(SqlCommon.Column lowColumn) {
-        var lengthOpt = findLength(lowColumn);
-        if (lengthOpt.isPresent()) {
-            var value = lengthOpt.get();
-            if (value.arbitrary()) {
-                return 2097132;
-            } else {
-                return value.value();
+    public int getLength(SqlCommon.Column lowColumn) throws SQLException {
+        var atomType = lowColumn.getAtomType();
+        switch (atomType) {
+        case BOOLEAN:
+            return 1;
+        case INT4:
+            return 32;
+        case INT8:
+            return 64;
+        case FLOAT4:
+            return 32;
+        case FLOAT8:
+            return 64;
+        case DECIMAL:
+            return getPrecision(lowColumn);
+        case CHARACTER:
+        case OCTET:
+            var lengthOpt = findLength(lowColumn);
+            if (lengthOpt.isPresent()) {
+                var value = lengthOpt.get();
+                if (value.arbitrary()) {
+                    return 2097132;
+                } else {
+                    return value.value();
+                }
             }
+            return 0;
+        default:
+//          throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported AtomType.{0}", atomType));
+            return 0;
         }
-        return 0;
+    }
+
+    /**
+     * Get octetLength for column.
+     *
+     * @param lowColumn column
+     * @return length
+     * @throws SQLException if atom type is not supported
+     */
+    public Integer getOctetLength(SqlCommon.Column lowColumn) throws SQLException {
+        var atomType = lowColumn.getAtomType();
+        switch (atomType) {
+        case CHARACTER:
+        case OCTET:
+            var lengthOpt = findLength(lowColumn);
+            if (lengthOpt.isPresent()) {
+                var value = lengthOpt.get();
+                if (value.arbitrary()) {
+                    return 2097132;
+                } else {
+                    return value.value();
+                }
+            }
+            return 0;
+        default:
+            return null;
+        }
+    }
+
+    /**
+     * Get bufferLength for column.
+     *
+     * @param lowColumn column
+     * @return length
+     * @throws SQLException if atom type is not supported
+     */
+    public Integer getBufferLength(SqlCommon.Column lowColumn) throws SQLException {
+        var atomType = lowColumn.getAtomType();
+        switch (atomType) {
+        case BOOLEAN:
+            return 1;
+        case INT4:
+            return 4;
+        case INT8:
+            return 8;
+        case FLOAT4:
+            return 4;
+        case FLOAT8:
+            return 8;
+        case DECIMAL:
+            return getPrecision(lowColumn);
+        case CHARACTER:
+        case OCTET:
+            return getLength(lowColumn);
+        default:
+            return null;
+        }
+    }
+
+    /**
+     * Get numPrecRadix for column.
+     *
+     * @param lowColumn column
+     * @return length
+     * @throws SQLException if atom type is not supported
+     */
+    public Integer getNumPrecRadix(SqlCommon.Column lowColumn) throws SQLException {
+        var atomType = lowColumn.getAtomType();
+        switch (atomType) {
+        case BOOLEAN:
+        case INT4:
+        case INT8:
+        case FLOAT4:
+        case FLOAT8:
+            return 2;
+        case DECIMAL:
+            return 10;
+        default:
+            return null;
+        }
     }
 
     /**

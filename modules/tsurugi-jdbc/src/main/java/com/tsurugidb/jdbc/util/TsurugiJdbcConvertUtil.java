@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -918,19 +919,19 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
-     * Convert to Reader.
+     * Convert to CharacterStream.
      *
      * @param value value
      * @return Reader value
      * @throws SQLException if data convert error occurs
      */
-    public Reader convertToReader(@Nonnull Object value) throws SQLException {
+    public Reader convertToCharacterStream(@Nonnull Object value) throws SQLException {
         try {
-            return convertToReaderMain(value);
+            return convertToCharacterStreamMain(value);
         } catch (SQLException e) {
             throw e;
         } catch (Exception e) {
-            throw getExceptionHandler().dataException("convertToReader error", e);
+            throw getExceptionHandler().dataException("convertToCharacterStream error", e);
         }
     }
 
@@ -941,47 +942,117 @@ public class TsurugiJdbcConvertUtil {
      * @return Reader value
      * @throws Exception if data convert error occurs
      */
-    protected Reader convertToReaderMain(@Nonnull Object value) throws Exception {
+    protected Reader convertToCharacterStreamMain(@Nonnull Object value) throws Exception {
         if (value instanceof Reader) {
             return (Reader) value;
+        }
+        if (value instanceof String) {
+            return new StringReader((String) value);
         }
         if (value instanceof java.sql.Clob) {
             return ((java.sql.Clob) value).getCharacterStream();
         }
 
-        try {
-            String s = convertToStringMain(value);
-            return new StringReader(s);
-        } catch (Exception e) {
-            throw getExceptionHandler().dataException("convertToReader error", e);
-        }
+        throw getExceptionHandler().dataTypeMismatchException("convertToCharacterStream unsupported type", value.getClass());
     }
 
     /**
-     * Convert to InputStream.
+     * Convert to AsciiStream.
      *
      * @param value value
      * @return InputStream value
      * @throws SQLException if data convert error occurs
      */
-    public InputStream convertToInputStream(@Nonnull Object value) throws SQLException {
+    public InputStream convertToAsciiStream(@Nonnull Object value) throws SQLException {
         try {
-            return convertToInputStreamMain(value);
+            return convertToAsciiStreamMain(value);
         } catch (SQLException e) {
             throw e;
         } catch (Exception e) {
-            throw getExceptionHandler().dataException("convertToInputStream error", e);
+            throw getExceptionHandler().dataException("convertToAsciiStream error", e);
         }
     }
 
     /**
-     * Convert to InputStream.
+     * Convert to AsciiStream.
      *
      * @param value value
      * @return InputStream value
      * @throws Exception if data convert error occurs
      */
-    protected InputStream convertToInputStreamMain(@Nonnull Object value) throws Exception {
+    protected InputStream convertToAsciiStreamMain(@Nonnull Object value) throws Exception {
+        if (value instanceof InputStream) {
+            return (InputStream) value;
+        }
+        if (value instanceof String) {
+            byte[] bytes = ((String) value).getBytes(StandardCharsets.UTF_8);
+            return new ByteArrayInputStream(bytes);
+        }
+
+        throw getExceptionHandler().dataTypeMismatchException("convertToAsciiStream unsupported type", value.getClass());
+    }
+
+    /**
+     * Convert to UnicodeStream.
+     *
+     * @param value value
+     * @return InputStream value
+     * @throws SQLException if data convert error occurs
+     */
+    public InputStream convertToUnicodeStream(@Nonnull Object value) throws SQLException {
+        try {
+            return convertToUnicodeStreamMain(value);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Exception e) {
+            throw getExceptionHandler().dataException("convertToUnicodeStream error", e);
+        }
+    }
+
+    /**
+     * Convert to UnicodeStream.
+     *
+     * @param value value
+     * @return InputStream value
+     * @throws Exception if data convert error occurs
+     */
+    protected InputStream convertToUnicodeStreamMain(@Nonnull Object value) throws Exception {
+        if (value instanceof InputStream) {
+            return (InputStream) value;
+        }
+        if (value instanceof String) {
+            byte[] bytes = ((String) value).getBytes(StandardCharsets.UTF_16);
+            return new ByteArrayInputStream(bytes);
+        }
+
+        throw getExceptionHandler().dataTypeMismatchException("convertToUnicodeStream unsupported type", value.getClass());
+    }
+
+    /**
+     * Convert to BinaryStream.
+     *
+     * @param value value
+     * @return InputStream value
+     * @throws SQLException if data convert error occurs
+     */
+    public InputStream convertToBinaryStream(@Nonnull Object value) throws SQLException {
+        try {
+            return convertToBinaryStreamMain(value);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Exception e) {
+            throw getExceptionHandler().dataException("convertToBinaryStream error", e);
+        }
+    }
+
+    /**
+     * Convert to BinaryStream.
+     *
+     * @param value value
+     * @return InputStream value
+     * @throws Exception if data convert error occurs
+     */
+    protected InputStream convertToBinaryStreamMain(@Nonnull Object value) throws Exception {
         if (value instanceof InputStream) {
             return (InputStream) value;
         }
@@ -992,7 +1063,7 @@ public class TsurugiJdbcConvertUtil {
             return ((java.sql.Blob) value).getBinaryStream();
         }
 
-        throw getExceptionHandler().dataTypeMismatchException("convertToInputStream unsupported type", value.getClass());
+        throw getExceptionHandler().dataTypeMismatchException("convertToBinaryStream unsupported type", value.getClass());
     }
 
     /**
