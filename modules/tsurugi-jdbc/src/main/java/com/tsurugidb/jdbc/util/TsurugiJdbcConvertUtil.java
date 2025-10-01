@@ -119,7 +119,7 @@ public class TsurugiJdbcConvertUtil {
      * @throws SQLException if data convert error occurs
      */
     protected boolean convertToBooleanFromString(@Nonnull String value) throws SQLException {
-        String v = value.toUpperCase(Locale.ENGLISH);
+        String v = value.toUpperCase(Locale.ENGLISH).trim();
         switch (v) {
         case "TRUE":
             return true;
@@ -181,7 +181,7 @@ public class TsurugiJdbcConvertUtil {
             return ((Number) value).byteValue();
         }
         if (value instanceof String) {
-            return Byte.parseByte((String) value);
+            return Byte.parseByte(((String) value).trim());
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToByte unsupported type", value.getClass());
@@ -219,7 +219,7 @@ public class TsurugiJdbcConvertUtil {
             return ((Number) value).shortValue();
         }
         if (value instanceof String) {
-            return Short.parseShort((String) value);
+            return Short.parseShort(((String) value).trim());
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToShort unsupported type", value.getClass());
@@ -257,7 +257,7 @@ public class TsurugiJdbcConvertUtil {
             return ((Number) value).intValue();
         }
         if (value instanceof String) {
-            return Integer.parseInt((String) value);
+            return Integer.parseInt(((String) value).trim());
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToInt unsupported type", value.getClass());
@@ -295,7 +295,7 @@ public class TsurugiJdbcConvertUtil {
             return ((Number) value).longValue();
         }
         if (value instanceof String) {
-            return Long.parseLong((String) value);
+            return Long.parseLong(((String) value).trim());
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToLong unsupported type", value.getClass());
@@ -333,7 +333,7 @@ public class TsurugiJdbcConvertUtil {
             return ((Number) value).floatValue();
         }
         if (value instanceof String) {
-            return Float.parseFloat((String) value);
+            return Float.parseFloat(((String) value).trim());
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToFloat unsupported type", value.getClass());
@@ -371,7 +371,7 @@ public class TsurugiJdbcConvertUtil {
             return ((Number) value).doubleValue();
         }
         if (value instanceof String) {
-            return Double.parseDouble((String) value);
+            return Double.parseDouble(((String) value).trim());
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToDouble unsupported type", value.getClass());
@@ -421,7 +421,7 @@ public class TsurugiJdbcConvertUtil {
             return BigDecimal.valueOf(((Number) value).longValue());
         }
         if (value instanceof String) {
-            return new BigDecimal((String) value);
+            return new BigDecimal(((String) value).trim());
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToDecimal unsupported type", value.getClass());

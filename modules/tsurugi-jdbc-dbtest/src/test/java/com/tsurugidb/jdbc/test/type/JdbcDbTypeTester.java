@@ -312,8 +312,13 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
 
         new ExpectedColumn(1, "pk").initialize("INT").notNull() //
                 .test(metaData, 1);
-        new ExpectedColumn(2, "value").initialize(expectedSqlType()) //
-                .test(metaData, 2);
+        var expected = new ExpectedColumn(2, "value").initialize(expectedSqlType());
+        modifyParameterMetaDataExcepted(expected);
+        expected.test(metaData, 2);
+    }
+
+    protected void modifyParameterMetaDataExcepted(ExpectedColumn expected) {
+        // do override
     }
 
     private List<T> selectIceaxe() throws IOException, InterruptedException {

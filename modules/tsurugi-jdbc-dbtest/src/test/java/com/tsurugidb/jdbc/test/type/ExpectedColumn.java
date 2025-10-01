@@ -234,6 +234,11 @@ public class ExpectedColumn {
         return this;
     }
 
+    public ExpectedColumn typeBaseName(String typeName) {
+        this.typeBaseName = typeName;
+        return this;
+    }
+
     public ExpectedColumn columnSize(Integer columnSize) {
         this.columnSize = columnSize;
         return this;
