@@ -120,7 +120,7 @@ public class ExpectedColumn {
             this.columnSize = 308;
             this.numPrecRadix = 10;
             this.bufferLength = 8;
-            this.displaySize = 15;
+            this.displaySize = 25;
             this.signed = true;
             this.typeClass = double.class;
             break;
