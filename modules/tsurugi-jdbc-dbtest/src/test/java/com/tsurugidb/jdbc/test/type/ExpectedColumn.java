@@ -25,10 +25,11 @@ public class ExpectedColumn {
 
     private String tableName = "test";
     private JDBCType dataType;
+    @SuppressWarnings("unused")
     private String typeName;
     private String typeBaseName;
     private Integer columnSize;
-    private Integer bufferLength;
+    private Integer columnLength = 0;
     private Integer decimalDigits;
     private Integer numPrecRadix;
     private boolean nullable = true;
@@ -84,7 +85,6 @@ public class ExpectedColumn {
             this.dataType = JDBCType.BOOLEAN;
             this.columnSize = 1;
             this.numPrecRadix = 2;
-            this.bufferLength = 1;
             this.displaySize = 1;
             this.typeClass = boolean.class;
             break;
@@ -92,7 +92,6 @@ public class ExpectedColumn {
             this.dataType = JDBCType.INTEGER;
             this.columnSize = 32;
             this.numPrecRadix = 2;
-            this.bufferLength = 4;
             this.displaySize = 11;
             this.signed = true;
             this.typeClass = int.class;
@@ -101,7 +100,6 @@ public class ExpectedColumn {
             this.dataType = JDBCType.BIGINT;
             this.columnSize = 64;
             this.numPrecRadix = 2;
-            this.bufferLength = 8;
             this.displaySize = 20;
             this.signed = true;
             this.typeClass = long.class;
@@ -110,7 +108,6 @@ public class ExpectedColumn {
             this.dataType = JDBCType.REAL;
             this.columnSize = 38;
             this.numPrecRadix = 10;
-            this.bufferLength = 4;
             this.displaySize = 15;
             this.signed = true;
             this.typeClass = float.class;
@@ -119,14 +116,12 @@ public class ExpectedColumn {
             this.dataType = JDBCType.DOUBLE;
             this.columnSize = 308;
             this.numPrecRadix = 10;
-            this.bufferLength = 8;
             this.displaySize = 25;
             this.signed = true;
             this.typeClass = double.class;
             break;
         case "DECIMAL":
             this.dataType = JDBCType.DECIMAL;
-            this.bufferLength = 19;
             this.decimalDigits = size2;
             this.numPrecRadix = 10;
             this.displaySize = size1;
@@ -138,21 +133,21 @@ public class ExpectedColumn {
         case "CHAR":
             this.dataType = JDBCType.CHAR;
             this.columnSize = size1;
-            this.bufferLength = size1;
+            this.columnLength = size1;
             this.displaySize = size1;
             this.typeClass = String.class;
             break;
         case "VARCHAR":
             this.dataType = JDBCType.VARCHAR;
             this.columnSize = size1;
-            this.bufferLength = size1;
+            this.columnLength = size1;
             this.displaySize = size1;
             this.typeClass = String.class;
             break;
         case "BINARY":
             this.dataType = JDBCType.BINARY;
             this.columnSize = size1;
-            this.bufferLength = size1;
+            this.columnLength = size1;
             this.displaySize = size1;
             this.typeClass = byte[].class;
             break;
@@ -160,10 +155,10 @@ public class ExpectedColumn {
             this.dataType = JDBCType.VARBINARY;
             if ("*".equals(arg1)) {
                 this.columnSize = 2097132;
-                this.bufferLength = 2097132;
+                this.columnLength = 2097132;
             } else {
                 this.columnSize = size1;
-                this.bufferLength = size1;
+                this.columnLength = size1;
             }
             this.displaySize = 2097132;
             this.typeClass = byte[].class;
@@ -229,11 +224,6 @@ public class ExpectedColumn {
         return this;
     }
 
-    public ExpectedColumn bufferLength(Integer bufferLength) {
-        this.bufferLength = bufferLength;
-        return this;
-    }
-
     public ExpectedColumn decimalDigits(Integer decimalDigits) {
         this.decimalDigits = decimalDigits;
         return this;
@@ -279,13 +269,17 @@ public class ExpectedColumn {
         assertEquals(this.dataType, dataType);
 
         String typeName = rs.getString("TYPE_NAME");
-        assertEquals(this.typeName, typeName);
+        assertEquals(this.typeBaseName, typeName);
 
         int columnSize = rs.getInt("COLUMN_SIZE");
-        assertEquals(this.columnSize, columnSize);
+        if (this.columnSize == null) {
+            assertTrue(rs.wasNull());
+        } else {
+            assertEquals(this.columnSize, columnSize);
+        }
 
-        int bufferLength = rs.getInt("BUFFER_LENGTH");
-        assertEquals(this.bufferLength, bufferLength);
+        /* int bufferLength = */ rs.getInt("BUFFER_LENGTH");
+        assertTrue(rs.wasNull());
 
         int decimalDigits = rs.getInt("DECIMAL_DIGITS");
         if (this.decimalDigits == null) {
@@ -358,7 +352,7 @@ public class ExpectedColumn {
         assertEquals(this.columnName, metaData.getColumnName(columnIndex));
 
         int length = metaData.getLength(columnIndex);
-        assertEquals(this.columnSize, length);
+        assertEquals(this.columnLength, length);
 
         int precision = metaData.getPrecision(columnIndex);
         if (this.precision == null) {

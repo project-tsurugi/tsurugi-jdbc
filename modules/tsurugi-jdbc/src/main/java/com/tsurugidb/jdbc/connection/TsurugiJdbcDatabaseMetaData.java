@@ -38,6 +38,7 @@ import com.tsurugidb.jdbc.resultset.FixedResultSetColumn;
 import com.tsurugidb.jdbc.util.TableNameMatcher;
 import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
+import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
 
@@ -867,8 +868,8 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
                         nullable = columnNullableUnknown;
                         isNullable = "";
                     }
-                    int length = util.getLength(lowColumn);
-                    Integer bufferLength = util.getBufferLength(lowColumn);
+                    Integer columnSize = util.getColumnSize(lowColumn);
+                    Integer decimalDigits = (lowColumn.getAtomType() == AtomType.DECIMAL) ? util.getScale(lowColumn) : null;
                     Integer numPrecRadix = util.getNumPrecRadix(lowColumn);
                     Integer charOctetLength = util.getOctetLength(lowColumn);
 
@@ -880,9 +881,9 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
                                 columnName, // COLUMN_NAME
                                 jdbcType.getVendorTypeNumber(), // DATA_TYPE
                                 typeName, // TYPE_NAME
-                                length, // COLUMN_SIZE
-                                bufferLength, // BUFFER_LENGTH
-                                null, // DECIMAL_DIGITS
+                                columnSize, // COLUMN_SIZE
+                                null, // BUFFER_LENGTH
+                                decimalDigits, // DECIMAL_DIGITS
                                 numPrecRadix, // NUM_PREC_RADIX
                                 nullable, // NULLABLE
                                 lowColumn.getDescription(), // REMARKS

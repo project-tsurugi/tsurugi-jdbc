@@ -345,7 +345,7 @@ public class TsurugiJdbcSqlTypeUtil {
      * @return length
      * @throws SQLException if atom type is not supported
      */
-    public int getLength(SqlCommon.Column lowColumn) throws SQLException {
+    public Integer getColumnSize(SqlCommon.Column lowColumn) throws SQLException {
         var atomType = lowColumn.getAtomType();
         switch (atomType) {
         case BOOLEAN:
@@ -359,23 +359,32 @@ public class TsurugiJdbcSqlTypeUtil {
         case FLOAT8:
             return 308;
         case DECIMAL:
-            return getPrecision(lowColumn);
+            return null;
         case CHARACTER:
         case OCTET:
-            var lengthOpt = findLength(lowColumn);
-            if (lengthOpt.isPresent()) {
-                var value = lengthOpt.get();
-                if (value.arbitrary()) {
-                    return 2097132;
-                } else {
-                    return value.value();
-                }
-            }
-            return 0;
+            return getLength(lowColumn);
         default:
-//          throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported AtomType.{0}", atomType));
-            return 0;
+            return null;
         }
+    }
+
+    /**
+     * Get length for column.
+     *
+     * @param lowColumn column
+     * @return length
+     */
+    public int getLength(SqlCommon.Column lowColumn) {
+        var lengthOpt = findLength(lowColumn);
+        if (lengthOpt.isPresent()) {
+            var value = lengthOpt.get();
+            if (value.arbitrary()) {
+                return 2097132;
+            } else {
+                return value.value();
+            }
+        }
+        return 0;
     }
 
     /**
@@ -400,36 +409,6 @@ public class TsurugiJdbcSqlTypeUtil {
                 }
             }
             return 0;
-        default:
-            return null;
-        }
-    }
-
-    /**
-     * Get bufferLength for column.
-     *
-     * @param lowColumn column
-     * @return length
-     * @throws SQLException if atom type is not supported
-     */
-    public Integer getBufferLength(SqlCommon.Column lowColumn) throws SQLException {
-        var atomType = lowColumn.getAtomType();
-        switch (atomType) {
-        case BOOLEAN:
-            return 1;
-        case INT4:
-            return 4;
-        case INT8:
-            return 8;
-        case FLOAT4:
-            return 4;
-        case FLOAT8:
-            return 8;
-        case DECIMAL:
-            return getPrecision(lowColumn);
-        case CHARACTER:
-        case OCTET:
-            return getLength(lowColumn);
         default:
             return null;
         }

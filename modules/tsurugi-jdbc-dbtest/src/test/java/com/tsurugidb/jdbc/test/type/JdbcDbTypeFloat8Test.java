@@ -77,6 +77,7 @@ public class JdbcDbTypeFloat8Test extends JdbcDbTypeTester<Double> {
     protected Double get(ResultSet rs, int columnIndex) throws SQLException {
         double value = rs.getDouble(columnIndex);
         if (rs.wasNull()) {
+            assertEquals(0, value);
             return null;
         }
         return value;

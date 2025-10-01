@@ -16,6 +16,7 @@
 package com.tsurugidb.jdbc.test.type;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -33,66 +34,87 @@ import com.tsurugidb.iceaxe.sql.parameter.TgBindVariable;
 import com.tsurugidb.iceaxe.sql.result.TsurugiResultEntity;
 
 /**
- * Tsurugi JDBC INT8 test.
+ * Tsurugi JDBC DECIMAL test.
  */
-public class JdbcDbTypeInt8Test extends JdbcDbTypeTester<Long> {
+public class JdbcDbTypeDecimalTest extends JdbcDbTypeTester<BigDecimal> {
+
+    private static final int SCALE = 1;
 
     @Override
     protected String sqlType() {
-        return "bigint";
+        return "decimal(38, " + SCALE + ")";
     }
 
+    private static final BigDecimal MIN_DECIMAL = new BigDecimal("-" + "9".repeat(37) + ".9");
+    private static final BigDecimal MAX_DECIMAL = new BigDecimal("9".repeat(37) + ".9");
+
     @Override
-    protected List<Long> values() {
-        var list = new ArrayList<Long>();
-        list.add(Long.MIN_VALUE);
-        list.add(-1L);
-        list.add(0L);
-        list.add(1L);
-        list.add(123L);
-        list.add(Long.MAX_VALUE);
+    protected List<BigDecimal> values() {
+        var list = new ArrayList<BigDecimal>();
+        list.add(MIN_DECIMAL);
+        list.add(BigDecimal.valueOf(-1));
+        list.add(BigDecimal.valueOf(0));
+        list.add(BigDecimal.valueOf(1));
+        list.add(new BigDecimal("123.4"));
+        list.add(new BigDecimal("-123.4"));
+        list.add(MAX_DECIMAL);
         list.add(null);
         return list;
     }
 
     @Override
-    protected TgBindVariable<Long> bindVariable(String name) {
-        return TgBindVariable.ofLong(name);
+    protected TgBindVariable<BigDecimal> bindVariable(String name) {
+        return TgBindVariable.ofDecimal(name);
     }
 
     @Override
-    protected TgBindParameter bindParameter(String name, Long value) {
+    protected TgBindParameter bindParameter(String name, BigDecimal value) {
         return TgBindParameter.of(name, value);
     }
 
     @Override
-    protected Long get(TsurugiResultEntity entity, String name) {
-        return entity.getLong(name);
+    protected BigDecimal get(TsurugiResultEntity entity, String name) {
+        return entity.getDecimal(name);
     }
 
     @Override
-    protected Long get(ResultSet rs, int columnIndex) throws SQLException {
-        long value = rs.getLong(columnIndex);
+    protected BigDecimal get(ResultSet rs, int columnIndex) throws SQLException {
+        BigDecimal value = rs.getBigDecimal(columnIndex);
         if (rs.wasNull()) {
-            assertEquals(0, value);
-            return null;
+            assertNull(value);
         }
         return value;
     }
 
     @Override
-    protected void setParameter(PreparedStatement ps, int parameterIndex, Long value) throws SQLException {
+    protected void setParameter(PreparedStatement ps, int parameterIndex, BigDecimal value) throws SQLException {
         if (value != null) {
-            ps.setLong(parameterIndex, value);
+            ps.setBigDecimal(parameterIndex, value);
         } else {
-            ps.setNull(parameterIndex, java.sql.Types.BIGINT);
+            ps.setNull(parameterIndex, java.sql.Types.DECIMAL);
+        }
+    }
+
+    @Override
+    protected void assertValueList(List<BigDecimal> expected, List<BigDecimal> actual) {
+        assertEquals(expected.size(), actual.size());
+        for (int i = 0; i < actual.size(); i++) {
+            var e = expected.get(i);
+            var a = actual.get(i);
+
+            if (e == null) {
+                assertNull(a);
+                continue;
+            }
+
+            assertEquals(e.setScale(1), a);
         }
     }
 
     private static final Set<Class<?>> SUPPORT_SET = Set.of(String.class, Boolean.class, Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, BigDecimal.class);
 
     @Override
-    protected void assertException(Long expected, Class<?> valueType, SQLDataException e) {
+    protected void assertException(BigDecimal expected, Class<?> valueType, SQLDataException e) {
         if (valueType == Boolean.class) {
             double v = expected.doubleValue();
             if (v == 0 || v == 1) {
@@ -111,13 +133,15 @@ public class JdbcDbTypeInt8Test extends JdbcDbTypeTester<Long> {
     }
 
     @Override
-    protected void assertValue(Long expected, Class<?> valueType, Object actual) {
+    protected void assertValue(BigDecimal expected, Class<?> valueType, Object actual) {
+        expected = expected.setScale(SCALE);
+
         if (valueType == String.class) {
-            assertEquals(Long.toString(expected), actual);
+            assertEquals(expected.toPlainString(), actual);
             return;
         }
         if (valueType == Boolean.class) {
-            assertEquals(expected != 0, actual);
+            assertEquals(expected.doubleValue() != 0, actual);
             return;
         }
         if (valueType == Byte.class) {
@@ -145,7 +169,7 @@ public class JdbcDbTypeInt8Test extends JdbcDbTypeTester<Long> {
             return;
         }
         if (valueType == BigDecimal.class) {
-            assertEquals(BigDecimal.valueOf(expected), actual);
+            assertEquals(expected, actual);
             return;
         }
 

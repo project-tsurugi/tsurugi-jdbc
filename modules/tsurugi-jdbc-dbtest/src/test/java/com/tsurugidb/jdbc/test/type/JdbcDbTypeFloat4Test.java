@@ -77,6 +77,7 @@ public class JdbcDbTypeFloat4Test extends JdbcDbTypeTester<Float> {
     protected Float get(ResultSet rs, int columnIndex) throws SQLException {
         float value = rs.getFloat(columnIndex);
         if (rs.wasNull()) {
+            assertEquals(0, value);
             return null;
         }
         return value;

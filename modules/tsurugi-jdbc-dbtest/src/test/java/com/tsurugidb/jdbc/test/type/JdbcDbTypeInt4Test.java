@@ -74,6 +74,7 @@ public class JdbcDbTypeInt4Test extends JdbcDbTypeTester<Integer> {
     protected Integer get(ResultSet rs, int columnIndex) throws SQLException {
         int value = rs.getInt(columnIndex);
         if (rs.wasNull()) {
+            assertEquals(0, value);
             return null;
         }
         return value;
