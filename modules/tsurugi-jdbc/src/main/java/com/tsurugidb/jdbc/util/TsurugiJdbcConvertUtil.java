@@ -468,11 +468,13 @@ public class TsurugiJdbcConvertUtil {
         if (value instanceof java.sql.Date || value instanceof java.sql.Time || value instanceof java.sql.Timestamp) {
             return value.toString();
         }
-
         if (value instanceof java.sql.Clob) {
             try (var reader = ((java.sql.Clob) value).getCharacterStream()) {
                 return convertToString(reader, -1);
             }
+        }
+        if (value instanceof Boolean) {
+            return value.toString();
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToString unsupported type", value.getClass());

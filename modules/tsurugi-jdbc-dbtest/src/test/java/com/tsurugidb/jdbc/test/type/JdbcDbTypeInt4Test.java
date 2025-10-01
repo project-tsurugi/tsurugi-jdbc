@@ -26,7 +26,6 @@ import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.tsurugidb.iceaxe.sql.parameter.TgBindParameter;
 import com.tsurugidb.iceaxe.sql.parameter.TgBindVariable;
@@ -89,11 +88,10 @@ public class JdbcDbTypeInt4Test extends JdbcDbTypeTester<Integer> {
         }
     }
 
-    private static final Set<Class<?>> SUPPORT_SET = Set.of(String.class, Boolean.class, Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, BigDecimal.class);
-
     @Override
-    protected void assertException(Integer expected, Class<?> valueType, SQLDataException e) {
-        if (valueType == Boolean.class) {
+    protected void assertException(Integer expected, ValueType valueType, SQLDataException e) {
+        switch (valueType) {
+        case BOOLEAN:
             double v = expected.doubleValue();
             if (v == 0 || v == 1) {
                 fail(e);
@@ -101,54 +99,55 @@ public class JdbcDbTypeInt4Test extends JdbcDbTypeTester<Integer> {
                 assertTrue(e.getMessage().contains("Cannot cast to boolean"));
             }
             return;
-        }
-
-        if (SUPPORT_SET.contains(valueType)) {
+        case STRING:
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case FLOAT:
+        case DOUBLE:
+        case DECIMAL:
             fail(e);
+            return;
+        default:
+            assertTrue(e.getMessage().contains("unsupported type"), () -> e.getMessage());
+            return;
         }
-
-        assertTrue(e.getMessage().contains("unsupported type"), () -> e.getMessage());
     }
 
     @Override
-    protected void assertValue(Integer expected, Class<?> valueType, Object actual) {
-        if (valueType == String.class) {
+    protected void assertValue(Integer expected, ValueType valueType, Object actual) {
+        switch (valueType) {
+        case STRING:
             assertEquals(Integer.toString(expected), actual);
             return;
-        }
-        if (valueType == Boolean.class) {
+        case BOOLEAN:
             assertEquals(expected != 0, actual);
             return;
-        }
-        if (valueType == Byte.class) {
+        case BYTE:
             assertEquals(expected.byteValue(), actual);
             return;
-        }
-        if (valueType == Short.class) {
+        case SHORT:
             assertEquals(expected.shortValue(), actual);
             return;
-        }
-        if (valueType == Integer.class) {
+        case INT:
             assertEquals(expected.intValue(), actual);
             return;
-        }
-        if (valueType == Long.class) {
+        case LONG:
             assertEquals(expected.longValue(), actual);
             return;
-        }
-        if (valueType == Float.class) {
+        case FLOAT:
             assertEquals(expected.floatValue(), actual);
             return;
-        }
-        if (valueType == Double.class) {
+        case DOUBLE:
             assertEquals(expected.doubleValue(), actual);
             return;
-        }
-        if (valueType == BigDecimal.class) {
+        case DECIMAL:
             assertEquals(BigDecimal.valueOf(expected), actual);
             return;
+        default:
+            assertEquals(expected, actual, "valueType=" + valueType);
+            return;
         }
-
-        assertEquals(expected, actual, "valueType=" + valueType.getCanonicalName());
     }
 }

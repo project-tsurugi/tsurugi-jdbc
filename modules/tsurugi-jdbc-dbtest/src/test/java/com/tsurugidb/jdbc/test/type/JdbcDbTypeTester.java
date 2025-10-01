@@ -23,9 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
@@ -37,7 +34,6 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -163,8 +159,52 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
                 .test(metaData, 2);
     }
 
+    @FunctionalInterface
+    private interface Getter {
+        Object get(ResultSet rs, int columnIndex) throws SQLException;
+    }
+
+    protected enum ValueType {
+        OBJECT(ResultSet::getObject), //
+        STRING(ResultSet::getString), //
+        BOOLEAN(ResultSet::getBoolean), //
+        BYTE(ResultSet::getByte, true), //
+        SHORT(ResultSet::getShort, true), //
+        INT(ResultSet::getInt, true), //
+        LONG(ResultSet::getLong, true), //
+        FLOAT(ResultSet::getFloat, true), //
+        DOUBLE(ResultSet::getDouble, true), //
+        DECIMAL(ResultSet::getBigDecimal), //
+        BYTES(ResultSet::getBytes), //
+        DATE(ResultSet::getDate), //
+        TIME(ResultSet::getTime), //
+        TIMESTAMP(ResultSet::getTimestamp), //
+        LOCAL_DATE((rs, i) -> rs.getObject(i, LocalDate.class)), //
+        LOCAL_TIME((rs, i) -> rs.getObject(i, LocalTime.class)), //
+        LOCAL_DATE_TIME((rs, i) -> rs.getObject(i, LocalDateTime.class)), //
+        OFFSET_TIME((rs, i) -> rs.getObject(i, OffsetTime.class)), //
+        OFFSET_DATE_TIME((rs, i) -> rs.getObject(i, OffsetDateTime.class)), //
+        ASCII_STREAM(ResultSet::getAsciiStream), //
+        @SuppressWarnings("deprecation")
+        UNICODE_STREAM(ResultSet::getUnicodeStream), //
+        BINARY_STREAM(ResultSet::getBinaryStream), //
+        CHARACTER_STREAM(ResultSet::getCharacterStream), //
+        ;
+
+        private final Getter getter;
+        private final boolean primitive;
+
+        ValueType(Getter getter) {
+            this(getter, false);
+        }
+
+        ValueType(Getter getter, boolean primitive) {
+            this.getter = getter;
+            this.primitive = primitive;
+        }
+    }
+
     @Test
-    @SuppressWarnings("deprecation")
     void resultSetPattern() throws Exception {
         createTable();
 
@@ -180,29 +220,9 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
                     assertEquals(rowIndex, pk, "pk");
 
                     T expected = values.get(rowIndex);
-                    patternTest(expected, rs, ResultSet::getObject, Object.class);
-                    patternTest(expected, rs, ResultSet::getString, String.class);
-                    patternTest(expected, rs, ResultSet::getBoolean, Boolean.class);
-                    patternTest(expected, rs, ResultSet::getByte, Byte.class);
-                    patternTest(expected, rs, ResultSet::getShort, Short.class);
-                    patternTest(expected, rs, ResultSet::getInt, Integer.class);
-                    patternTest(expected, rs, ResultSet::getLong, Long.class);
-                    patternTest(expected, rs, ResultSet::getFloat, Float.class);
-                    patternTest(expected, rs, ResultSet::getDouble, Double.class);
-                    patternTest(expected, rs, ResultSet::getBigDecimal, BigDecimal.class);
-                    patternTest(expected, rs, ResultSet::getBytes, byte[].class);
-                    patternTest(expected, rs, ResultSet::getDate, java.sql.Date.class);
-                    patternTest(expected, rs, ResultSet::getTime, java.sql.Time.class);
-                    patternTest(expected, rs, ResultSet::getTimestamp, java.sql.Timestamp.class);
-                    patternTest(expected, rs, (s, i) -> s.getObject(i, LocalDate.class), LocalDate.class);
-                    patternTest(expected, rs, (s, i) -> s.getObject(i, LocalTime.class), LocalTime.class);
-                    patternTest(expected, rs, (s, i) -> s.getObject(i, LocalDateTime.class), LocalDateTime.class);
-                    patternTest(expected, rs, (s, i) -> s.getObject(i, OffsetTime.class), OffsetTime.class);
-                    patternTest(expected, rs, (s, i) -> s.getObject(i, OffsetDateTime.class), OffsetDateTime.class);
-                    patternTest(expected, rs, ResultSet::getAsciiStream, InputStream.class);
-                    patternTest(expected, rs, ResultSet::getUnicodeStream, InputStream.class);
-                    patternTest(expected, rs, ResultSet::getBinaryStream, InputStream.class);
-                    patternTest(expected, rs, ResultSet::getCharacterStream, Reader.class);
+                    for (var valueType : ValueType.values()) {
+                        patternTest(expected, rs, valueType);
+                    }
 
                     rowIndex++;
                 }
@@ -210,23 +230,16 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
         }
     }
 
-    @FunctionalInterface
-    private interface Getter {
-        Object get(ResultSet rs, int columnIndex) throws SQLException;
-    }
-
-    private static final Set<Class<?>> PRIMITIVE_SET = Set.of(Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class);
-
-    private void patternTest(T expected, ResultSet rs, Getter getter, Class<?> valueType) throws SQLException {
+    private void patternTest(T expected, ResultSet rs, ValueType valueType) throws SQLException {
         Object value;
         try {
-            value = getter.get(rs, 2);
+            value = valueType.getter.get(rs, 2);
         } catch (SQLDataException e) {
             try {
                 assertException(expected, valueType, e);
                 return;
             } catch (Throwable t) {
-                LOG.error("selectPattern() FAIL. expected={}, valueType={}, e.message={}", expected, valueType.getCanonicalName(), e.getMessage(), t);
+                LOG.error("selectPattern() FAIL. expected={}, valueType={}, e.message={}", expected, valueType, e.getMessage(), t);
                 throw t;
             }
         }
@@ -234,7 +247,7 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
 
         try {
             if (expected == null) {
-                if (PRIMITIVE_SET.contains(valueType)) {
+                if (valueType.primitive) {
                     assertNotNull(value);
                     assertEquals(0, ((Number) value).doubleValue());
                 } else if (value instanceof Boolean) {
@@ -248,14 +261,14 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
                 assertValue(expected, valueType, value);
             }
         } catch (Throwable e) {
-            LOG.error("selectPattern() FAIL. expected={}, valueType={}, actual={}", expected, valueType.getCanonicalName(), value, e);
+            LOG.error("selectPattern() FAIL. expected={}, valueType={}, actual={}", expected, valueType, value, e);
             throw e;
         }
     }
 
-    protected abstract void assertException(T expected, Class<?> valueType, SQLDataException e);
+    protected abstract void assertException(T expected, ValueType valueType, SQLDataException e);
 
-    protected abstract void assertValue(@Nonnull T expected, Class<?> valueType, @Nonnull Object actual);
+    protected abstract void assertValue(@Nonnull T expected, ValueType valueType, @Nonnull Object actual);
 
     @Test
     void jdbcToIceaxe() throws Exception {
