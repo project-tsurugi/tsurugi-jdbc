@@ -355,9 +355,9 @@ public class TsurugiJdbcSqlTypeUtil {
         case INT8:
             return 64;
         case FLOAT4:
-            return 32;
+            return 38;
         case FLOAT8:
-            return 64;
+            return 308;
         case DECIMAL:
             return getPrecision(lowColumn);
         case CHARACTER:
@@ -448,9 +448,9 @@ public class TsurugiJdbcSqlTypeUtil {
         case BOOLEAN:
         case INT4:
         case INT8:
+            return 2;
         case FLOAT4:
         case FLOAT8:
-            return 2;
         case DECIMAL:
             return 10;
         default:
