@@ -775,10 +775,10 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
 
     @Override
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-        // FIXME calendar
         Object value = getObject(columnIndex);
+        var zone = cal.getTimeZone().toZoneId();
         var converter = getConverter();
-        return converter.convertToDate(value);
+        return converter.convertToDate(value, zone);
     }
 
     @Override
@@ -789,10 +789,10 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
 
     @Override
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-        // FIXME calendar
         Object value = getObject(columnIndex);
+        var zone = cal.getTimeZone().toZoneId();
         var converter = getConverter();
-        return converter.convertToTime(value);
+        return converter.convertToTime(value, zone);
     }
 
     @Override
@@ -803,10 +803,10 @@ public abstract class AbstractResultSet implements ResultSet, GetFactory {
 
     @Override
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
-        // FIXME calendar
         Object value = getObject(columnIndex);
+        var zone = cal.getTimeZone().toZoneId();
         var converter = getConverter();
-        return converter.convertToTimestamp(value);
+        return converter.convertToTimestamp(value, zone);
     }
 
     @Override

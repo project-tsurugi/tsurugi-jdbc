@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -266,6 +267,22 @@ public class TsurugiJdbcResultSetConverter {
     }
 
     /**
+     * Convert to Date.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return date value
+     * @throws SQLException if data convert error occurs
+     */
+    public java.sql.Date convertToDate(Object value, ZoneId zone) throws SQLException {
+        if (value == null) {
+            return null;
+        }
+
+        return convertUtil.convertToDate(value, zone);
+    }
+
+    /**
      * Convert to Time.
      *
      * @param value value
@@ -281,6 +298,22 @@ public class TsurugiJdbcResultSetConverter {
     }
 
     /**
+     * Convert to Time.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return time value
+     * @throws SQLException if data convert error occurs
+     */
+    public java.sql.Time convertToTime(Object value, ZoneId zone) throws SQLException {
+        if (value == null) {
+            return null;
+        }
+
+        return convertUtil.convertToTime(value, zone);
+    }
+
+    /**
      * Convert to Timestamp.
      *
      * @param value value
@@ -293,6 +326,22 @@ public class TsurugiJdbcResultSetConverter {
         }
 
         return convertUtil.convertToTimestamp(value);
+    }
+
+    /**
+     * Convert to Timestamp.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return timestamp value
+     * @throws SQLException if data convert error occurs
+     */
+    public java.sql.Timestamp convertToTimestamp(Object value, ZoneId zone) throws SQLException {
+        if (value == null) {
+            return null;
+        }
+
+        return convertUtil.convertToTimestamp(value, zone);
     }
 
     /**

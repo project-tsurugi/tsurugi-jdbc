@@ -532,23 +532,23 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     @Override
     public void setDate(int parameterIndex, Date x, Calendar cal) throws SQLException {
-        // FIXME calendar
         var atomType = AtomType.DATE;
-        setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x));
+        var zone = cal.getTimeZone().toZoneId();
+        setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x, zone));
     }
 
     @Override
     public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
-        // FIXME calendar
         var atomType = AtomType.TIME_OF_DAY;
-        setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x));
+        var zone = cal.getTimeZone().toZoneId();
+        setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x, zone));
     }
 
     @Override
     public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal) throws SQLException {
-        // FIXME calendar
         var atomType = AtomType.TIME_POINT;
-        setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x));
+        var zone = cal.getTimeZone().toZoneId();
+        setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x, zone));
     }
 
     @Override

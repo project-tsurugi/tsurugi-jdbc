@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -328,6 +329,24 @@ public class TsurugiJdbcParameterGenerator {
      * Create parameter.
      *
      * @param name  parameter name
+     * @param value date value
+     * @param zone  time zone
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
+    public Parameter create(String name, java.sql.Date value, ZoneId zone) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+
+        LocalDate x = getConvertUtil().convertToLocalDate(value, zone);
+        return Parameters.of(name, x);
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
      * @param value time value
      * @return parameter
      * @throws SQLException if data convert error occurs
@@ -345,6 +364,24 @@ public class TsurugiJdbcParameterGenerator {
      * Create parameter.
      *
      * @param name  parameter name
+     * @param value time value
+     * @param zone  time zone
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
+    public Parameter create(String name, java.sql.Time value, ZoneId zone) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+
+        LocalTime x = getConvertUtil().convertToLocalTime(value, zone);
+        return Parameters.of(name, x);
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
      * @param value timestamp value
      * @return parameter
      * @throws SQLException if data convert error occurs
@@ -355,6 +392,24 @@ public class TsurugiJdbcParameterGenerator {
         }
 
         LocalDateTime x = getConvertUtil().convertToLocalDateTime(value);
+        return Parameters.of(name, x);
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value timestamp value
+     * @param zone  time zone
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     */
+    public Parameter create(String name, java.sql.Timestamp value, ZoneId zone) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+
+        LocalDateTime x = getConvertUtil().convertToLocalDateTime(value, zone);
         return Parameters.of(name, x);
     }
 
