@@ -18,6 +18,7 @@ package com.tsurugidb.jdbc.test.type;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -120,6 +121,15 @@ public class JdbcDbTypeDateTest extends JdbcDbTypeTester<java.sql.Date> {
     @Override
     protected void assertException(java.sql.Date expected, ValueType valueType, SQLDataException e) {
         switch (valueType) {
+        case OBJECT:
+        case STRING:
+        case DATE:
+        case TIMESTAMP:
+        case LOCAL_DATE:
+        case LOCAL_DATE_TIME:
+        case OFFSET_DATE_TIME:
+            fail(e);
+            return;
         default:
             assertTrue(e.getMessage().contains("unsupported type"), () -> e.getMessage());
             return;
