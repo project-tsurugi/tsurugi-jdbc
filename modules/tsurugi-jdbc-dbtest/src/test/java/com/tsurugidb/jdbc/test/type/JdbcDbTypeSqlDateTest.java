@@ -39,7 +39,7 @@ import com.tsurugidb.iceaxe.sql.result.TsurugiResultEntity;
 /**
  * Tsurugi JDBC DATE test.
  */
-public class JdbcDbTypeDateTest extends JdbcDbTypeTester<java.sql.Date> {
+public class JdbcDbTypeSqlDateTest extends JdbcDbTypeTester<java.sql.Date> {
 
     @Override
     protected String sqlType() {
