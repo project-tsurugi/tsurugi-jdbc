@@ -438,6 +438,28 @@ public class TsurugiJdbcSqlTypeUtil {
     }
 
     /**
+     * Get decimalDigits for column.
+     *
+     * @param lowColumn column
+     * @return decimalDigits
+     * @throws SQLException if atom type is not supported
+     */
+    public Integer getDecimalDigits(SqlCommon.Column lowColumn) throws SQLException {
+        var atomType = lowColumn.getAtomType();
+        switch (atomType) {
+        case DECIMAL:
+            return getScale(lowColumn);
+        case TIME_OF_DAY:
+        case TIME_POINT:
+        case TIME_OF_DAY_WITH_TIME_ZONE:
+        case TIME_POINT_WITH_TIME_ZONE:
+            return 9;
+        default:
+            return null;
+        }
+    }
+
+    /**
      * Get precision for column.
      *
      * @param lowColumn column

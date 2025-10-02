@@ -38,7 +38,6 @@ import com.tsurugidb.jdbc.resultset.FixedResultSetColumn;
 import com.tsurugidb.jdbc.util.TableNameMatcher;
 import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
-import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
 
@@ -869,7 +868,7 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
                         isNullable = "";
                     }
                     Integer columnSize = util.getColumnSize(lowColumn);
-                    Integer decimalDigits = (lowColumn.getAtomType() == AtomType.DECIMAL) ? util.getScale(lowColumn) : null;
+                    Integer decimalDigits = util.getDecimalDigits(lowColumn);
                     Integer numPrecRadix = util.getNumPrecRadix(lowColumn);
                     Integer charOctetLength = util.getOctetLength(lowColumn);
 
