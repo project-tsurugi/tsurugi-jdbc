@@ -163,7 +163,7 @@ public class ExpectedColumn {
             this.dataType = JDBCType.BINARY;
             this.columnSize = size1;
             this.columnLength = size1;
-            this.displaySize = size1;
+            this.displaySize = size1 * 2;
             this.typeClass = byte[].class;
             break;
         case "VARBINARY":
@@ -175,7 +175,7 @@ public class ExpectedColumn {
                 this.columnSize = size1;
                 this.columnLength = size1;
             }
-            this.displaySize = 2097132;
+            this.displaySize = columnLength * 2;
             this.typeClass = byte[].class;
             break;
         case "DATE":
