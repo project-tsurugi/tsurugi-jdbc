@@ -1378,6 +1378,9 @@ public class TsurugiJdbcConvertUtil {
         if (value instanceof OffsetDateTime) {
             return (OffsetDateTime) value;
         }
+        if (value instanceof ZonedDateTime) {
+            return toOffsetDateTime((ZonedDateTime) value);
+        }
         if (value instanceof java.sql.Timestamp) {
             return toOffsetDateTime((java.sql.Timestamp) value);
         }
@@ -1392,9 +1395,6 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof java.sql.Time) {
             return toOffsetDateTime((java.sql.Time) value);
-        }
-        if (value instanceof ZonedDateTime) {
-            return toOffsetDateTime((ZonedDateTime) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToOffsetDateTime unsupported type", value.getClass());

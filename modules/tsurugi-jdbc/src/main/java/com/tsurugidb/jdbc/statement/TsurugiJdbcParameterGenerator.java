@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -525,6 +526,7 @@ public class TsurugiJdbcParameterGenerator {
         map.put(LocalDateTime.class, AtomType.TIME_POINT);
         map.put(OffsetTime.class, AtomType.TIME_OF_DAY_WITH_TIME_ZONE);
         map.put(OffsetDateTime.class, AtomType.TIME_POINT_WITH_TIME_ZONE);
+        map.put(ZonedDateTime.class, AtomType.TIME_POINT_WITH_TIME_ZONE);
 
         map.put(java.sql.Blob.class, AtomType.BLOB);
         map.put(java.sql.Clob.class, AtomType.CLOB);
