@@ -180,36 +180,31 @@ public class ExpectedColumn {
             break;
         case "DATE":
             this.dataType = JDBCType.DATE;
-            this.columnSize = 10;
-            this.displaySize = this.columnSize;
+            this.displaySize = 10;
             this.typeClass = LocalDate.class;
             break;
         case "TIME":
             this.dataType = JDBCType.TIME;
-            this.columnSize = 18;
             this.decimalDigits = 9;
-            this.displaySize = this.columnSize;
+            this.displaySize = 18;
             this.typeClass = LocalTime.class;
             break;
         case "TIMESTAMP":
             this.dataType = JDBCType.TIMESTAMP;
-            this.columnSize = 10 + 1 + 18;
             this.decimalDigits = 9;
-            this.displaySize = this.columnSize;
+            this.displaySize = 10 + 1 + 18;
             this.typeClass = LocalDateTime.class;
             break;
         case "TIME WITH TIME ZONE":
             this.dataType = JDBCType.TIME_WITH_TIMEZONE;
-            this.columnSize = 18 + 6;
             this.decimalDigits = 9;
-            this.displaySize = this.columnSize;
+            this.displaySize = 18 + 6;
             this.typeClass = OffsetTime.class;
             break;
         case "TIMESTAMP WITH TIME ZONE":
             this.dataType = JDBCType.TIMESTAMP_WITH_TIMEZONE;
-            this.columnSize = (10 + 1 + 18) + 6;
             this.decimalDigits = 9;
-            this.displaySize = this.columnSize;
+            this.displaySize = (10 + 1 + 18) + 6;
             this.typeClass = OffsetDateTime.class;
             break;
         default:
