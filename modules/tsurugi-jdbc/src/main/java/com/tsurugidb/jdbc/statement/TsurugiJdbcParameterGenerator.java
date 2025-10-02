@@ -319,7 +319,7 @@ public class TsurugiJdbcParameterGenerator {
             return Parameters.ofNull(name);
         }
 
-        LocalDate x = convertUtil.convertToLocalDate(value);
+        LocalDate x = getConvertUtil().convertToLocalDate(value);
         return Parameters.of(name, x);
     }
 
@@ -336,7 +336,7 @@ public class TsurugiJdbcParameterGenerator {
             return Parameters.ofNull(name);
         }
 
-        LocalTime x = convertUtil.convertToLocalTime(value);
+        LocalTime x = getConvertUtil().convertToLocalTime(value);
         return Parameters.of(name, x);
     }
 
@@ -353,7 +353,7 @@ public class TsurugiJdbcParameterGenerator {
             return Parameters.ofNull(name);
         }
 
-        LocalDateTime x = convertUtil.convertToLocalDateTime(value);
+        LocalDateTime x = getConvertUtil().convertToLocalDateTime(value);
         return Parameters.of(name, x);
     }
 
@@ -372,7 +372,7 @@ public class TsurugiJdbcParameterGenerator {
         }
 
         try {
-            String x = convertUtil.convertToString(value, length);
+            String x = getConvertUtil().convertToString(value, length);
             return Parameters.of(name, x);
         } catch (Exception e) {
             throw getExceptionHandler().dataException("Create parameter of CharacterStream error", e);

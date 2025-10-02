@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.tsurugidb.iceaxe.sql.TgDataType;
 import com.tsurugidb.iceaxe.sql.parameter.TgBindParameter;
 import com.tsurugidb.iceaxe.sql.parameter.TgBindVariable;
 import com.tsurugidb.iceaxe.sql.result.TsurugiResultEntity;
@@ -37,7 +38,7 @@ import com.tsurugidb.iceaxe.sql.result.TsurugiResultEntity;
 /**
  * Tsurugi JDBC DATE test.
  */
-public class JdbcDbTypeLocalDateTest extends JdbcDbTypeTester<LocalDate> {
+public class JdbcDbTypeDateTest extends JdbcDbTypeTester<java.sql.Date> {
 
     @Override
     protected String sqlType() {
@@ -45,36 +46,62 @@ public class JdbcDbTypeLocalDateTest extends JdbcDbTypeTester<LocalDate> {
     }
 
     @Override
-    protected List<LocalDate> values() {
-        var list = new ArrayList<LocalDate>();
-        list.add(LocalDate.now());
-        list.add(LocalDate.of(1970, 1, 1));
-        list.add(LocalDate.of(-1, 1, 1));
-        list.add(LocalDate.of(0, 1, 1));
-        list.add(LocalDate.of(1, 1, 1));
-        list.add(LocalDate.of(9999, 12, 31));
+    protected List<java.sql.Date> values() {
+        var list = new ArrayList<java.sql.Date>();
+        list.add(date(LocalDate.now()));
+        list.add(date(1970, 1, 1));
+        list.add(date(-1, 1, 1));
+        list.add(date(0, 1, 1));
+        list.add(date(1, 1, 1));
+        list.add(date(9999, 12, 31));
         list.add(null);
         return list;
     }
 
-    @Override
-    protected TgBindVariable<LocalDate> bindVariable(String name) {
-        return TgBindVariable.ofDate(name);
+    private java.sql.Date date(int year, int month, int day) {
+        return date(LocalDate.of(year, month, day));
+    }
+
+    private java.sql.Date date(LocalDate value) {
+        return toSqlDate(value);
     }
 
     @Override
-    protected TgBindParameter bindParameter(String name, LocalDate value) {
-        return TgBindParameter.of(name, value);
+    protected TgBindVariable<java.sql.Date> bindVariable(String name) {
+        return new TgBindVariable<java.sql.Date>(name, TgDataType.DATE) {
+            @Override
+            public TgBindParameter bind(java.sql.Date value) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public TgBindVariable<java.sql.Date> clone(String name) {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     @Override
-    protected LocalDate get(TsurugiResultEntity entity, String name) {
-        return entity.getDate(name);
+    protected TgBindParameter bindParameter(String name, java.sql.Date value) {
+        if (value == null) {
+            return TgBindParameter.of(name, (LocalDate) null);
+        } else {
+            return TgBindParameter.of(name, toLocalDate(value));
+        }
     }
 
     @Override
-    protected LocalDate get(ResultSet rs, int columnIndex) throws SQLException {
-        LocalDate value = (LocalDate) rs.getObject(columnIndex);
+    protected java.sql.Date get(TsurugiResultEntity entity, String name) {
+        LocalDate value = entity.getDate(name);
+        if (value == null) {
+            return null;
+        }
+        return toSqlDate(value);
+    }
+
+    @Override
+    protected java.sql.Date get(ResultSet rs, int columnIndex) throws SQLException {
+        java.sql.Date value = rs.getDate(columnIndex);
         if (rs.wasNull()) {
             assertNull(value);
         }
@@ -82,16 +109,16 @@ public class JdbcDbTypeLocalDateTest extends JdbcDbTypeTester<LocalDate> {
     }
 
     @Override
-    protected void setParameter(PreparedStatement ps, int parameterIndex, LocalDate value) throws SQLException {
+    protected void setParameter(PreparedStatement ps, int parameterIndex, java.sql.Date value) throws SQLException {
         if (value != null) {
-            ps.setObject(parameterIndex, value);
+            ps.setDate(parameterIndex, value);
         } else {
             ps.setNull(parameterIndex, java.sql.Types.DATE);
         }
     }
 
     @Override
-    protected void assertException(LocalDate expected, ValueType valueType, SQLDataException e) {
+    protected void assertException(java.sql.Date expected, ValueType valueType, SQLDataException e) {
         switch (valueType) {
         default:
             assertTrue(e.getMessage().contains("unsupported type"), () -> e.getMessage());
@@ -100,25 +127,26 @@ public class JdbcDbTypeLocalDateTest extends JdbcDbTypeTester<LocalDate> {
     }
 
     @Override
-    protected void assertValue(LocalDate expected, ValueType valueType, Object actual) {
+    protected void assertValue(java.sql.Date expected, ValueType valueType, Object actual) {
         switch (valueType) {
         case STRING:
-            assertEquals(expected.toString(), actual);
+            assertEquals(toLocalDate(expected).toString(), actual);
             return;
         case DATE:
-            assertEquals(toSqlDate(expected), actual);
+            assertEquals(expected, actual);
             return;
         case TIMESTAMP:
             assertEquals(toSqlTimestamp(expected), actual);
             return;
         case LOCAL_DATE:
-            assertEquals(expected, actual);
+        case OBJECT:
+            assertEquals(toLocalDate(expected), actual);
             return;
         case LOCAL_DATE_TIME:
-            assertEquals(expected.atStartOfDay(), actual);
+            assertEquals(toLocalDate(expected).atStartOfDay(), actual);
             return;
         case OFFSET_DATE_TIME:
-            assertEquals(expected.atStartOfDay().atOffset(ZoneOffset.UTC), actual);
+            assertEquals(toLocalDate(expected).atStartOfDay().atOffset(ZoneOffset.UTC), actual);
             return;
         default:
             assertEquals(expected, actual, "valueType=" + valueType);
@@ -126,14 +154,19 @@ public class JdbcDbTypeLocalDateTest extends JdbcDbTypeTester<LocalDate> {
         }
     }
 
+    private LocalDate toLocalDate(java.sql.Date value) {
+        long epochMilli = value.getTime();
+        return LocalDate.ofEpochDay(TimeUnit.MILLISECONDS.toDays(epochMilli));
+    }
+
     private java.sql.Date toSqlDate(LocalDate value) {
         long epochDay = value.toEpochDay();
         return new java.sql.Date(TimeUnit.DAYS.toMillis(epochDay));
     }
 
-    private java.sql.Timestamp toSqlTimestamp(LocalDate value) {
+    private java.sql.Timestamp toSqlTimestamp(java.sql.Date value) {
         var zone = ZoneId.systemDefault();
-        var zdt = value.atStartOfDay(zone);
+        var zdt = toLocalDate(value).atStartOfDay(zone);
         long epochSecond = zdt.toEpochSecond();
         return new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
     }
