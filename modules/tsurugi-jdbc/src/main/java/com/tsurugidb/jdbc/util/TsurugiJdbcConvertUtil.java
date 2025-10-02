@@ -31,6 +31,7 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.Locale;
 import java.util.Objects;
@@ -599,6 +600,9 @@ public class TsurugiJdbcConvertUtil {
         if (value instanceof java.sql.Time) {
             return toDate((java.sql.Time) value);
         }
+        if (value instanceof ZonedDateTime) {
+            return toDate((ZonedDateTime) value);
+        }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToDate unsupported type", value.getClass());
     }
@@ -651,7 +655,21 @@ public class TsurugiJdbcConvertUtil {
      * @return date value
      */
     protected java.sql.Date toDate(OffsetDateTime value) {
-        return toDate(value.toLocalDate());
+        var zone = ZoneId.systemDefault(); // in java.sql.Date
+        var zdt = value.atZoneSameInstant(zone);
+        return toDate(zdt.toLocalDate());
+    }
+
+    /**
+     * Convert to Date.
+     *
+     * @param value value
+     * @return date value
+     */
+    protected java.sql.Date toDate(ZonedDateTime value) {
+        var zone = ZoneId.systemDefault(); // in java.sql.Date
+        var zdt = value.withZoneSameInstant(zone);
+        return toDate(zdt.toLocalDate());
     }
 
     /**
@@ -694,6 +712,9 @@ public class TsurugiJdbcConvertUtil {
         if (value instanceof OffsetDateTime) {
             return toTime((OffsetDateTime) value);
         }
+        if (value instanceof ZonedDateTime) {
+            return toTime((ZonedDateTime) value);
+        }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToTime unsupported type", value.getClass());
     }
@@ -705,7 +726,7 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(LocalTime value) {
-        ZoneId zone = ZoneId.systemDefault(); // in java.sql.Time
+        var zone = ZoneId.systemDefault(); // in java.sql.Time
         long epochSecond = value.atDate(LocalDate.EPOCH).atZone(zone).toEpochSecond();
         return new java.sql.Time(TimeUnit.SECONDS.toMillis(epochSecond));
     }
@@ -739,6 +760,16 @@ public class TsurugiJdbcConvertUtil {
      */
     protected java.sql.Time toTime(OffsetDateTime value) {
         return toTime(value.toOffsetTime());
+    }
+
+    /**
+     * Convert to Time.
+     *
+     * @param value value
+     * @return time value
+     */
+    protected java.sql.Time toTime(ZonedDateTime value) {
+        return toTime(value.toOffsetDateTime().toOffsetTime());
     }
 
     /**
@@ -777,6 +808,9 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof LocalDate) {
             return toTimestamp((LocalDate) value);
+        }
+        if (value instanceof ZonedDateTime) {
+            return toTimestamp((ZonedDateTime) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToTimestamp unsupported type", value.getClass());
@@ -820,7 +854,18 @@ public class TsurugiJdbcConvertUtil {
      */
     protected java.sql.Timestamp toTimestamp(LocalDateTime value) {
         var zone = ZoneId.systemDefault();
-        long epochSecond = value.atZone(zone).toEpochSecond();
+        var zdt = value.atZone(zone);
+        return toTimestamp(zdt);
+    }
+
+    /**
+     * Convert to Timestamp.
+     *
+     * @param value value
+     * @return timestamp value
+     */
+    protected java.sql.Timestamp toTimestamp(OffsetDateTime value) {
+        long epochSecond = value.toEpochSecond();
         var timestamp = new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
         timestamp.setNanos(value.getNano());
         return timestamp;
@@ -832,7 +877,7 @@ public class TsurugiJdbcConvertUtil {
      * @param value value
      * @return timestamp value
      */
-    protected java.sql.Timestamp toTimestamp(OffsetDateTime value) {
+    protected java.sql.Timestamp toTimestamp(ZonedDateTime value) {
         long epochSecond = value.toEpochSecond();
         var timestamp = new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
         timestamp.setNanos(value.getNano());
@@ -881,6 +926,9 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof java.sql.Time) {
             return toLocalDate((java.sql.Time) value);
+        }
+        if (value instanceof ZonedDateTime) {
+            return toLocalDate((ZonedDateTime) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToLocalDate unsupported type", value.getClass());
@@ -937,6 +985,16 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to LocalDate.
+     *
+     * @param value value
+     * @return local date value
+     */
+    protected LocalDate toLocalDate(ZonedDateTime value) {
+        return value.toLocalDate();
+    }
+
+    /**
      * Convert to LocalTime.
      *
      * @param value value
@@ -981,6 +1039,9 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof java.sql.Date) {
             return toLocalTime((java.sql.Date) value);
+        }
+        if (value instanceof ZonedDateTime) {
+            return toLocalTime((ZonedDateTime) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToLocalTime unsupported type", value.getClass());
@@ -1047,6 +1108,16 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to LocalTime.
+     *
+     * @param value value
+     * @return local time value
+     */
+    protected LocalTime toLocalTime(ZonedDateTime value) {
+        return value.toLocalTime();
+    }
+
+    /**
      * Convert to LocalDateTime.
      *
      * @param value value
@@ -1088,6 +1159,9 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof java.sql.Time) {
             return toLocalDateTime((java.sql.Time) value);
+        }
+        if (value instanceof ZonedDateTime) {
+            return toLocalDateTime((ZonedDateTime) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToLocalDateTime unsupported type", value.getClass());
@@ -1144,6 +1218,16 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to LocalDateTime.
+     *
+     * @param value value
+     * @return local date time value
+     */
+    protected LocalDateTime toLocalDateTime(ZonedDateTime value) {
+        return value.toLocalDateTime();
+    }
+
+    /**
      * Convert to OffsetTime.
      *
      * @param value value
@@ -1188,6 +1272,9 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof java.sql.Date) {
             return toOffsetTime((java.sql.Date) value);
+        }
+        if (value instanceof ZonedDateTime) {
+            return toOffsetTime((ZonedDateTime) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToOffsetTime unsupported type", value.getClass());
@@ -1254,6 +1341,16 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to OffsetTime.
+     *
+     * @param value value
+     * @return offset time value
+     */
+    protected OffsetTime toOffsetTime(ZonedDateTime value) {
+        return value.toOffsetDateTime().toOffsetTime();
+    }
+
+    /**
      * Convert to OffsetDateTime.
      *
      * @param value value
@@ -1296,6 +1393,9 @@ public class TsurugiJdbcConvertUtil {
         if (value instanceof java.sql.Time) {
             return toOffsetDateTime((java.sql.Time) value);
         }
+        if (value instanceof ZonedDateTime) {
+            return toOffsetDateTime((ZonedDateTime) value);
+        }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToOffsetDateTime unsupported type", value.getClass());
     }
@@ -1307,10 +1407,7 @@ public class TsurugiJdbcConvertUtil {
      * @return offset date time value
      */
     protected OffsetDateTime toOffsetDateTime(java.sql.Date value) {
-        long epochMilli = value.getTime();
-        var instant = Instant.ofEpochMilli(epochMilli);
-        var zone = ZoneId.systemDefault();
-        return instant.atZone(zone).toOffsetDateTime();
+        return toZonedDateTime(value).toOffsetDateTime();
     }
 
     /**
@@ -1320,10 +1417,7 @@ public class TsurugiJdbcConvertUtil {
      * @return offset date time value
      */
     protected OffsetDateTime toOffsetDateTime(java.sql.Time value) {
-        long epochMilli = value.getTime();
-        var instant = Instant.ofEpochMilli(epochMilli);
-        var zone = ZoneId.systemDefault();
-        return instant.atZone(zone).toOffsetDateTime();
+        return toZonedDateTime(value).toOffsetDateTime();
     }
 
     /**
@@ -1333,10 +1427,7 @@ public class TsurugiJdbcConvertUtil {
      * @return offset date time value
      */
     protected OffsetDateTime toOffsetDateTime(java.sql.Timestamp value) {
-        long epochMilli = value.getTime();
-        var instant = Instant.ofEpochMilli(epochMilli);
-        var zone = ZoneId.systemDefault();
-        return instant.atZone(zone).toOffsetDateTime();
+        return toZonedDateTime(value).toOffsetDateTime();
     }
 
     /**
@@ -1346,8 +1437,8 @@ public class TsurugiJdbcConvertUtil {
      * @return offset date time value
      */
     protected OffsetDateTime toOffsetDateTime(LocalDate value) {
-        var localDateTime = value.atTime(LocalTime.MIN);
-        return toOffsetDateTime(localDateTime);
+        var ldt = value.atTime(LocalTime.MIN);
+        return toOffsetDateTime(ldt);
     }
 
     /**
@@ -1358,6 +1449,136 @@ public class TsurugiJdbcConvertUtil {
      */
     protected OffsetDateTime toOffsetDateTime(LocalDateTime value) {
         return OffsetDateTime.of(value, ZoneOffset.UTC);
+    }
+
+    /**
+     * Convert to OffsetDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     */
+    protected OffsetDateTime toOffsetDateTime(ZonedDateTime value) {
+        return value.toOffsetDateTime();
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     * @throws SQLException if data convert error occurs
+     */
+    public ZonedDateTime convertToZonedDateTime(@Nonnull Object value) throws SQLException {
+        try {
+            return convertToZonedDateTimeMain(value);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Exception e) {
+            throw getExceptionHandler().dataException("convertToZonedDateTime error", e);
+        }
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     * @throws Exception if data convert error occurs
+     */
+    protected ZonedDateTime convertToZonedDateTimeMain(@Nonnull Object value) throws Exception {
+        if (value instanceof ZonedDateTime) {
+            return (ZonedDateTime) value;
+        }
+        if (value instanceof OffsetDateTime) {
+            return toZonedDateTime((OffsetDateTime) value);
+        }
+        if (value instanceof java.sql.Timestamp) {
+            return toZonedDateTime((java.sql.Timestamp) value);
+        }
+        if (value instanceof LocalDateTime) {
+            return toZonedDateTime((LocalDateTime) value);
+        }
+        if (value instanceof LocalDate) {
+            return toZonedDateTime((LocalDate) value);
+        }
+        if (value instanceof java.sql.Date) {
+            return toZonedDateTime((java.sql.Date) value);
+        }
+        if (value instanceof java.sql.Time) {
+            return toZonedDateTime((java.sql.Time) value);
+        }
+
+        throw getExceptionHandler().dataTypeMismatchException("convertToZonedDateTime unsupported type", value.getClass());
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     */
+    protected ZonedDateTime toZonedDateTime(java.sql.Date value) {
+        long epochMilli = value.getTime();
+        var instant = Instant.ofEpochMilli(epochMilli);
+        var zone = ZoneId.systemDefault();
+        return instant.atZone(zone);
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     */
+    protected ZonedDateTime toZonedDateTime(java.sql.Time value) {
+        long epochMilli = value.getTime();
+        var instant = Instant.ofEpochMilli(epochMilli);
+        var zone = ZoneId.systemDefault();
+        return instant.atZone(zone);
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     */
+    protected ZonedDateTime toZonedDateTime(java.sql.Timestamp value) {
+        long epochMilli = value.getTime();
+        var instant = Instant.ofEpochMilli(epochMilli);
+        var zone = ZoneId.systemDefault();
+        return instant.atZone(zone);
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     */
+    protected ZonedDateTime toZonedDateTime(LocalDate value) {
+        var ldt = value.atTime(LocalTime.MIN);
+        return toZonedDateTime(ldt);
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     */
+    protected ZonedDateTime toZonedDateTime(LocalDateTime value) {
+        return ZonedDateTime.of(value, ZoneOffset.UTC);
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     */
+    protected ZonedDateTime toZonedDateTime(OffsetDateTime value) {
+        return value.toZonedDateTime();
     }
 
     /**

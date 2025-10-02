@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -184,6 +185,7 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
         LOCAL_DATE_TIME((rs, i) -> rs.getObject(i, LocalDateTime.class)), //
         OFFSET_TIME((rs, i) -> rs.getObject(i, OffsetTime.class)), //
         OFFSET_DATE_TIME((rs, i) -> rs.getObject(i, OffsetDateTime.class)), //
+        ZONED_DATE_TIME((rs, i) -> rs.getObject(i, ZonedDateTime.class)), //
         ASCII_STREAM(ResultSet::getAsciiStream), //
         @SuppressWarnings("deprecation")
         UNICODE_STREAM(ResultSet::getUnicodeStream), //

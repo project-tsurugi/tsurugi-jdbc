@@ -101,6 +101,7 @@ public class JdbcDbTypeLocalDateTest extends JdbcDbTypeTester<LocalDate> {
         case LOCAL_DATE:
         case LOCAL_DATE_TIME:
         case OFFSET_DATE_TIME:
+        case ZONED_DATE_TIME:
             fail(e);
             return;
         default:
@@ -129,6 +130,9 @@ public class JdbcDbTypeLocalDateTest extends JdbcDbTypeTester<LocalDate> {
             return;
         case OFFSET_DATE_TIME:
             assertEquals(expected.atStartOfDay().atOffset(ZoneOffset.UTC), actual);
+            return;
+        case ZONED_DATE_TIME:
+            assertEquals(expected.atStartOfDay().atZone(ZoneId.of("Z")), actual);
             return;
         default:
             assertEquals(expected, actual, "valueType=" + valueType);

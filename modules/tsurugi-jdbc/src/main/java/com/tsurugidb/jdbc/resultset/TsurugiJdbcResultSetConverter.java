@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -370,6 +371,21 @@ public class TsurugiJdbcResultSetConverter {
     }
 
     /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @return offset date time value
+     * @throws SQLException if data convert error occurs
+     */
+    public ZonedDateTime convertToZonedDateTime(Object value) throws SQLException {
+        if (value == null) {
+            return null;
+        }
+
+        return convertUtil.convertToZonedDateTime(value);
+    }
+
+    /**
      * Convert to CharacterStream.
      *
      * @param value value
@@ -516,6 +532,7 @@ public class TsurugiJdbcResultSetConverter {
         map.put(LocalDateTime.class, TsurugiJdbcResultSetConverter::convertToLocalDateTime);
         map.put(OffsetTime.class, TsurugiJdbcResultSetConverter::convertToOffsetTime);
         map.put(OffsetDateTime.class, TsurugiJdbcResultSetConverter::convertToOffsetDateTime);
+        map.put(ZonedDateTime.class, TsurugiJdbcResultSetConverter::convertToZonedDateTime);
 
         map.put(java.sql.Blob.class, TsurugiJdbcResultSetConverter::convertToBlob);
         map.put(java.sql.Clob.class, TsurugiJdbcResultSetConverter::convertToClob);
