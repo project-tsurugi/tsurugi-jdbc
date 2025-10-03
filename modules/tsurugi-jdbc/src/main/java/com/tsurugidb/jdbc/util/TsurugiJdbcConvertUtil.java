@@ -771,8 +771,8 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(LocalTime value, ZoneId zone) {
-        long epochSecond = value.atDate(LocalDate.EPOCH).atZone(zone).toEpochSecond();
-        return new java.sql.Time(TimeUnit.SECONDS.toMillis(epochSecond));
+        var zdt = value.atDate(LocalDate.EPOCH).atZone(zone);
+        return java.sql.Time.valueOf(zdt.toLocalTime());
     }
 
     /**
@@ -783,7 +783,8 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(LocalDateTime value, ZoneId zone) {
-        return toTime(value.toLocalTime(), zone);
+        var zdt = value.atZone(zone);
+        return java.sql.Time.valueOf(zdt.toLocalTime());
     }
 
     /**
@@ -793,8 +794,8 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(OffsetTime value) {
-        long epochSecond = value.toEpochSecond(LocalDate.EPOCH);
-        return new java.sql.Time(TimeUnit.SECONDS.toMillis(epochSecond));
+        var odt = value.atDate(LocalDate.EPOCH).atZoneSameInstant(DEFAULT_ZONE);
+        return java.sql.Time.valueOf(odt.toLocalTime());
     }
 
     /**
@@ -804,7 +805,8 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(OffsetDateTime value) {
-        return toTime(value.toOffsetTime());
+        var odt = value.atZoneSameInstant(DEFAULT_ZONE);
+        return java.sql.Time.valueOf(odt.toLocalTime());
     }
 
     /**

@@ -190,13 +190,12 @@ public class JdbcDbTypeSqlTimestampTest extends JdbcDbTypeTester<java.sql.Timest
     }
 
     private java.sql.Time toSqlTime(java.sql.Timestamp value) {
-        var time = toZonedDateTime(value).toLocalTime();
-        return java.sql.Time.valueOf(time);
+        var zdt = toZonedDateTime(value);
+        return java.sql.Time.valueOf(zdt.toLocalTime());
     }
 
     private java.sql.Timestamp toSqlTimestamp(LocalDateTime value) {
-        var zone = ZoneId.systemDefault();
-        var zdt = value.atZone(zone);
+        var zdt = value.atZone(ZoneId.systemDefault());
         long epochSecond = zdt.toEpochSecond();
         var timestamp = new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
         timestamp.setNanos(value.getNano());

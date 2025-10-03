@@ -126,7 +126,8 @@ public class JdbcDbTypeTimeTest extends JdbcDbTypeTester<LocalTime> {
     }
 
     private java.sql.Time toSqlTime(LocalTime value) {
-        return java.sql.Time.valueOf(value);
+        var zdt = value.atDate(LocalDate.EPOCH).atZone(ZoneId.systemDefault());
+        return java.sql.Time.valueOf(zdt.toLocalTime());
     }
 
     private OffsetTime toOffsetTime(LocalTime value) {
