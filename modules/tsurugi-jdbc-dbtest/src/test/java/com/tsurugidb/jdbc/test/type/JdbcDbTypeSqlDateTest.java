@@ -26,7 +26,7 @@ import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -69,7 +69,7 @@ public class JdbcDbTypeSqlDateTest extends JdbcDbTypeTester<java.sql.Date> {
 
     @Override
     protected TgBindVariable<java.sql.Date> bindVariable(String name) {
-        return new TgBindVariable<java.sql.Date>(name, TgDataType.DATE) {
+        return new TgBindVariable<>(name, TgDataType.DATE) {
             @Override
             public TgBindParameter bind(java.sql.Date value) {
                 throw new UnsupportedOperationException();
@@ -84,11 +84,8 @@ public class JdbcDbTypeSqlDateTest extends JdbcDbTypeTester<java.sql.Date> {
 
     @Override
     protected TgBindParameter bindParameter(String name, java.sql.Date value) {
-        if (value == null) {
-            return TgBindParameter.of(name, (LocalDate) null);
-        } else {
-            return TgBindParameter.of(name, toLocalDate(value));
-        }
+        var date = toLocalDate(value);
+        return TgBindParameter.of(name, date);
     }
 
     @Override
@@ -157,20 +154,15 @@ public class JdbcDbTypeSqlDateTest extends JdbcDbTypeTester<java.sql.Date> {
             assertEquals(toLocalDate(expected).atStartOfDay(), actual);
             return;
         case OFFSET_DATE_TIME:
-            assertEquals(toLocalDate(expected).atStartOfDay().atOffset(ZoneOffset.UTC), actual);
+            assertEquals(toZonedDateTime(expected).toOffsetDateTime(), actual);
             return;
         case ZONED_DATE_TIME:
-            assertEquals(toLocalDate(expected).atStartOfDay().atZone(ZoneId.of("Z")), actual);
+            assertEquals(toZonedDateTime(expected), actual);
             return;
         default:
             assertEquals(expected, actual, "valueType=" + valueType);
             return;
         }
-    }
-
-    private LocalDate toLocalDate(java.sql.Date value) {
-        long epochMilli = value.getTime();
-        return LocalDate.ofEpochDay(TimeUnit.MILLISECONDS.toDays(epochMilli));
     }
 
     private java.sql.Date toSqlDate(LocalDate value) {
@@ -183,5 +175,18 @@ public class JdbcDbTypeSqlDateTest extends JdbcDbTypeTester<java.sql.Date> {
         var zdt = toLocalDate(value).atStartOfDay(zone);
         long epochSecond = zdt.toEpochSecond();
         return new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
+    }
+
+    private LocalDate toLocalDate(java.sql.Date value) {
+        if (value == null) {
+            return null;
+        }
+        long epochMilli = value.getTime();
+        return LocalDate.ofEpochDay(TimeUnit.MILLISECONDS.toDays(epochMilli));
+    }
+
+    private ZonedDateTime toZonedDateTime(java.sql.Date value) {
+        var ldt = toLocalDate(value);
+        return ldt.atStartOfDay(ZoneId.systemDefault());
     }
 }

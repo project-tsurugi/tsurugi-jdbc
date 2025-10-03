@@ -26,7 +26,7 @@ import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -129,10 +129,10 @@ public class JdbcDbTypeDateTest extends JdbcDbTypeTester<LocalDate> {
             assertEquals(expected.atStartOfDay(), actual);
             return;
         case OFFSET_DATE_TIME:
-            assertEquals(expected.atStartOfDay().atOffset(ZoneOffset.UTC), actual);
+            assertEquals(toZonedDateTime(expected).toOffsetDateTime(), actual);
             return;
         case ZONED_DATE_TIME:
-            assertEquals(expected.atStartOfDay().atZone(ZoneId.of("Z")), actual);
+            assertEquals(toZonedDateTime(expected), actual);
             return;
         default:
             assertEquals(expected, actual, "valueType=" + valueType);
@@ -150,5 +150,9 @@ public class JdbcDbTypeDateTest extends JdbcDbTypeTester<LocalDate> {
         var zdt = value.atStartOfDay(zone);
         long epochSecond = zdt.toEpochSecond();
         return new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
+    }
+
+    private ZonedDateTime toZonedDateTime(LocalDate value) {
+        return value.atStartOfDay(ZoneId.systemDefault());
     }
 }

@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -170,10 +169,10 @@ public class JdbcDbTypeTimestampTest extends JdbcDbTypeTester<LocalDateTime> {
     }
 
     private OffsetDateTime toOffsetDateTime(LocalDateTime value) {
-        return value.atOffset(ZoneOffset.UTC);
+        return toZonedDateTime(value).toOffsetDateTime();
     }
 
     private ZonedDateTime toZonedDateTime(LocalDateTime value) {
-        return value.atZone(ZoneId.of("Z"));
+        return value.atZone(ZoneId.systemDefault());
     }
 }

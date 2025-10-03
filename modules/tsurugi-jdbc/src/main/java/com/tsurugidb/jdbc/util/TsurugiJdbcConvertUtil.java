@@ -30,7 +30,6 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.Locale;
@@ -1449,7 +1448,7 @@ public class TsurugiJdbcConvertUtil {
      * @return offset time value
      */
     protected OffsetTime toOffsetTime(LocalTime value) {
-        return OffsetTime.of(value, ZoneOffset.UTC);
+        return toOffsetDateTime(value.atDate(LocalDate.EPOCH)).toOffsetTime();
     }
 
     /**
@@ -1596,7 +1595,7 @@ public class TsurugiJdbcConvertUtil {
      * @return offset date time value
      */
     protected OffsetDateTime toOffsetDateTime(LocalDateTime value) {
-        return OffsetDateTime.of(value, ZoneOffset.UTC);
+        return toZonedDateTime(value).toOffsetDateTime();
     }
 
     /**
@@ -1708,7 +1707,7 @@ public class TsurugiJdbcConvertUtil {
     protected ZonedDateTime toZonedDateTime(java.sql.Timestamp value, ZoneId zone) {
         long epochMilli = value.getTime();
         var instant = Instant.ofEpochMilli(epochMilli);
-        return instant.atZone(zone);
+        return instant.atZone(zone).withNano(value.getNanos());
     }
 
     /**
@@ -1729,7 +1728,7 @@ public class TsurugiJdbcConvertUtil {
      * @return offset date time value
      */
     protected ZonedDateTime toZonedDateTime(LocalDateTime value) {
-        return ZonedDateTime.of(value, ZoneOffset.UTC);
+        return ZonedDateTime.of(value, DEFAULT_ZONE);
     }
 
     /**
