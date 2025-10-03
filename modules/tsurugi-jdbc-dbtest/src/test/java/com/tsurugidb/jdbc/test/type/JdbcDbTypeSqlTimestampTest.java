@@ -184,8 +184,8 @@ public class JdbcDbTypeSqlTimestampTest extends JdbcDbTypeTester<java.sql.Timest
     }
 
     private java.sql.Date toSqlDate(java.sql.Timestamp value) {
-        var ldt = toZonedDateTime(value).toLocalDate();
-        long epochDay = ldt.toEpochDay();
+        var zdt = toZonedDateTime(value);
+        long epochDay = zdt.toLocalDate().toEpochDay();
         return new java.sql.Date(TimeUnit.DAYS.toMillis(epochDay));
     }
 

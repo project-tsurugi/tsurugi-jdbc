@@ -24,10 +24,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -37,48 +36,51 @@ import com.tsurugidb.iceaxe.sql.parameter.TgBindVariable;
 import com.tsurugidb.iceaxe.sql.result.TsurugiResultEntity;
 
 /**
- * Tsurugi JDBC TIMESTAMP test.
+ * Tsurugi JDBC TIMESTAMP WITH TIME ZONE test.
  */
-public class JdbcDbTypeTimestampTest extends JdbcDbTypeTester<LocalDateTime> {
+public class JdbcDbTypeTimestampTzTest extends JdbcDbTypeTester<OffsetDateTime> {
 
     @Override
     protected String sqlType() {
-        return "timestamp";
+        return "timestamp with time zone";
     }
 
+    private static final OffsetDateTime NOW = OffsetDateTime.now();
+
     @Override
-    protected List<LocalDateTime> values() {
-        var list = new ArrayList<LocalDateTime>();
-        list.add(LocalDateTime.now());
-        list.add(LocalDateTime.of(1969, 12, 31, 23, 59, 59, 999_999_999));
-        list.add(LocalDateTime.of(1970, 1, 1, 0, 0, 0));
-        list.add(LocalDateTime.of(2025, 2, 7, 12, 30, 59, 123456789));
-        list.add(LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999_999_999));
-        list.add(LocalDateTime.of(-1, 1, 1, 0, 0, 0));
-        list.add(LocalDateTime.of(0, 1, 1, 0, 0, 0));
-        list.add(LocalDateTime.of(2025, 7, 3, 8, 17, 19, 210_000_000));
+    protected List<OffsetDateTime> values() {
+        var list = new ArrayList<OffsetDateTime>();
+        list.add(NOW);
+        for (var offset : List.of(ZoneOffset.UTC, ZoneOffset.ofHours(9))) {
+            list.add(OffsetDateTime.of(1969, 12, 31, 23, 59, 59, 999_999_999, offset));
+            list.add(OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, offset));
+            list.add(OffsetDateTime.of(2025, 2, 7, 12, 30, 59, 123456789, offset));
+            list.add(OffsetDateTime.of(9999, 12, 31, 23, 59, 59, 999_999_999, offset));
+            list.add(OffsetDateTime.of(-1, 1, 1, 0, 0, 0, 0, offset));
+            list.add(OffsetDateTime.of(0, 1, 1, 0, 0, 0, 0, offset));
+        }
         list.add(null);
         return list;
     }
 
     @Override
-    protected TgBindVariable<LocalDateTime> bindVariable(String name) {
-        return TgBindVariable.ofDateTime(name);
+    protected TgBindVariable<OffsetDateTime> bindVariable(String name) {
+        return TgBindVariable.ofOffsetDateTime(name);
     }
 
     @Override
-    protected TgBindParameter bindParameter(String name, LocalDateTime value) {
+    protected TgBindParameter bindParameter(String name, OffsetDateTime value) {
         return TgBindParameter.of(name, value);
     }
 
     @Override
-    protected LocalDateTime get(TsurugiResultEntity entity, String name) {
-        return entity.getDateTime(name);
+    protected OffsetDateTime get(TsurugiResultEntity entity, String name) {
+        return entity.getOffsetDateTime(name);
     }
 
     @Override
-    protected LocalDateTime get(ResultSet rs, int columnIndex) throws SQLException {
-        LocalDateTime value = (LocalDateTime) rs.getObject(columnIndex);
+    protected OffsetDateTime get(ResultSet rs, int columnIndex) throws SQLException {
+        OffsetDateTime value = (OffsetDateTime) rs.getObject(columnIndex);
         if (rs.wasNull()) {
             assertNull(value);
         }
@@ -86,16 +88,38 @@ public class JdbcDbTypeTimestampTest extends JdbcDbTypeTester<LocalDateTime> {
     }
 
     @Override
-    protected void setParameter(PreparedStatement ps, int parameterIndex, LocalDateTime value) throws SQLException {
+    protected void setParameter(PreparedStatement ps, int parameterIndex, OffsetDateTime value) throws SQLException {
         if (value != null) {
             ps.setObject(parameterIndex, value);
         } else {
-            ps.setNull(parameterIndex, java.sql.Types.TIMESTAMP);
+            ps.setNull(parameterIndex, java.sql.Types.TIMESTAMP_WITH_TIMEZONE);
         }
     }
 
     @Override
-    protected void assertException(LocalDateTime expected, ValueType valueType, SQLDataException e) {
+    protected void assertValueList(List<OffsetDateTime> expected, List<OffsetDateTime> actual) {
+        try {
+            assertEquals(expected.size(), actual.size());
+            for (int i = 0; i < actual.size(); i++) {
+                var e = expectedTimestamp(expected.get(i));
+                var a = actual.get(i);
+                assertEquals(e, a);
+            }
+        } catch (Throwable e) {
+            LOG.error("{}\nexpected={}\nactual=  {}", e.getMessage(), expected, actual);
+            throw e;
+        }
+    }
+
+    private static OffsetDateTime expectedTimestamp(OffsetDateTime value) {
+        if (value == null) {
+            return null;
+        }
+        return value.withOffsetSameInstant(ZoneOffset.UTC);
+    }
+
+    @Override
+    protected void assertException(OffsetDateTime expected, ValueType valueType, SQLDataException e) {
         switch (valueType) {
         case OBJECT:
         case STRING:
@@ -115,7 +139,9 @@ public class JdbcDbTypeTimestampTest extends JdbcDbTypeTester<LocalDateTime> {
     }
 
     @Override
-    protected void assertValue(LocalDateTime expected, ValueType valueType, Object actual) {
+    protected void assertValue(OffsetDateTime expected, ValueType valueType, Object actual) {
+        expected = expectedTimestamp(expected);
+
         switch (valueType) {
         case STRING:
             assertEquals(expected.toString(), actual);
@@ -135,14 +161,18 @@ public class JdbcDbTypeTimestampTest extends JdbcDbTypeTester<LocalDateTime> {
         case LOCAL_TIME:
             assertEquals(expected.toLocalTime(), actual);
             return;
+        case LOCAL_DATE_TIME:
+            assertEquals(expected.toLocalDateTime(), actual);
+            return;
         case OFFSET_TIME:
-            assertEquals(toOffsetDateTime(expected).toOffsetTime(), actual);
+            assertEquals(expected.toOffsetTime(), actual);
             return;
         case OFFSET_DATE_TIME:
-            assertEquals(toOffsetDateTime(expected), actual);
+        case OBJECT:
+            assertEquals(expected, actual);
             return;
         case ZONED_DATE_TIME:
-            assertEquals(toZonedDateTime(expected), actual);
+            assertEquals(expected.toZonedDateTime(), actual);
             return;
         default:
             assertEquals(expected, actual, "valueType=" + valueType);
@@ -150,30 +180,22 @@ public class JdbcDbTypeTimestampTest extends JdbcDbTypeTester<LocalDateTime> {
         }
     }
 
-    private java.sql.Date toSqlDate(LocalDateTime value) {
-        var zdt = toZonedDateTime(value);
+    private java.sql.Date toSqlDate(OffsetDateTime value) {
+        var zdt = value.atZoneSameInstant(ZoneId.systemDefault());
         long epochDay = zdt.toLocalDate().toEpochDay();
         return new java.sql.Date(TimeUnit.DAYS.toMillis(epochDay));
     }
 
-    private java.sql.Time toSqlTime(LocalDateTime value) {
-        var zdt = toZonedDateTime(value);
+    private java.sql.Time toSqlTime(OffsetDateTime value) {
+        var zdt = value.atZoneSameInstant(ZoneId.systemDefault());
         return java.sql.Time.valueOf(zdt.toLocalTime());
     }
 
-    private java.sql.Timestamp toSqlTimestamp(LocalDateTime value) {
-        var zdt = toZonedDateTime(value);
+    private java.sql.Timestamp toSqlTimestamp(OffsetDateTime value) {
+        var zdt = value.atZoneSameInstant(ZoneId.systemDefault());
         long epochSecond = zdt.toEpochSecond();
         var timestamp = new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
         timestamp.setNanos(value.getNano());
         return timestamp;
-    }
-
-    private OffsetDateTime toOffsetDateTime(LocalDateTime value) {
-        return toZonedDateTime(value).toOffsetDateTime();
-    }
-
-    private ZonedDateTime toZonedDateTime(LocalDateTime value) {
-        return value.atZone(ZoneId.systemDefault());
     }
 }
