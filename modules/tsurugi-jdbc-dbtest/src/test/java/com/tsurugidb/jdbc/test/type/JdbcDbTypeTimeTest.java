@@ -37,7 +37,7 @@ import com.tsurugidb.iceaxe.sql.result.TsurugiResultEntity;
 /**
  * Tsurugi JDBC TIME test.
  */
-public class JdbcDbTypeLocalTimeTest extends JdbcDbTypeTester<LocalTime> {
+public class JdbcDbTypeTimeTest extends JdbcDbTypeTester<LocalTime> {
 
     @Override
     protected String sqlType() {
