@@ -15,25 +15,18 @@
  */
 package com.tsurugidb.jdbc.util;
 
-import java.math.BigDecimal;
 import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.text.MessageFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
-import com.tsurugidb.sql.proto.SqlCommon;
+import com.tsurugidb.jdbc.util.type.TsurugiJdbcType;
 import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 
 /**
@@ -96,257 +89,94 @@ public class TsurugiJdbcSqlTypeUtil {
     }
 
     /**
-     * Convert from Column to JDBCType.
+     * Get signed.
      *
-     * @param lowColumn column
-     * @return JDBCType
+     * @param type type
+     * @return signed
      * @throws SQLException if type is not supported
      */
-    public JDBCType toJdbcType(SqlCommon.Column lowColumn) throws SQLException {
-        var atomType = lowColumn.getAtomType();
-        switch (atomType) {
-        case CHARACTER:
-            if (isVarying(lowColumn)) {
-                return JDBCType.VARCHAR;
-            } else {
-                return JDBCType.CHAR;
-            }
-        case OCTET:
-            if (isVarying(lowColumn)) {
-                return JDBCType.VARBINARY;
-            } else {
-                return JDBCType.BINARY;
-            }
-        default:
-            return toJdbcType(atomType);
-        }
-    }
-
-    /**
-     * Convert from AtomType to JDBCType.
-     *
-     * @param atomType atom type
-     * @return JDBCType
-     * @throws SQLException if atom type is not supported
-     */
-    public JDBCType toJdbcType(AtomType atomType) throws SQLException {
-        switch (atomType) {
-        case BOOLEAN:
-            return JDBCType.BOOLEAN;
-        case INT4:
-            return JDBCType.INTEGER;
-        case INT8:
-            return JDBCType.BIGINT;
-        case FLOAT4:
-            return JDBCType.REAL;
-        case FLOAT8:
-            return JDBCType.DOUBLE;
+    public boolean getSigned(TsurugiJdbcType type) throws SQLException {
+        var jdbcType = type.getJdbcType();
+        switch (jdbcType) {
+        case TINYINT:
+        case SMALLINT:
+        case INTEGER:
+        case BIGINT:
+        case REAL:
+        case FLOAT:
+        case DOUBLE:
         case DECIMAL:
-            return JDBCType.DECIMAL;
-        case CHARACTER:
-            return JDBCType.VARCHAR;
-        case OCTET:
-            return JDBCType.VARBINARY;
-        case DATE:
-            return JDBCType.DATE;
-        case TIME_OF_DAY:
-            return JDBCType.TIME;
-        case TIME_POINT:
-            return JDBCType.TIMESTAMP;
-        case TIME_OF_DAY_WITH_TIME_ZONE:
-            return JDBCType.TIME_WITH_TIMEZONE;
-        case TIME_POINT_WITH_TIME_ZONE:
-            return JDBCType.TIMESTAMP_WITH_TIMEZONE;
-        case BLOB:
-            return JDBCType.BLOB;
-        case CLOB:
-            return JDBCType.CLOB;
+        case NUMERIC:
+            return true;
         default:
-            throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported AtomType.{0}", atomType));
+            return false;
         }
     }
 
     /**
-     * Convert from Column to SQL type name.
+     * Get display size.
      *
-     * @param lowColumn column
-     * @return SQL type name
-     * @throws SQLException if type is not supported
-     */
-    public String toSqlTypeName(SqlCommon.Column lowColumn) throws SQLException {
-        var atomType = lowColumn.getAtomType();
-        switch (atomType) {
-        case CHARACTER:
-            if (isVarying(lowColumn)) {
-                return "VARCHAR";
-            } else {
-                return "CHAR";
-            }
-        case OCTET:
-            if (isVarying(lowColumn)) {
-                return "VARBINARY";
-            } else {
-                return "BINARY";
-            }
-        default:
-            return toSqlTypeName(atomType);
-        }
-    }
-
-    /**
-     * Convert from AtomType to SQL type name.
-     *
-     * @param atomType atom type
-     * @return SQL type name
-     * @throws SQLException if atom type is not supported
-     */
-    public String toSqlTypeName(AtomType atomType) throws SQLException {
-        switch (atomType) {
-        case BOOLEAN:
-            return "BOOLEAN";
-        case INT4:
-            return "INT";
-        case INT8:
-            return "BIGINT";
-        case FLOAT4:
-            return "REAL";
-        case FLOAT8:
-            return "DOUBLE";
-        case DECIMAL:
-            return "DECIMAL";
-        case CHARACTER:
-            return "VARCHAR";
-        case OCTET:
-            return "VARBINARY";
-        case DATE:
-            return "DATE";
-        case TIME_OF_DAY:
-            return "TIME";
-        case TIME_POINT:
-            return "TIMESTAMP";
-        case TIME_OF_DAY_WITH_TIME_ZONE:
-            return "TIME WITH TIME ZONE";
-        case TIME_POINT_WITH_TIME_ZONE:
-            return "TIMESTAMP WITH TIME ZONE";
-        case BLOB:
-            return "BLOB";
-        case CLOB:
-            return "CLOB";
-        default:
-            throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported AtomType.{0}", atomType));
-        }
-    }
-
-    /**
-     * Get display size for the column.
-     *
-     * @param lowColumn column
+     * @param type type
      * @return display size
      * @throws SQLException if type is not supported
      */
-    public int toDisplaySize(SqlCommon.Column lowColumn) throws SQLException {
-        var atomType = lowColumn.getAtomType();
-        switch (atomType) {
+    public int getDisplaySize(TsurugiJdbcType type) throws SQLException {
+        var jdbcType = type.getJdbcType();
+        switch (jdbcType) {
         case BOOLEAN:
             return 1;
-        case INT4:
+        case TINYINT:
+            return 4;
+        case SMALLINT:
+            return 6;
+        case INTEGER:
             return 11;
-        case INT8:
+        case BIGINT:
             return 20;
-        case FLOAT4:
+        case REAL:
+        case FLOAT:
             return 15;
-        case FLOAT8:
+        case DOUBLE:
             return 25;
         case DECIMAL:
-            return getPrecision(lowColumn);
-        case CHARACTER:
-            return getLength(lowColumn);
-        case OCTET:
-            return getLength(lowColumn) * 2;
+        case NUMERIC:
+            return getPrecision(type);
+        case CHAR:
+        case VARCHAR:
+        case LONGNVARCHAR:
+            return getLength(type);
+        case BINARY:
+        case VARBINARY:
+        case LONGVARBINARY:
+            return getLength(type) * 2;
         case DATE:
             return 10; // yyyy-MM-dd
-        case TIME_OF_DAY:
+        case TIME:
             return 18; // HH:mm:ss.SSSSSSSSS
-        case TIME_POINT:
+        case TIMESTAMP:
             return 10 + 1 + 18; // yyyy-MM-dd HH:mm:ss.SSSSSSSSS
-        case TIME_OF_DAY_WITH_TIME_ZONE:
+        case TIME_WITH_TIMEZONE:
             return 18 + 6; // HH:mm:ss.SSSSSSSSS+09:00
-        case TIME_POINT_WITH_TIME_ZONE:
+        case TIMESTAMP_WITH_TIMEZONE:
             return 10 + 1 + 18 + 6; // yyyy-MM-dd HH:mm:ss.SSSSSSSSS+09:00
         case BLOB:
             return Integer.MAX_VALUE;
         case CLOB:
             return Integer.MAX_VALUE;
         default:
-            throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported AtomType.{0}", atomType));
+            throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported JDBCType.{0}", jdbcType));
         }
     }
 
     /**
-     * Convert from Column to Java class.
+     * Get column size.
      *
-     * @param lowColumn column
-     * @return Java class
-     * @throws SQLException if type is not supported
-     */
-    public Class<?> toJavaClass(SqlCommon.Column lowColumn) throws SQLException {
-        var atomType = lowColumn.getAtomType();
-        return toJavaClass(atomType);
-    }
-
-    /**
-     * Convert from AtomType to Java class.
-     *
-     * @param atomType atom type
-     * @return Java class
+     * @param type type
+     * @return column size
      * @throws SQLException if atom type is not supported
      */
-    public Class<?> toJavaClass(AtomType atomType) throws SQLException {
-        switch (atomType) {
-        case BOOLEAN:
-            return boolean.class;
-        case INT4:
-            return int.class;
-        case INT8:
-            return long.class;
-        case FLOAT4:
-            return float.class;
-        case FLOAT8:
-            return double.class;
-        case DECIMAL:
-            return BigDecimal.class;
-        case CHARACTER:
-            return String.class;
-        case OCTET:
-            return byte[].class;
-        case DATE:
-            return LocalDate.class;
-        case TIME_OF_DAY:
-            return LocalTime.class;
-        case TIME_POINT:
-            return LocalDateTime.class;
-        case TIME_OF_DAY_WITH_TIME_ZONE:
-            return OffsetTime.class;
-        case TIME_POINT_WITH_TIME_ZONE:
-            return OffsetDateTime.class;
-        case BLOB:
-            return java.sql.Blob.class;
-        case CLOB:
-            return java.sql.Clob.class;
-        default:
-            throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported AtomType.{0}", atomType));
-        }
-    }
-
-    /**
-     * Get length for column.
-     *
-     * @param lowColumn column
-     * @return length
-     * @throws SQLException if atom type is not supported
-     */
-    public Integer getColumnSize(SqlCommon.Column lowColumn) throws SQLException {
-        var atomType = lowColumn.getAtomType();
+    public Integer getColumnSize(TsurugiJdbcType type) throws SQLException {
+        var atomType = type.getAtomType();
         switch (atomType) {
         case BOOLEAN:
             return 1;
@@ -362,20 +192,20 @@ public class TsurugiJdbcSqlTypeUtil {
             return null;
         case CHARACTER:
         case OCTET:
-            return getLength(lowColumn);
+            return getLength(type);
         default:
             return null;
         }
     }
 
     /**
-     * Get length for column.
+     * Get length.
      *
-     * @param lowColumn column
+     * @param type type
      * @return length
      */
-    public int getLength(SqlCommon.Column lowColumn) {
-        var lengthOpt = findLength(lowColumn);
+    public int getLength(TsurugiJdbcType type) {
+        var lengthOpt = type.findLength();
         if (lengthOpt.isPresent()) {
             var value = lengthOpt.get();
             if (value.arbitrary()) {
@@ -388,18 +218,18 @@ public class TsurugiJdbcSqlTypeUtil {
     }
 
     /**
-     * Get octetLength for column.
+     * Get octet length.
      *
-     * @param lowColumn column
-     * @return length
-     * @throws SQLException if atom type is not supported
+     * @param type type
+     * @return octet length
+     * @throws SQLException if type is not supported
      */
-    public Integer getOctetLength(SqlCommon.Column lowColumn) throws SQLException {
-        var atomType = lowColumn.getAtomType();
+    public Integer getOctetLength(TsurugiJdbcType type) throws SQLException {
+        var atomType = type.getAtomType();
         switch (atomType) {
         case CHARACTER:
         case OCTET:
-            var lengthOpt = findLength(lowColumn);
+            var lengthOpt = type.findLength();
             if (lengthOpt.isPresent()) {
                 var value = lengthOpt.get();
                 if (value.arbitrary()) {
@@ -415,14 +245,14 @@ public class TsurugiJdbcSqlTypeUtil {
     }
 
     /**
-     * Get numPrecRadix for column.
+     * Get numeric precision radix.
      *
-     * @param lowColumn column
-     * @return length
-     * @throws SQLException if atom type is not supported
+     * @param type type
+     * @return numeric precision radix
+     * @throws SQLException if type is not supported
      */
-    public Integer getNumPrecRadix(SqlCommon.Column lowColumn) throws SQLException {
-        var atomType = lowColumn.getAtomType();
+    public Integer getNumPrecRadix(TsurugiJdbcType type) throws SQLException {
+        var atomType = type.getAtomType();
         switch (atomType) {
         case BOOLEAN:
         case INT4:
@@ -438,17 +268,17 @@ public class TsurugiJdbcSqlTypeUtil {
     }
 
     /**
-     * Get decimalDigits for column.
+     * Get decimal digits.
      *
-     * @param lowColumn column
-     * @return decimalDigits
-     * @throws SQLException if atom type is not supported
+     * @param type type
+     * @return decimal digits
+     * @throws SQLException if type is not supported
      */
-    public Integer getDecimalDigits(SqlCommon.Column lowColumn) throws SQLException {
-        var atomType = lowColumn.getAtomType();
+    public Integer getDecimalDigits(TsurugiJdbcType type) throws SQLException {
+        var atomType = type.getAtomType();
         switch (atomType) {
         case DECIMAL:
-            return getScale(lowColumn);
+            return getScale(type);
         case TIME_OF_DAY:
         case TIME_POINT:
         case TIME_OF_DAY_WITH_TIME_ZONE:
@@ -460,13 +290,13 @@ public class TsurugiJdbcSqlTypeUtil {
     }
 
     /**
-     * Get precision for column.
+     * Get precision.
      *
-     * @param lowColumn column
+     * @param type type
      * @return precision
      */
-    public int getPrecision(SqlCommon.Column lowColumn) {
-        var precisionOpt = findPrecision(lowColumn);
+    public int getPrecision(TsurugiJdbcType type) {
+        var precisionOpt = type.findPrecision();
         if (precisionOpt.isPresent()) {
             var value = precisionOpt.get();
             if (value.arbitrary()) {
@@ -479,13 +309,13 @@ public class TsurugiJdbcSqlTypeUtil {
     }
 
     /**
-     * Get scale for column.
+     * Get scale.
      *
-     * @param lowColumn column
+     * @param type type
      * @return scale
      */
-    public int getScale(SqlCommon.Column lowColumn) {
-        var scaleOpt = findScale(lowColumn);
+    public int getScale(TsurugiJdbcType type) {
+        var scaleOpt = type.findScale();
         if (scaleOpt.isPresent()) {
             var value = scaleOpt.get();
             if (value.arbitrary()) {
@@ -495,134 +325,6 @@ public class TsurugiJdbcSqlTypeUtil {
             }
         }
         return 0;
-    }
-
-    /**
-     * Whether the column type is nullable.
-     *
-     * @param lowColumn column
-     * @return nullable
-     */
-    public boolean isNullable(SqlCommon.Column lowColumn) {
-        var nullableOpt = findNullable(lowColumn);
-        return nullableOpt.orElse(true);
-    }
-
-    /**
-     * Whether the column type is varying.
-     *
-     * @param lowColumn column
-     * @return varying
-     */
-    public boolean isVarying(SqlCommon.Column lowColumn) {
-        var varyingOpt = findVarying(lowColumn);
-        return varyingOpt.orElse(true);
-    }
-
-    /**
-     * Get length for column.
-     *
-     * @param lowColumn column
-     * @return length
-     */
-    public Optional<ArbitraryInt> findLength(SqlCommon.Column lowColumn) {
-        var c = lowColumn.getLengthOptCase();
-        if (c == null) {
-            return Optional.empty();
-        }
-        switch (c) {
-        case LENGTH:
-            return Optional.of(ArbitraryInt.of(lowColumn.getLength()));
-        case ARBITRARY_LENGTH:
-            return Optional.of(ArbitraryInt.ofArbitrary());
-        case LENGTHOPT_NOT_SET:
-        default:
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Get precision for column.
-     *
-     * @param lowColumn column
-     * @return precision
-     */
-    public Optional<ArbitraryInt> findPrecision(SqlCommon.Column lowColumn) {
-        var c = lowColumn.getPrecisionOptCase();
-        if (c == null) {
-            return Optional.empty();
-        }
-        switch (c) {
-        case PRECISION:
-            return Optional.of(ArbitraryInt.of(lowColumn.getPrecision()));
-        case ARBITRARY_PRECISION:
-            return Optional.of(ArbitraryInt.ofArbitrary());
-        case PRECISIONOPT_NOT_SET:
-        default:
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Get scale for column.
-     *
-     * @param lowColumn column
-     * @return scale
-     */
-    public Optional<ArbitraryInt> findScale(SqlCommon.Column lowColumn) {
-        var c = lowColumn.getScaleOptCase();
-        if (c == null) {
-            return Optional.empty();
-        }
-        switch (c) {
-        case SCALE:
-            return Optional.of(ArbitraryInt.of(lowColumn.getScale()));
-        case ARBITRARY_SCALE:
-            return Optional.of(ArbitraryInt.ofArbitrary());
-        case SCALEOPT_NOT_SET:
-        default:
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Whether the column type is nullable.
-     *
-     * @param lowColumn column
-     * @return nullable
-     */
-    public Optional<Boolean> findNullable(SqlCommon.Column lowColumn) {
-        var c = lowColumn.getNullableOptCase();
-        if (c == null) {
-            return Optional.empty();
-        }
-        switch (c) {
-        case NULLABLE:
-            return Optional.of(lowColumn.getNullable());
-        case NULLABLEOPT_NOT_SET:
-        default:
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Whether the column type is varying.
-     *
-     * @param lowColumn column
-     * @return varying
-     */
-    public Optional<Boolean> findVarying(SqlCommon.Column lowColumn) {
-        var c = lowColumn.getVaryingOptCase();
-        if (c == null) {
-            return Optional.empty();
-        }
-        switch (c) {
-        case VARYING:
-            return Optional.of(lowColumn.getVarying());
-        case VARYINGOPT_NOT_SET:
-        default:
-            return Optional.empty();
-        }
     }
 
     /**

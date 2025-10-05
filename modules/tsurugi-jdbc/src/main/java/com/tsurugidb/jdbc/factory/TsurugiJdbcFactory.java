@@ -29,6 +29,7 @@ import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetConfig;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSetConverter;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcParameterGenerator;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcParameterMetaData;
+import com.tsurugidb.jdbc.statement.TsurugiJdbcPlaceholderType;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementConfig;
@@ -36,6 +37,10 @@ import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
+import com.tsurugidb.jdbc.util.type.TsurugiJdbcColumnType;
+import com.tsurugidb.jdbc.util.type.TsurugiJdbcType;
+import com.tsurugidb.sql.proto.SqlCommon;
+import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.sql.ResultSet;
 import com.tsurugidb.tsubakuro.sql.Transaction;
@@ -263,5 +268,25 @@ public class TsurugiJdbcFactory {
      */
     public TsurugiJdbcIoUtil getIoUtil() {
         return this.ioUtil;
+    }
+
+    /**
+     * Create Tsurugi type.
+     *
+     * @param lowColumn column
+     * @return Tsurugi type
+     */
+    public TsurugiJdbcType createType(SqlCommon.Column lowColumn) {
+        return new TsurugiJdbcColumnType(lowColumn);
+    }
+
+    /**
+     * Create Tsurugi type.
+     *
+     * @param lowPlaceholder placeholder
+     * @return Tsurugi type
+     */
+    public TsurugiJdbcType createType(Placeholder lowPlaceholder) {
+        return new TsurugiJdbcPlaceholderType(lowPlaceholder);
     }
 }

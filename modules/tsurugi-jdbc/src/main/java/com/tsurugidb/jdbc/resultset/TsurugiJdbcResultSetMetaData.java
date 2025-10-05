@@ -17,13 +17,15 @@ package com.tsurugidb.jdbc.resultset;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
+import com.tsurugidb.jdbc.util.type.TsurugiJdbcType;
 import com.tsurugidb.sql.proto.SqlCommon;
-import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 
 /**
  * {@link TsurugiJdbcResultSet} Meta Data.
@@ -32,6 +34,7 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
 
     private final TsurugiJdbcResultSet ownerResultSet;
     private final com.tsurugidb.tsubakuro.sql.ResultSetMetadata lowMetadata;
+    private List<TsurugiJdbcType> typeList = null;
 
     /**
      * Creates a new instance.
@@ -111,16 +114,30 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
     }
 
     /**
-     * Get AtomType.
+     * Get tsurugi type.
      *
      * @param column column number (1-origin)
-     * @return AtomType
+     * @return tsurugi type
      * @throws SQLException if the column number is out of range
      */
     @TsurugiJdbcInternal
-    public AtomType getLowAtomType(int column) throws SQLException {
-        var lowColumn = getLowColumn(column);
-        return lowColumn.getAtomType();
+    public TsurugiJdbcType getTsurugiType(int column) throws SQLException {
+        if (this.typeList == null) {
+            var lowColumnList = lowMetadata.getColumns();
+            var list = new ArrayList<TsurugiJdbcType>(lowColumnList.size());
+            for (var lowColumn : lowColumnList) {
+                var type = getFactory().createType(lowColumn);
+                list.add(type);
+            }
+            this.typeList = list;
+        }
+
+        int index = column - 1;
+        try {
+            return typeList.get(index);
+        } catch (IndexOutOfBoundsException e) {
+            throw getExceptionHandler().sqlException("getTsurugiType error", e);
+        }
     }
 
     @Override
@@ -145,9 +162,8 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
 
     @Override
     public int isNullable(int column) throws SQLException {
-        var lowColumn = getLowColumn(column);
-        var util = getSqlTypeUtil();
-        var nullable = util.findNullable(lowColumn);
+        var type = getTsurugiType(column);
+        var nullable = type.findNullable();
         if (nullable.isPresent()) {
             if (nullable.get()) {
                 return columnNullable;
@@ -160,24 +176,16 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
 
     @Override
     public boolean isSigned(int column) throws SQLException {
-        var atomType = getLowAtomType(column);
-        switch (atomType) {
-        case INT4:
-        case INT8:
-        case FLOAT4:
-        case FLOAT8:
-        case DECIMAL:
-            return true;
-        default:
-            return false;
-        }
+        var type = getTsurugiType(column);
+        var util = getSqlTypeUtil();
+        return util.getSigned(type);
     }
 
     @Override
     public int getColumnDisplaySize(int column) throws SQLException {
-        var lowColumn = getLowColumn(column);
+        var type = getTsurugiType(column);
         var util = getSqlTypeUtil();
-        return util.toDisplaySize(lowColumn);
+        return util.getDisplaySize(type);
     }
 
     @Override
@@ -204,23 +212,23 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
      * @throws SQLException if the column number is out of range
      */
     public int getLength(int column) throws SQLException {
-        var lowColumn = getLowColumn(column);
+        var type = getTsurugiType(column);
         var util = getSqlTypeUtil();
-        return util.getLength(lowColumn);
+        return util.getLength(type);
     }
 
     @Override
     public int getPrecision(int column) throws SQLException {
-        var lowColumn = getLowColumn(column);
+        var type = getTsurugiType(column);
         var util = getSqlTypeUtil();
-        return util.getPrecision(lowColumn);
+        return util.getPrecision(type);
     }
 
     @Override
     public int getScale(int column) throws SQLException {
-        var lowColumn = getLowColumn(column);
+        var type = getTsurugiType(column);
         var util = getSqlTypeUtil();
-        return util.getScale(lowColumn);
+        return util.getScale(type);
     }
 
     @Override
@@ -235,17 +243,15 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
 
     @Override
     public int getColumnType(int column) throws SQLException {
-        var lowColumn = getLowColumn(column);
-        var util = getSqlTypeUtil();
-        var jdbcType = util.toJdbcType(lowColumn);
+        var type = getTsurugiType(column);
+        var jdbcType = type.getJdbcType();
         return jdbcType.getVendorTypeNumber();
     }
 
     @Override
     public String getColumnTypeName(int column) throws SQLException {
-        var lowColumn = getLowColumn(column);
-        var util = getSqlTypeUtil();
-        return util.toSqlTypeName(lowColumn);
+        var type = getTsurugiType(column);
+        return type.getSqlTypeName();
     }
 
     @Override
@@ -265,9 +271,8 @@ public class TsurugiJdbcResultSetMetaData implements ResultSetMetaData {
 
     @Override
     public String getColumnClassName(int column) throws SQLException {
-        var lowColumn = getLowColumn(column);
-        var util = getSqlTypeUtil();
-        var type = util.toJavaClass(lowColumn);
-        return type.getCanonicalName();
+        var type = getTsurugiType(column);
+        var c = type.getJavaClass();
+        return c.getCanonicalName();
     }
 }

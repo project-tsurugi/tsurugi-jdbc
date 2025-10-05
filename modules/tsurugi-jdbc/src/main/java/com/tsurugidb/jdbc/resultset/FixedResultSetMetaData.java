@@ -121,7 +121,7 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
     @TsurugiJdbcInternal
     public JDBCType getJdbcType(int column) throws SQLException {
         var rawColumn = getColumn(column);
-        return rawColumn.type();
+        return rawColumn.type().jdbcType();
     }
 
     @Override
@@ -147,7 +147,7 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
     @Override
     public int isNullable(int column) throws SQLException {
         var rawColumn = getColumn(column);
-        if (rawColumn.nullable()) {
+        if (rawColumn.type().nullable()) {
             return columnNullable;
         } else {
             return columnNoNulls;
@@ -156,56 +156,16 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
 
     @Override
     public boolean isSigned(int column) throws SQLException {
-        var jdbcType = getJdbcType(column);
-        switch (jdbcType) {
-        case TINYINT:
-        case SMALLINT:
-        case INTEGER:
-        case BIGINT:
-        case REAL:
-        case FLOAT:
-        case DOUBLE:
-        case DECIMAL:
-        case NUMERIC:
-            return true;
-        default:
-            return false;
-        }
+        var rawColumn = getColumn(column);
+        var util = getSqlTypeUtil();
+        return util.getSigned(rawColumn.type());
     }
 
     @Override
     public int getColumnDisplaySize(int column) throws SQLException {
-        var jdbcType = getJdbcType(column);
-        switch (jdbcType) {
-        case BOOLEAN:
-            return 1;
-        case TINYINT:
-            return 4;
-        case SMALLINT:
-            return 6;
-        case INTEGER:
-            return 11;
-        case BIGINT:
-            return 20;
-        case REAL:
-        case FLOAT:
-            return 15;
-        case DOUBLE:
-            return 25;
-        case DECIMAL:
-        case NUMERIC:
-            return getPrecision(column);
-        case CHAR:
-        case VARCHAR:
-        case LONGNVARCHAR:
-            return getLength(column);
-        case BINARY:
-        case VARBINARY:
-        case LONGVARBINARY:
-            return getLength(column) * 2;
-        default:
-            throw new SQLFeatureNotSupportedException(MessageFormat.format("Unsupported JDBCType.{0}", jdbcType));
-        }
+        var rawColumn = getColumn(column);
+        var util = getSqlTypeUtil();
+        return util.getDisplaySize(rawColumn.type());
     }
 
     @Override
@@ -233,19 +193,19 @@ public class FixedResultSetMetaData implements ResultSetMetaData {
      */
     public int getLength(int column) throws SQLException {
         var rawColumn = getColumn(column);
-        return rawColumn.length();
+        return rawColumn.type().length();
     }
 
     @Override
     public int getPrecision(int column) throws SQLException {
         var rawColumn = getColumn(column);
-        return rawColumn.precision();
+        return rawColumn.type().precision();
     }
 
     @Override
     public int getScale(int column) throws SQLException {
         var rawColumn = getColumn(column);
-        return rawColumn.scale();
+        return rawColumn.type().scale();
     }
 
     @Override

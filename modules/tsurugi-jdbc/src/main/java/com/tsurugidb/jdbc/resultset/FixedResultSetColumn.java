@@ -29,7 +29,8 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofString(String name) {
-        return new FixedResultSetColumn(name, JDBCType.VARCHAR, 0, 0, 0, false);
+        var type = new FixedResultSetType(JDBCType.VARCHAR, 0, 0, 0, false);
+        return new FixedResultSetColumn(name, type);
     }
 
     /**
@@ -39,7 +40,8 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofStringNullable(String name) {
-        return new FixedResultSetColumn(name, JDBCType.VARCHAR, 0, 0, 0, true);
+        var type = new FixedResultSetType(JDBCType.VARCHAR, 0, 0, 0, true);
+        return new FixedResultSetColumn(name, type);
     }
 
     /**
@@ -49,7 +51,8 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofShort(String name) {
-        return new FixedResultSetColumn(name, JDBCType.SMALLINT, 0, 0, 0, false);
+        var type = new FixedResultSetType(JDBCType.SMALLINT, 0, 0, 0, false);
+        return new FixedResultSetColumn(name, type);
     }
 
     /**
@@ -59,7 +62,8 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofShortNullable(String name) {
-        return new FixedResultSetColumn(name, JDBCType.SMALLINT, 0, 0, 0, true);
+        var type = new FixedResultSetType(JDBCType.SMALLINT, 0, 0, 0, true);
+        return new FixedResultSetColumn(name, type);
     }
 
     /**
@@ -69,7 +73,8 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofInt(String name) {
-        return new FixedResultSetColumn(name, JDBCType.INTEGER, 0, 0, 0, false);
+        var type = new FixedResultSetType(JDBCType.INTEGER, 0, 0, 0, false);
+        return new FixedResultSetColumn(name, type);
     }
 
     /**
@@ -79,7 +84,8 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofIntNullable(String name) {
-        return new FixedResultSetColumn(name, JDBCType.INTEGER, 0, 0, 0, true);
+        var type = new FixedResultSetType(JDBCType.INTEGER, 0, 0, 0, true);
+        return new FixedResultSetColumn(name, type);
     }
 
     /**
@@ -89,33 +95,22 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofBoolean(String name) {
-        return new FixedResultSetColumn(name, JDBCType.BOOLEAN, 0, 0, 0, false);
+        var type = new FixedResultSetType(JDBCType.BOOLEAN, 0, 0, 0, false);
+        return new FixedResultSetColumn(name, type);
     }
 
     private final String name;
-    private final JDBCType type;
-    private final int length;
-    private final int precision;
-    private final int scale;
-    private final boolean nullable;
+    private final FixedResultSetType type;
 
     /**
      * Creates a new instance.
      *
      * @param name      column name
-     * @param type      JDBC type
-     * @param length    length
-     * @param precision precision
-     * @param scale     scale
-     * @param nullable  nullable
+     * @param type      tsurugi type
      */
-    public FixedResultSetColumn(String name, JDBCType type, int length, int precision, int scale, boolean nullable) {
+    public FixedResultSetColumn(String name, FixedResultSetType type) {
         this.name = name;
         this.type = type;
-        this.length = length;
-        this.precision = precision;
-        this.scale = scale;
-        this.nullable = nullable;
     }
 
     /**
@@ -128,47 +123,11 @@ public class FixedResultSetColumn {
     }
 
     /**
-     * Get JDBC type.
+     * Get tsurugi type.
      *
-     * @return JDBC type
+     * @return tsurugi type
      */
-    public JDBCType type() {
+    public FixedResultSetType type() {
         return this.type;
-    }
-
-    /**
-     * Get length.
-     *
-     * @return length
-     */
-    public int length() {
-        return this.length;
-    }
-
-    /**
-     * Get precision.
-     *
-     * @return precision
-     */
-    public int precision() {
-        return this.precision;
-    }
-
-    /**
-     * Get scale.
-     *
-     * @return scale
-     */
-    public int scale() {
-        return this.scale;
-    }
-
-    /**
-     * Get nullable.
-     *
-     * @return true if nullable, false otherwise
-     */
-    public boolean nullable() {
-        return this.nullable;
     }
 }

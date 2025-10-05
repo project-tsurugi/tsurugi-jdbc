@@ -849,10 +849,11 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
                 var lowColumnList = lowMetadata.getColumns();
                 int position = 1;
                 for (var lowColumn : lowColumnList) {
+                    var type = getFactory().createType(lowColumn);
                     String columnName = lowColumn.getName();
-                    JDBCType jdbcType = util.toJdbcType(lowColumn);
-                    String typeName = util.toSqlTypeName(lowColumn);
-                    var nullableOpt = util.findNullable(lowColumn);
+                    JDBCType jdbcType = type.getJdbcType();
+                    String typeName = type.getSqlTypeName();
+                    var nullableOpt = type.findNullable();
                     int nullable;
                     String isNullable;
                     if (nullableOpt.isPresent()) {
@@ -867,10 +868,10 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
                         nullable = columnNullableUnknown;
                         isNullable = "";
                     }
-                    Integer columnSize = util.getColumnSize(lowColumn);
-                    Integer decimalDigits = util.getDecimalDigits(lowColumn);
-                    Integer numPrecRadix = util.getNumPrecRadix(lowColumn);
-                    Integer charOctetLength = util.getOctetLength(lowColumn);
+                    Integer columnSize = util.getColumnSize(type);
+                    Integer decimalDigits = util.getDecimalDigits(type);
+                    Integer numPrecRadix = util.getNumPrecRadix(type);
+                    Integer charOctetLength = util.getOctetLength(type);
 
                     if (matcher.matchesColumnName(columnName)) {
                         Object[] values = { //

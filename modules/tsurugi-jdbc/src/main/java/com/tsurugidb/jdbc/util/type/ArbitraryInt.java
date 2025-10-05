@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tsurugidb.jdbc.util;
+package com.tsurugidb.jdbc.util.type;
 
 import java.util.Objects;
 

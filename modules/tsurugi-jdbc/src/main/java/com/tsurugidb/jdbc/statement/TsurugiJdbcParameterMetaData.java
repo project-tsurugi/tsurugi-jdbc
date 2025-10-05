@@ -24,6 +24,7 @@ import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
+import com.tsurugidb.jdbc.util.type.TsurugiJdbcType;
 import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
 
 /**
@@ -110,6 +111,18 @@ public class TsurugiJdbcParameterMetaData implements ParameterMetaData {
         }
     }
 
+    /**
+     * Get tsurugi type.
+     *
+     * @param param parameter number (1-origin)
+     * @return tsurugi type
+     * @throws SQLException if the parameter number is out of range
+     */
+    protected TsurugiJdbcType getTsurugiType(int param) throws SQLException {
+        var lowPlaceholder = getLowPlaceholder(param);
+        return getFactory().createType(lowPlaceholder);
+    }
+
     @Override
     public int getParameterCount() throws SQLException {
         var lowPlaceholderList = getLowPlaceholderList();
@@ -154,31 +167,22 @@ public class TsurugiJdbcParameterMetaData implements ParameterMetaData {
 
     @Override
     public int getParameterType(int param) throws SQLException {
-        var lowPlaceholder = getLowPlaceholder(param);
-        var atomType = lowPlaceholder.getAtomType();
-
-        var util = getSqlTypeUtil();
-        var jdbcType = util.toJdbcType(atomType);
+        var type = getTsurugiType(param);
+        var jdbcType = type.getJdbcType();
         return jdbcType.getVendorTypeNumber();
     }
 
     @Override
     public String getParameterTypeName(int param) throws SQLException {
-        var lowPlaceholder = getLowPlaceholder(param);
-        var atomType = lowPlaceholder.getAtomType();
-
-        var util = getSqlTypeUtil();
-        return util.toSqlTypeName(atomType);
+        var type = getTsurugiType(param);
+        return type.getSqlTypeName();
     }
 
     @Override
     public String getParameterClassName(int param) throws SQLException {
-        var lowPlaceholder = getLowPlaceholder(param);
-        var atomType = lowPlaceholder.getAtomType();
-
-        var util = getSqlTypeUtil();
-        var type = util.toJavaClass(atomType);
-        return type.getCanonicalName();
+        var type = getTsurugiType(param);
+        var c = type.getJavaClass();
+        return c.getCanonicalName();
     }
 
     @Override
