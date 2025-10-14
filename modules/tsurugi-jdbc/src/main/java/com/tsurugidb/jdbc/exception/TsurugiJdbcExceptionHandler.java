@@ -349,6 +349,17 @@ public class TsurugiJdbcExceptionHandler {
     // Transaction
 
     /**
+     * Create SQLException for "Cannot when auto commit".
+     *
+     * @param method method name
+     * @return SQLException
+     */
+    public SQLException autoCommitException(String method) {
+        String message = String.format("Cannot %s when auto-commit is enabled", method);
+        return new SQLException(message, SqlState.S25000_INVALID_TRANSACTION_STATE.code());
+    }
+
+    /**
      * Create SQLException for "transaction not found".
      *
      * @return SQLException

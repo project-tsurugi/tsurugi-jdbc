@@ -16,6 +16,7 @@
 package com.tsurugidb.jdbc.test.statement;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -72,7 +73,8 @@ public class JdbcDbPreparedStatementTest extends JdbcDbTester {
             }
             {
                 var e = assertThrows(SQLException.class, () -> connection.commit());
-                assertEquals("Transaction not found", e.getMessage());
+                assertEquals("Cannot commit when auto-commit is enabled", e.getMessage());
+                assertEquals("25000", e.getSQLState());
             }
 
             ps.setInt(1, 2);
@@ -86,7 +88,8 @@ public class JdbcDbPreparedStatementTest extends JdbcDbTester {
             }
             {
                 var e = assertThrows(SQLException.class, () -> connection.commit());
-                assertEquals("Transaction not found", e.getMessage());
+                assertEquals("Cannot commit when auto-commit is enabled", e.getMessage());
+                assertEquals("25000", e.getSQLState());
             }
 
             ps.setInt(1, 3);
@@ -95,7 +98,8 @@ public class JdbcDbPreparedStatementTest extends JdbcDbTester {
             }
             {
                 var e = assertThrows(SQLException.class, () -> connection.commit());
-                assertEquals("Transaction not found", e.getMessage());
+                assertEquals("Cannot commit when auto-commit is enabled", e.getMessage());
+                assertEquals("25000", e.getSQLState());
             }
         }
     }
@@ -138,8 +142,7 @@ public class JdbcDbPreparedStatementTest extends JdbcDbTester {
 
             connection.commit();
             {
-                var e = assertThrows(SQLException.class, () -> connection.commit());
-                assertEquals("Transaction not found", e.getMessage());
+                assertDoesNotThrow(() -> connection.commit());
             }
 
             ps.setInt(1, 2);
@@ -171,11 +174,21 @@ public class JdbcDbPreparedStatementTest extends JdbcDbTester {
             ps.setLong(2, 11);
             ps.setString(3, "abc");
             assertEquals(1, ps.executeUpdate());
+            {
+                var e = assertThrows(SQLException.class, () -> connection.commit());
+                assertEquals("Cannot commit when auto-commit is enabled", e.getMessage());
+                assertEquals("25000", e.getSQLState());
+            }
 
             ps.setInt(1, 2);
             ps.setLong(2, 22);
             ps.setString(3, "def");
             assertEquals(1, ps.executeUpdate());
+            {
+                var e = assertThrows(SQLException.class, () -> connection.commit());
+                assertEquals("Cannot commit when auto-commit is enabled", e.getMessage());
+                assertEquals("25000", e.getSQLState());
+            }
 
             executeQuery();
         }
@@ -222,6 +235,9 @@ public class JdbcDbPreparedStatementTest extends JdbcDbTester {
             executeQuery0();
 
             connection.commit();
+            {
+                assertDoesNotThrow(() -> connection.commit());
+            }
 
             executeQuery();
         }

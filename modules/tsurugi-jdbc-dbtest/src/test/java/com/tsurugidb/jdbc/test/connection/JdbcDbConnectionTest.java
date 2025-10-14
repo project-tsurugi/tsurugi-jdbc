@@ -15,6 +15,7 @@
  */
 package com.tsurugidb.jdbc.test.connection;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -167,20 +168,32 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     @Test
     void commit_noTransaction() throws SQLException {
         try (var connection = createConnection()) {
-            var e = assertThrows(SQLException.class, () -> {
-                connection.commit();
-            });
-            assertEquals("Transaction not found", e.getMessage());
+            assertTrue(connection.getAutoCommit());
+            {
+                var e = assertThrows(SQLException.class, () -> connection.commit());
+                assertEquals("Cannot commit when auto-commit is enabled", e.getMessage());
+                assertEquals("25000", e.getSQLState());
+            }
+        }
+        try (var connection = createConnection()) {
+            connection.setAutoCommit(false);
+            assertDoesNotThrow(() -> connection.commit());
         }
     }
 
     @Test
     void rollback_noTransaction() throws SQLException {
         try (var connection = createConnection()) {
-            var e = assertThrows(SQLException.class, () -> {
-                connection.rollback();
-            });
-            assertEquals("Transaction not found", e.getMessage());
+            assertTrue(connection.getAutoCommit());
+            {
+                var e = assertThrows(SQLException.class, () -> connection.rollback());
+                assertEquals("Cannot rollback when auto-commit is enabled", e.getMessage());
+                assertEquals("25000", e.getSQLState());
+            }
+        }
+        try (var connection = createConnection()) {
+            connection.setAutoCommit(false);
+            assertDoesNotThrow(() -> connection.rollback());
         }
     }
 

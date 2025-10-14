@@ -434,21 +434,33 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public void commit() throws SQLException {
-        var transaction = checkTransactionActive();
-        try {
-            transaction.commit();
-        } finally {
-            this.transaction = null;
+        if (getAutoCommit()) {
+            throw getExceptionHandler().autoCommitException("commit");
+        }
+
+        var transaction = getFieldTransaction();
+        if (transaction != null) {
+            try {
+                transaction.commit();
+            } finally {
+                this.transaction = null;
+            }
         }
     }
 
     @Override
     public void rollback() throws SQLException {
-        var transaction = checkTransactionActive();
-        try {
-            transaction.rollback();
-        } finally {
-            this.transaction = null;
+        if (getAutoCommit()) {
+            throw getExceptionHandler().autoCommitException("rollback");
+        }
+
+        var transaction = getFieldTransaction();
+        if (transaction != null) {
+            try {
+                transaction.rollback();
+            } finally {
+                this.transaction = null;
+            }
         }
     }
 
