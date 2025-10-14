@@ -208,6 +208,21 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
             assertTrue(connection.isReadOnly());
             assertEquals(TsurugiJdbcTransactionType.RTX, connection.getTransactionType());
             assertEquals(TransactionType.READ_ONLY, connection.getConfig().getLowTransactionOption().getType());
+
+            connection.setReadOnly(false);
+            assertFalse(connection.isReadOnly());
+            assertEquals(TsurugiJdbcTransactionType.OCC, connection.getTransactionType());
+            assertEquals(TransactionType.SHORT, connection.getConfig().getLowTransactionOption().getType());
+
+            connection.setTransactionType(TsurugiJdbcTransactionType.LTX);
+            assertFalse(connection.isReadOnly());
+            assertEquals(TsurugiJdbcTransactionType.LTX, connection.getTransactionType());
+            assertEquals(TransactionType.LONG, connection.getConfig().getLowTransactionOption().getType());
+
+            connection.setReadOnly(false);
+            assertFalse(connection.isReadOnly());
+            assertEquals(TsurugiJdbcTransactionType.LTX, connection.getTransactionType());
+            assertEquals(TransactionType.LONG, connection.getConfig().getLowTransactionOption().getType());
         }
     }
 

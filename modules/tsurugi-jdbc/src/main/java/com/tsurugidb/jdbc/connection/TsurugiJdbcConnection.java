@@ -474,7 +474,20 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public void setReadOnly(boolean readOnly) throws SQLException {
-        setTransactionType(TsurugiJdbcTransactionType.RTX);
+        if (readOnly) {
+            setTransactionType(TsurugiJdbcTransactionType.RTX);
+        } else {
+            var type = getTransactionType();
+            if (type != TsurugiJdbcTransactionType.RTX) {
+                return;
+            }
+            type = config.getDefaultTransactionType();
+            if (type != TsurugiJdbcTransactionType.RTX) {
+                setTransactionType(type);
+            } else {
+                setTransactionType(TsurugiJdbcTransactionType.OCC);
+            }
+        }
     }
 
     @Override

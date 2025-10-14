@@ -169,6 +169,19 @@ public class TsurugiJdbcConnectionConfig {
     }
 
     /**
+     * Get default transaction type.
+     *
+     * @return transaction type
+     */
+    public TsurugiJdbcTransactionType getDefaultTransactionType() {
+        var type = transactionType.getDefaultValue();
+        if (type != null) {
+            return type;
+        }
+        return TsurugiJdbcTransactionType.OCC;
+    }
+
+    /**
      * Set transaction label.
      *
      * @param label transaction label

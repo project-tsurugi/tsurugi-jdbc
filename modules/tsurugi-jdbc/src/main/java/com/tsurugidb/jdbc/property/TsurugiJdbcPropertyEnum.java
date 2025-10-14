@@ -152,6 +152,15 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
         }
     }
 
+    /**
+     * Get default value.
+     *
+     * @return default value
+     */
+    public E getDefaultValue() {
+        return this.defaultValue;
+    }
+
     @Override
     public String getStringDefaultValue() {
         if (this.defaultValue == null) {
