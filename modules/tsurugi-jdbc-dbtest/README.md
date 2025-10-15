@@ -1,6 +1,6 @@
 # tsurugi-jdbc-dbtest
 
-Tsurugi JDBC test for connecting to Tsurugi.
+Tsurugi JDBC test for connecting to [Tsurugi](https://github.com/project-tsurugi/tsurugidb).
 
 ## Requirements
 

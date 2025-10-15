@@ -1,13 +1,11 @@
 # Tsurugi JDBC
 
-Tsurugi JDBC is a JDBC library that executes SQL on Tsurugi database.
+Tsurugi JDBC is a JDBC library that executes SQL on [Tsurugi](https://github.com/project-tsurugi/tsurugidb).
 
-## Requirements
+## Target
 
+* Tsurugi 1.6.0 or later.
 * Java `>= 11`
-
-* dependent modules:
-  * [Tsubakuro](https://github.com/project-tsurugi/tsubakuro)
 
 ## How to use
 
@@ -26,24 +24,9 @@ dependencies {
 The JDBC URL begins with `jdbc:tsurugi:` and specifies the Tsurugi endpoint.  
 For example, `jdbc:tsurugi:tcp://localhost:12345` or `jdbc:tsurugi:ipc:tsurugi`.
 
-## How to build
+## Example
 
-```bash
-cd tsurugi-jdbc
-./gradlew build
-```
-
-### Build with Tsubakuro that installed locally
-
-First, check out and install Tsubakuro locally, and build Tsurugi JDBC with Gradle Property `mavenLocal` .
-
-```bash
-cd tsubakuro
-./gradlew PublishToMavenLocal -PskipBuildNative
-
-cd tsurugi-jdbc
-./gradlew build -PmavenLocal
-```
+See [tsurugi-jdbc-examples](modules/tsurugi-jdbc-examples/src/main/java/com/tsurugidb/jdbc/example).
 
 ## License
 
