@@ -248,9 +248,25 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
         var lowPlaceholder = lowPlaceholderList.get(index);
 
-        if (lowPlaceholder == null || lowPlaceholder.getAtomType() != atomType) {
+        if (overwritePlaceholder(lowPlaceholder, atomType)) {
             lowPlaceholder = Placeholders.of(parameterName, atomType);
             lowPlaceholderList.set(index, lowPlaceholder);
+        }
+    }
+
+    private boolean overwritePlaceholder(Placeholder lowPlaceholder, AtomType newAtomType) {
+        if (lowPlaceholder == null) {
+            return true;
+        }
+
+        switch (newAtomType) {
+        case UNKNOWN:
+        case UNRECOGNIZED:
+        case TYPE_UNSPECIFIED:
+            return false;
+        default:
+            var oldAtomType = lowPlaceholder.getAtomType();
+            return (newAtomType != oldAtomType);
         }
     }
 
@@ -272,9 +288,13 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     @Override
     public void setNull(int parameterIndex, int sqlType) throws SQLException {
         if (this.lowPreparedStatement == null) {
-            var util = getSqlTypeUtil();
-            var atomType = util.toLowAtomType(sqlType);
-            setNull(parameterIndex, atomType);
+            if (sqlType == java.sql.Types.OTHER) {
+                setNull(parameterIndex, AtomType.UNKNOWN);
+            } else {
+                var util = getSqlTypeUtil();
+                var atomType = util.toLowAtomType(sqlType);
+                setNull(parameterIndex, atomType);
+            }
         } else {
             String name = placeholderName(parameterIndex);
             var lowParameter = Parameters.ofNull(name);

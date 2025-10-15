@@ -44,6 +44,8 @@ public class TsurugiJdbcSqlTypeUtil {
      */
     public AtomType toLowAtomType(int sqlType) throws SQLException {
         switch (sqlType) {
+        case java.sql.Types.NULL:
+            return AtomType.UNKNOWN;
         case java.sql.Types.BOOLEAN:
         case java.sql.Types.BIT:
             return AtomType.BOOLEAN;
