@@ -69,15 +69,17 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
      * @param value value
      */
     public void setValue(boolean value) {
+        boolean old = value();
         this.value = value;
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(old);
         }
     }
 
     @Override
     public void setStringValue(String value) {
+        boolean old = value();
         if (value == null) {
             this.value = null;
         } else {
@@ -85,7 +87,7 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
         }
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(old);
         }
     }
 
@@ -98,7 +100,7 @@ public class TsurugiJdbcPropertyBoolean extends TsurugiJdbcProperty {
         this.defaultValue = from.defaultValue;
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(null);
         }
     }
 

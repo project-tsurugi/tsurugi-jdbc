@@ -35,9 +35,11 @@ import static com.tsurugidb.jdbc.TsurugiConfig.TRANSACTION_TYPE;
 import static com.tsurugidb.jdbc.TsurugiConfig.WRITE_PRESERVE;
 
 import java.sql.ClientInfoStatus;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -133,8 +135,9 @@ public class TsurugiJdbcConnectionConfig {
      * @param key              key
      * @param value            value
      * @param failedProperties failed properties
+     * @throws SQLException if error occurs
      */
-    public void put(String key, String value, Map<String, ClientInfoStatus> failedProperties) {
+    public void setProperty(String key, String value, Map<String, ClientInfoStatus> failedProperties) throws SQLException {
         properties.putForClient(key, value, failedProperties);
     }
 
@@ -289,7 +292,7 @@ public class TsurugiJdbcConnectionConfig {
         return scanParallel.value();
     }
 
-    private <T> void clearTransactionOption(T value) {
+    private <T> void clearTransactionOption(T old) {
         this.transactionOption = null;
     }
 
@@ -333,6 +336,16 @@ public class TsurugiJdbcConnectionConfig {
     }
 
     // commit
+
+    /**
+     * Set auto commit event handler.
+     *
+     * @param handler event handler
+     */
+    @TsurugiJdbcInternal
+    public void setAutoCommitEventHanlder(Consumer<Boolean> handler) {
+        autoCommit.changeEvent(handler);
+    }
 
     /**
      * Set auto commit.
@@ -388,7 +401,7 @@ public class TsurugiJdbcConnectionConfig {
         return autoDispose.value();
     }
 
-    private <T> void clearCommitOption(T value) {
+    private <T> void clearCommitOption(T old) {
         this.commitOption = null;
     }
 

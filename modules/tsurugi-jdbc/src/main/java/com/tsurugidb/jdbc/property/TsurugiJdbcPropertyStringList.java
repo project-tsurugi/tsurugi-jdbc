@@ -71,10 +71,11 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
      * @param value value
      */
     public void setValue(List<String> value) {
+        List<String> old = value();
         this.value = value;
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(old);
         }
     }
 
@@ -106,7 +107,7 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
         this.defaultValue = from.defaultValue;
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(null);
         }
     }
 

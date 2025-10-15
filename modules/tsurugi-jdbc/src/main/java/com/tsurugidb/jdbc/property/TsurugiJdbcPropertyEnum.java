@@ -75,10 +75,11 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
      * @param value value
      */
     public void setValue(E value) {
+        E old = value();
         this.value = value;
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(old);
         }
     }
 
@@ -110,7 +111,7 @@ public class TsurugiJdbcPropertyEnum<E extends Enum<E>> extends TsurugiJdbcPrope
         this.defaultValue = from.defaultValue;
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(null);
         }
     }
 

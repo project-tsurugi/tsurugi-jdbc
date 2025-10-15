@@ -84,15 +84,17 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
      * @param value value
      */
     public void setValue(int value) {
+        OptionalInt old = value();
         this.value = OptionalInt.of(value);
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(old);
         }
     }
 
     @Override
     public void setStringValue(String value) {
+        OptionalInt old = value();
         if (value == null) {
             this.value = OptionalInt.empty();
         } else {
@@ -100,7 +102,7 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         }
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(old);
         }
     }
 
@@ -114,7 +116,7 @@ public class TsurugiJdbcPropertyInt extends TsurugiJdbcProperty {
         this.defaultValueSupplier = from.defaultValueSupplier;
 
         if (this.changeEventHandler != null) {
-            changeEventHandler.accept(this.value);
+            changeEventHandler.accept(null);
         }
     }
 

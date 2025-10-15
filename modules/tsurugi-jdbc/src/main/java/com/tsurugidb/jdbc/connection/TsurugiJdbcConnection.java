@@ -46,6 +46,7 @@ import javax.annotation.Nullable;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
+import com.tsurugidb.jdbc.exception.SQLRuntimeException;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
@@ -85,6 +86,8 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
      */
     @TsurugiJdbcInternal
     public TsurugiJdbcConnection(TsurugiJdbcFactory factory, Session lowSession, TsurugiJdbcConnectionConfig config) {
+        config.setAutoCommitEventHanlder(this::autoCommitChanged);
+
         this.factory = Objects.requireNonNull(factory, "factory is null");
         this.lowSession = Objects.requireNonNull(lowSession);
         this.lowSqlClient = SqlClient.attach(lowSession);
@@ -388,7 +391,24 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
 
     @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        config.setAutoCommit(autoCommit);
+        try {
+            config.setAutoCommit(autoCommit);
+        } catch (SQLRuntimeException e) {
+            throw e.getCause();
+        }
+    }
+
+    private void autoCommitChanged(Boolean old) {
+        try {
+            boolean oldAutoCommit = (old != null) ? old : true;
+            boolean newAutoCommit = getAutoCommit();
+            if (newAutoCommit != oldAutoCommit) {
+                // JDBC 4.3 Specification - 10.1.1
+                doCommit();
+            }
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e);
+        }
     }
 
     @Override
@@ -438,6 +458,10 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
             throw getExceptionHandler().autoCommitException("commit");
         }
 
+        doCommit();
+    }
+
+    private void doCommit() throws SQLException {
         var transaction = getFieldTransaction();
         if (transaction != null) {
             try {
@@ -454,6 +478,10 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
             throw getExceptionHandler().autoCommitException("rollback");
         }
 
+        doRollback();
+    }
+
+    private void doRollback() throws SQLException {
         var transaction = getFieldTransaction();
         if (transaction != null) {
             try {
@@ -694,7 +722,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         var failedProperties = new LinkedHashMap<String, ClientInfoStatus>();
 
         try {
-            config.put(name, value, failedProperties);
+            config.setProperty(name, value, failedProperties);
         } catch (Exception e) {
             throw getExceptionHandler().clientInfoException(e, failedProperties);
         }
@@ -713,7 +741,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
             try {
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
-                this.config.put(key, value, failedProperties);
+                this.config.setProperty(key, value, failedProperties);
             } catch (Exception e) {
                 exceptionList.add(e);
             }

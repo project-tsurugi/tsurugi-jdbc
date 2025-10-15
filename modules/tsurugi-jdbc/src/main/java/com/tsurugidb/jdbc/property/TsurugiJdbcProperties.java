@@ -25,6 +25,7 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
+import com.tsurugidb.jdbc.exception.SQLRuntimeException;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
 /**
@@ -74,7 +75,11 @@ public class TsurugiJdbcProperties {
         }
 
         try {
-            property.setStringValue(value);
+            try {
+                property.setStringValue(value);
+            } catch (SQLRuntimeException e) {
+                throw e.getCause();
+            }
         } catch (Exception e) {
             throw factory.getExceptionHandler().propertyConvertException(key, e);
         }
@@ -86,8 +91,9 @@ public class TsurugiJdbcProperties {
      * @param key              key
      * @param value            value
      * @param failedProperties failed properties
+     * @throws SQLException if error occurs
      */
-    public void putForClient(String key, String value, Map<String, ClientInfoStatus> failedProperties) {
+    public void putForClient(String key, String value, Map<String, ClientInfoStatus> failedProperties) throws SQLException {
         var property = getProperty(key);
         if (property == null) {
             failedProperties.put(key, ClientInfoStatus.REASON_UNKNOWN_PROPERTY);
@@ -95,7 +101,11 @@ public class TsurugiJdbcProperties {
         }
 
         try {
-            property.setStringValue(value);
+            try {
+                property.setStringValue(value);
+            } catch (SQLRuntimeException e) {
+                throw e.getCause();
+            }
         } catch (Exception e) {
             failedProperties.put(key, ClientInfoStatus.REASON_VALUE_INVALID);
             throw e;
