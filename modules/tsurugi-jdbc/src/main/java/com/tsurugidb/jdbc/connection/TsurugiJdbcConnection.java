@@ -435,9 +435,9 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     /**
-     * Set automatically dispose upon commit.
+     * Set whether to automatically dispose the transaction upon commit.
      *
-     * @param autoDispose automatically dispose
+     * @param autoDispose {@code true} automatically dispose
      */
     public void setCommitAutoDispose(boolean autoDispose) {
         config.setAutoDispose(autoDispose);

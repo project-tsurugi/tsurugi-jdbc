@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -29,10 +28,10 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
-import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
+import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
 
-public class TsurugiJdbcExample12TransactionType {
-    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample12TransactionType.class);
+public class TsurugiJdbcExample13CommitOption {
+    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample13CommitOption.class);
 
     private static final String JDBC_URL = "jdbc:tsurugi:tcp://localhost:12345";
 
@@ -42,27 +41,26 @@ public class TsurugiJdbcExample12TransactionType {
     }
 
     public static void main(String[] args) throws SQLException {
-        defaultTransactionType();
+        defaultCommitType();
         connect1();
         connect2();
-        connection_setTransactionType();
+        connection_setCommitType();
         connection_setClientInfo();
-        connection_setReadOnly();
     }
 
-    static void defaultTransactionType() throws SQLException {
+    static void defaultCommitType() throws SQLException {
         try (var connection = DriverManager.getConnection(JDBC_URL, "tsurugi", "password")) {
-            printTransactionType("default", connection); // OCC
+            printCommitType("default", connection); // DEFAULT
         }
     }
 
     static void connect1() throws SQLException {
         String url = JDBC_URL //
-                + encode("?", TsurugiConfig.TRANSACTION_TYPE, "LTX") //
-                + encode("&", TsurugiConfig.WRITE_PRESERVE, "test1, test2");
+                + encode("?", TsurugiConfig.COMMIT_TYPE, "STORED") //
+                + encode("&", TsurugiConfig.AUTO_DISPOSE, "false");
 
         try (var connection = DriverManager.getConnection(url, "tsurugi", "password")) {
-            printTransactionType("connect1", connection); // LTX
+            printCommitType("connect1", connection);
         }
     }
 
@@ -70,48 +68,38 @@ public class TsurugiJdbcExample12TransactionType {
         var info = new Properties();
         info.setProperty(TsurugiConfig.USER, "tsurugi");
         info.setProperty(TsurugiConfig.PASSWORD, "password");
-        info.setProperty(TsurugiConfig.TRANSACTION_TYPE, TsurugiJdbcTransactionType.LTX.name());
-        info.setProperty(TsurugiConfig.WRITE_PRESERVE, "test1, test2");
+        info.setProperty(TsurugiConfig.COMMIT_TYPE, TsurugiJdbcCommitType.STORED.name());
+        info.setProperty(TsurugiConfig.AUTO_DISPOSE, Boolean.FALSE.toString());
 
         try (var connection = DriverManager.getConnection(JDBC_URL, info)) {
-            printTransactionType("connect2", connection); // LTX
+            printCommitType("connect2", connection);
         }
     }
 
-    static void connection_setTransactionType() throws SQLException {
+    static void connection_setCommitType() throws SQLException {
         try (var connection = DriverManager.getConnection(JDBC_URL, "tsurugi", "password")) {
             TsurugiJdbcConnection rawConnection = connection.unwrap(TsurugiJdbcConnection.class);
-            rawConnection.setTransactionType(TsurugiJdbcTransactionType.LTX);
-            rawConnection.setWritePreserve(List.of("test1", "test2"));
+            rawConnection.setCommitType(TsurugiJdbcCommitType.STORED);
+            rawConnection.setCommitAutoDispose(false);
 
-            printTransactionType("setTransactionType", connection); // LTX
+            printCommitType("setCommitType", connection);
         }
     }
 
     static void connection_setClientInfo() throws SQLException {
         try (var connection = DriverManager.getConnection(JDBC_URL, "tsurugi", "password")) {
-            connection.setClientInfo(TsurugiConfig.TRANSACTION_TYPE, TsurugiJdbcTransactionType.LTX.name());
-            connection.setClientInfo(TsurugiConfig.WRITE_PRESERVE, "test1, test2");
+            connection.setClientInfo(TsurugiConfig.COMMIT_TYPE, TsurugiJdbcCommitType.STORED.name());
+            connection.setClientInfo(TsurugiConfig.AUTO_DISPOSE, "false");
 
-            printTransactionType("setClientInfo", connection); // LTX
+            printCommitType("setClientInfo", connection);
         }
     }
 
-    static void connection_setReadOnly() throws SQLException {
-        try (var connection = DriverManager.getConnection(JDBC_URL, "tsurugi", "password")) {
-            connection.setReadOnly(true);
-            printTransactionType("readOnly=true ", connection); // RTX
-
-            connection.setReadOnly(false);
-            printTransactionType("readOnly=false", connection); // OCC
-        }
-    }
-
-    private static void printTransactionType(String message, Connection connection) throws SQLException {
+    private static void printCommitType(String message, Connection connection) throws SQLException {
         TsurugiJdbcConnection rawConnection = connection.unwrap(TsurugiJdbcConnection.class);
-        TsurugiJdbcTransactionType type = rawConnection.getTransactionType();
+        TsurugiJdbcCommitType type = rawConnection.getCommitType();
 
-        LOG.info("{} - transactionType={}", message, type);
+        LOG.info("{} - commitType={}", message, type);
     }
 
     private static String encode(String prefix, String key, String value) {
