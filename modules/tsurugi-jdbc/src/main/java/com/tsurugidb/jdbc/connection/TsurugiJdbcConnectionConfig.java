@@ -454,6 +454,15 @@ public class TsurugiJdbcConnectionConfig {
     // Session
 
     /**
+     * Set session shutdown type.
+     *
+     * @param shutdownType shutdown type
+     */
+    public void setShutdownType(TsurugiJdbcShutdownType shutdownType) {
+        this.shutdownType.setValue(shutdownType);
+    }
+
+    /**
      * Get session shutdown type.
      *
      * @return shutdown type

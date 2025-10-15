@@ -842,6 +842,24 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
         return config.getDefaultTimeout();
     }
 
+    /**
+     * Set shutdown type.
+     *
+     * @param shutdownType shutdown type
+     */
+    public void setShutdownType(TsurugiJdbcShutdownType shutdownType) {
+        config.setShutdownType(shutdownType);
+    }
+
+    /**
+     * Get shutdown type.
+     *
+     * @return shutdown type
+     */
+    public TsurugiJdbcShutdownType getShutdownType() {
+        return config.getShutdownType();
+    }
+
     @Override
     public void close() throws SQLException {
         LowCloser shutdown;
