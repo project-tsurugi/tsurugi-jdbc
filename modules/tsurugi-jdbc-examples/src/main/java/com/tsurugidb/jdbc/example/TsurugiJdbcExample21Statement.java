@@ -28,8 +28,8 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 /**
  * Tsurugi JDBC Statement executeUpdate(), executeQuery() example.
  */
-public class TsurugiJdbcExample11Statement {
-    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample11Statement.class);
+public class TsurugiJdbcExample21Statement {
+    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample21Statement.class);
 
     private static final String JDBC_URL = "jdbc:tsurugi:tcp://localhost:12345";
 

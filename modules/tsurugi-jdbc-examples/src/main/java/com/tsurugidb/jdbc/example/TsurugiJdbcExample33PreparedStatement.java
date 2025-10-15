@@ -20,6 +20,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -27,10 +28,10 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
- * Tsurugi JDBC PreparedStatement execute() example.
+ * Tsurugi JDBC PreparedStatement executeBatch() example.
  */
-public class TsurugiJdbcExample22PreparedStatement {
-    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample22PreparedStatement.class);
+public class TsurugiJdbcExample33PreparedStatement {
+    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample33PreparedStatement.class);
 
     private static final String JDBC_URL = "jdbc:tsurugi:tcp://localhost:12345";
 
@@ -93,7 +94,7 @@ public class TsurugiJdbcExample22PreparedStatement {
     static void insert(Connection connection) throws SQLException {
         LOG.info("insert() start");
 
-        connection.setAutoCommit(false);
+        connection.setAutoCommit(true);
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
         String sql = "insert into test values(?, ?, ?)";
@@ -122,15 +123,12 @@ public class TsurugiJdbcExample22PreparedStatement {
                     }
                 }
 
-                boolean isQuery = ps.execute();
-                assert isQuery == false;
-
-                int r = ps.getUpdateCount();
-                LOG.info("insert.count={}", r);
+                ps.addBatch();
             }
-        }
 
-        connection.commit();
+            int[] r = ps.executeBatch();
+            LOG.info("insert.count={}", Arrays.toString(r));
+        }
 
         LOG.info("insert() end");
     }

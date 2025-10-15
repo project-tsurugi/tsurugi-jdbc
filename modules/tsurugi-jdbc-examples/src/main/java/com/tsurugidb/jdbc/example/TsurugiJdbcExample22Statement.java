@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -27,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
- * Tsurugi JDBC Statement executeBatch() example.
+ * Tsurugi JDBC Statement execute() example.
  */
-public class TsurugiJdbcExample13Statement {
-    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample13Statement.class);
+public class TsurugiJdbcExample22Statement {
+    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample22Statement.class);
 
     private static final String JDBC_URL = "jdbc:tsurugi:tcp://localhost:12345";
 
@@ -93,7 +92,7 @@ public class TsurugiJdbcExample13Statement {
     static void insert(Connection connection) throws SQLException {
         LOG.info("insert() start");
 
-        connection.setAutoCommit(true);
+        connection.setAutoCommit(false);
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
         try (var statement = connection.createStatement()) {
@@ -116,12 +115,15 @@ public class TsurugiJdbcExample13Statement {
                         throw new InternalError();
                     }
                 }
-                statement.addBatch(sql);
-            }
+                boolean isQuery = statement.execute(sql);
+                assert isQuery == false;
 
-            int[] r = statement.executeBatch();
-            LOG.info("insert.count={}", Arrays.toString(r));
+                int r = statement.getUpdateCount();
+                LOG.info("insert.count={}", r);
+            }
         }
+
+        connection.commit();
 
         LOG.info("insert() end");
     }

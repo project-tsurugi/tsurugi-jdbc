@@ -18,7 +18,6 @@ package com.tsurugidb.jdbc.example;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -28,10 +27,10 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 /**
- * Tsurugi JDBC PreparedStatement executeBatch() example.
+ * Tsurugi JDBC Statement executeBatch() example.
  */
-public class TsurugiJdbcExample23PreparedStatement {
-    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample23PreparedStatement.class);
+public class TsurugiJdbcExample23Statement {
+    private static final Logger LOG = LoggerFactory.getLogger(TsurugiJdbcExample23Statement.class);
 
     private static final String JDBC_URL = "jdbc:tsurugi:tcp://localhost:12345";
 
@@ -59,12 +58,12 @@ public class TsurugiJdbcExample23PreparedStatement {
         LOG.info("dropTable() start");
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        String sql = "drop table if exists test";
-        try (var ps = connection.prepareStatement(sql)) {
-            boolean isQuery = ps.execute();
+        try (var statement = connection.createStatement()) {
+            String sql = "drop table if exists test";
+            boolean isQuery = statement.execute(sql);
             assert isQuery == false;
 
-            int r = ps.getUpdateCount();
+            int r = statement.getUpdateCount();
             LOG.info("dropTable().count={}", r);
         }
 
@@ -75,16 +74,16 @@ public class TsurugiJdbcExample23PreparedStatement {
         LOG.info("createTable() start");
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        String sql = "create table test (" //
-                + " foo int primary key," //
-                + " bar bigint," //
-                + " zzz varchar(10)" //
-                + ")";
-        try (var ps = connection.prepareStatement(sql)) {
-            boolean isQuery = ps.execute();
+        try (var statement = connection.createStatement()) {
+            String sql = "create table test (" //
+                    + " foo int primary key," //
+                    + " bar bigint," //
+                    + " zzz varchar(10)" //
+                    + ")";
+            boolean isQuery = statement.execute(sql);
             assert isQuery == false;
 
-            int r = ps.getUpdateCount();
+            int r = statement.getUpdateCount();
             LOG.info("createTable().count={}", r);
         }
 
@@ -97,36 +96,30 @@ public class TsurugiJdbcExample23PreparedStatement {
         connection.setAutoCommit(true);
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        String sql = "insert into test values(?, ?, ?)";
-        try (var ps = connection.prepareStatement(sql)) {
+        try (var statement = connection.createStatement()) {
             for (int i = 0; i < 6; i++) {
-                ps.setInt(1, i);
+                String sql;
                 if (i < 3) {
-                    ps.setLong(2, i + 10);
-                    ps.setString(3, Integer.toString(i));
+                    sql = String.format("insert into test values(%d, %d, '%d')", i, i + 10, i);
                 } else {
                     switch (i % 3) {
                     case 0:
-                        ps.setNull(2, Types.BIGINT);
-                        ps.setNull(3, Types.VARCHAR);
+                        sql = String.format("insert into test values(%d, null, null)", i);
                         break;
                     case 1:
-                        ps.setNull(2, Types.BIGINT);
-                        ps.setString(3, Integer.toString(i));
+                        sql = String.format("insert into test values(%d, null, '%d')", i, i);
                         break;
                     case 2:
-                        ps.setLong(2, i + 10);
-                        ps.setNull(3, Types.VARCHAR);
+                        sql = String.format("insert into test values(%d, %d, null)", i, i + 10);
                         break;
                     default:
                         throw new InternalError();
                     }
                 }
-
-                ps.addBatch();
+                statement.addBatch(sql);
             }
 
-            int[] r = ps.executeBatch();
+            int[] r = statement.executeBatch();
             LOG.info("insert.count={}", Arrays.toString(r));
         }
 
@@ -139,36 +132,32 @@ public class TsurugiJdbcExample23PreparedStatement {
         connection.setAutoCommit(true);
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        String sql = "select * from test where foo=?";
-        try (var ps = connection.prepareStatement(sql)) {
-            for (int i = 0; i < 6; i++) {
-                ps.setInt(1, i);
+        try (var statement = connection.createStatement()) {
+            String sql = "select * from test order by foo";
+            boolean isQuery = statement.execute(sql);
+            assert isQuery == true;
 
-                boolean isQuery = ps.execute();
-                assert isQuery == true;
+            try (var rs = statement.getResultSet()) {
+                while (rs.next()) {
+                    var result = new ArrayList<Object>();
 
-                try (var rs = ps.getResultSet()) {
-                    while (rs.next()) {
-                        var result = new ArrayList<Object>();
+                    int foo = rs.getInt(1);
+                    assert rs.wasNull() == false;
+                    result.add(foo);
 
-                        int foo = rs.getInt(1);
-                        assert rs.wasNull() == false;
-                        result.add(foo);
-
-                        long bar = rs.getLong(2);
-                        if (rs.wasNull()) {
-                            assert bar == 0L;
-                            result.add(null);
-                        } else {
-                            result.add(bar);
-                        }
-
-                        String zzz = rs.getString(3);
-                        assert rs.wasNull() == (zzz == null);
-                        result.add(zzz);
-
-                        System.out.println(result);
+                    long bar = rs.getLong(2);
+                    if (rs.wasNull()) {
+                        assert bar == 0L;
+                        result.add(null);
+                    } else {
+                        result.add(bar);
                     }
+
+                    String zzz = rs.getString(3);
+                    assert rs.wasNull() == (zzz == null);
+                    result.add(zzz);
+
+                    System.out.println(result);
                 }
             }
         }
@@ -182,36 +171,32 @@ public class TsurugiJdbcExample23PreparedStatement {
         connection.setAutoCommit(true);
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
-        String sql = "select * from test where foo=?";
-        try (var ps = connection.prepareStatement(sql)) {
-            for (int i = 0; i < 6; i++) {
-                ps.setInt(1, i);
+        try (var statement = connection.createStatement()) {
+            String sql = "select * from test order by foo";
+            boolean isQuery = statement.execute(sql);
+            assert isQuery == true;
 
-                boolean isQuery = ps.execute();
-                assert isQuery == true;
+            try (var rs = statement.getResultSet()) {
+                while (rs.next()) {
+                    var result = new ArrayList<Object>();
 
-                try (var rs = ps.getResultSet()) {
-                    while (rs.next()) {
-                        var result = new ArrayList<Object>();
+                    int foo = rs.getInt("foo");
+                    assert rs.wasNull() == false;
+                    result.add(foo);
 
-                        int foo = rs.getInt("foo");
-                        assert rs.wasNull() == false;
-                        result.add(foo);
-
-                        long bar = rs.getLong("bar");
-                        if (rs.wasNull()) {
-                            assert bar == 0L;
-                            result.add(null);
-                        } else {
-                            result.add(bar);
-                        }
-
-                        String zzz = rs.getString("zzz");
-                        assert rs.wasNull() == (zzz == null);
-                        result.add(zzz);
-
-                        System.out.println(result);
+                    long bar = rs.getLong("bar");
+                    if (rs.wasNull()) {
+                        assert bar == 0L;
+                        result.add(null);
+                    } else {
+                        result.add(bar);
                     }
+
+                    String zzz = rs.getString("zzz");
+                    assert rs.wasNull() == (zzz == null);
+                    result.add(zzz);
+
+                    System.out.println(result);
                 }
             }
         }
