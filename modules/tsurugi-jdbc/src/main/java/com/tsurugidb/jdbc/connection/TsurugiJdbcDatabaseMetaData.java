@@ -1150,13 +1150,15 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
 
     @Override
     public int getDatabaseMajorVersion() throws SQLException {
-        String[] ss = TsurugiDriver.TSURUGI_VERSION.split(Pattern.quote("."));
+        String version = getDatabaseProductVersion();
+        String[] ss = version.split(Pattern.quote("."));
         return Integer.parseInt(ss[0]);
     }
 
     @Override
     public int getDatabaseMinorVersion() throws SQLException {
-        String[] ss = TsurugiDriver.TSURUGI_VERSION.split(Pattern.quote("."));
+        String version = getDatabaseProductVersion();
+        String[] ss = version.split(Pattern.quote("."));
         return Integer.parseInt(ss[1]);
     }
 
