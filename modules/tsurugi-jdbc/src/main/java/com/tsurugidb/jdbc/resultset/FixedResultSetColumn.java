@@ -29,7 +29,7 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofString(String name) {
-        var type = new FixedResultSetType(JDBCType.VARCHAR, 0, 0, 0, false);
+        var type = new FixedResultSetDataType(JDBCType.VARCHAR, 0, 0, 0, false);
         return new FixedResultSetColumn(name, type);
     }
 
@@ -40,7 +40,7 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofStringNullable(String name) {
-        var type = new FixedResultSetType(JDBCType.VARCHAR, 0, 0, 0, true);
+        var type = new FixedResultSetDataType(JDBCType.VARCHAR, 0, 0, 0, true);
         return new FixedResultSetColumn(name, type);
     }
 
@@ -51,7 +51,7 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofShort(String name) {
-        var type = new FixedResultSetType(JDBCType.SMALLINT, 0, 0, 0, false);
+        var type = new FixedResultSetDataType(JDBCType.SMALLINT, 0, 0, 0, false);
         return new FixedResultSetColumn(name, type);
     }
 
@@ -62,7 +62,7 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofShortNullable(String name) {
-        var type = new FixedResultSetType(JDBCType.SMALLINT, 0, 0, 0, true);
+        var type = new FixedResultSetDataType(JDBCType.SMALLINT, 0, 0, 0, true);
         return new FixedResultSetColumn(name, type);
     }
 
@@ -73,7 +73,7 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofInt(String name) {
-        var type = new FixedResultSetType(JDBCType.INTEGER, 0, 0, 0, false);
+        var type = new FixedResultSetDataType(JDBCType.INTEGER, 0, 0, 0, false);
         return new FixedResultSetColumn(name, type);
     }
 
@@ -84,7 +84,7 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofIntNullable(String name) {
-        var type = new FixedResultSetType(JDBCType.INTEGER, 0, 0, 0, true);
+        var type = new FixedResultSetDataType(JDBCType.INTEGER, 0, 0, 0, true);
         return new FixedResultSetColumn(name, type);
     }
 
@@ -95,12 +95,12 @@ public class FixedResultSetColumn {
      * @return column
      */
     public static FixedResultSetColumn ofBoolean(String name) {
-        var type = new FixedResultSetType(JDBCType.BOOLEAN, 0, 0, 0, false);
+        var type = new FixedResultSetDataType(JDBCType.BOOLEAN, 0, 0, 0, false);
         return new FixedResultSetColumn(name, type);
     }
 
     private final String name;
-    private final FixedResultSetType type;
+    private final FixedResultSetDataType type;
 
     /**
      * Creates a new instance.
@@ -108,7 +108,7 @@ public class FixedResultSetColumn {
      * @param name      column name
      * @param type      tsurugi type
      */
-    public FixedResultSetColumn(String name, FixedResultSetType type) {
+    public FixedResultSetColumn(String name, FixedResultSetDataType type) {
         this.name = name;
         this.type = type;
     }
@@ -127,7 +127,7 @@ public class FixedResultSetColumn {
      *
      * @return tsurugi type
      */
-    public FixedResultSetType type() {
+    public FixedResultSetDataType type() {
         return this.type;
     }
 }

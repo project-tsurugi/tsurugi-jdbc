@@ -202,6 +202,6 @@ public class FixedResultSet extends AbstractResultSet {
 
     @Override
     public void close() throws SQLException {
-        // do nothing
+        this.closed = true;
     }
 }

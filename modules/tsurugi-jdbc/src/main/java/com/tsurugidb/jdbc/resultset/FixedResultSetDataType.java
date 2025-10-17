@@ -27,7 +27,7 @@ import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 /**
  * Tsurugi type for {@link FixedResultSetColumn}.
  */
-public class FixedResultSetType implements TsurugiJdbcType {
+public class FixedResultSetDataType implements TsurugiJdbcType {
 
     private final JDBCType jdbcType;
     private final int length;
@@ -44,7 +44,7 @@ public class FixedResultSetType implements TsurugiJdbcType {
      * @param scale     scale
      * @param nullable  nullable
      */
-    public FixedResultSetType(JDBCType jdbcType, int length, int precision, int scale, boolean nullable) {
+    public FixedResultSetDataType(JDBCType jdbcType, int length, int precision, int scale, boolean nullable) {
         this.jdbcType = jdbcType;
         this.length = length;
         this.precision = precision;
