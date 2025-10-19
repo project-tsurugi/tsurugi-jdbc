@@ -24,9 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.OffsetTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -157,7 +155,6 @@ public class JdbcDbTypeTimeTzTest extends JdbcDbTypeTester<OffsetTime> {
     }
 
     private java.sql.Time toSqlTime(OffsetTime value) {
-        var zdt = value.atDate(LocalDate.EPOCH).atZoneSameInstant(ZoneId.systemDefault());
-        return java.sql.Time.valueOf(zdt.toLocalTime());
+        return java.sql.Time.valueOf(value.toLocalTime());
     }
 }

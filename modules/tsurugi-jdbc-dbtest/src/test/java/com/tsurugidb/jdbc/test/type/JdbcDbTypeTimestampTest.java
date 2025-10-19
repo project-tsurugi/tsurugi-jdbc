@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -151,9 +152,9 @@ public class JdbcDbTypeTimestampTest extends JdbcDbTypeTester<LocalDateTime> {
     }
 
     private java.sql.Date toSqlDate(LocalDateTime value) {
-        var zdt = toZonedDateTime(value);
-        long epochDay = zdt.toLocalDate().toEpochDay();
-        return new java.sql.Date(TimeUnit.DAYS.toMillis(epochDay));
+        var zdt = toZonedDateTime(value).truncatedTo(ChronoUnit.DAYS);
+        long epochSecond = zdt.toEpochSecond();
+        return new java.sql.Date(TimeUnit.SECONDS.toMillis(epochSecond));
     }
 
     private java.sql.Time toSqlTime(LocalDateTime value) {

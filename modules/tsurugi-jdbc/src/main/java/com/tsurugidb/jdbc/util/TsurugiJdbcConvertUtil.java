@@ -31,6 +31,7 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.Locale;
 import java.util.Objects;
@@ -629,7 +630,7 @@ public class TsurugiJdbcConvertUtil {
      * @return date value
      */
     protected java.sql.Date toDate(java.sql.Time value, ZoneId zone) {
-        return toDate(toOffsetDateTime(value, zone));
+        return toDate(toZonedDateTime(value, zone));
     }
 
     /**
@@ -640,7 +641,7 @@ public class TsurugiJdbcConvertUtil {
      * @return date value
      */
     protected java.sql.Date toDate(java.sql.Timestamp value, ZoneId zone) {
-        return toDate(toOffsetDateTime(value, zone));
+        return toDate(toZonedDateTime(value, zone));
     }
 
     /**
@@ -651,7 +652,9 @@ public class TsurugiJdbcConvertUtil {
      * @return date value
      */
     protected java.sql.Date toDate(LocalDate value, ZoneId zone) {
-        return toDate(value.atStartOfDay(), zone);
+        var zdt = value.atStartOfDay(zone);
+        long epochSecond = zdt.toEpochSecond();
+        return new java.sql.Date(TimeUnit.SECONDS.toMillis(epochSecond));
     }
 
     /**
@@ -662,7 +665,7 @@ public class TsurugiJdbcConvertUtil {
      * @return date value
      */
     protected java.sql.Date toDate(LocalDateTime value, ZoneId zone) {
-        return toDate(value.atZone(zone));
+        return toDate(value.toLocalDate(), zone);
     }
 
     /**
@@ -672,9 +675,9 @@ public class TsurugiJdbcConvertUtil {
      * @return date value
      */
     protected java.sql.Date toDate(OffsetDateTime value) {
-        var zdt = value.atZoneSameInstant(DEFAULT_ZONE);
-        long epochDay = zdt.toLocalDate().toEpochDay();
-        return new java.sql.Date(TimeUnit.DAYS.toMillis(epochDay));
+        var odt = value.truncatedTo(ChronoUnit.DAYS);
+        long epochSecond = odt.toEpochSecond();
+        return new java.sql.Date(TimeUnit.SECONDS.toMillis(epochSecond));
     }
 
     /**
@@ -684,9 +687,9 @@ public class TsurugiJdbcConvertUtil {
      * @return date value
      */
     protected java.sql.Date toDate(ZonedDateTime value) {
-        var zdt = value.withZoneSameInstant(DEFAULT_ZONE);
-        long epochDay = zdt.toLocalDate().toEpochDay();
-        return new java.sql.Date(TimeUnit.DAYS.toMillis(epochDay));
+        var zdt = value.truncatedTo(ChronoUnit.DAYS);
+        long epochSecond = zdt.toEpochSecond();
+        return new java.sql.Date(TimeUnit.SECONDS.toMillis(epochSecond));
     }
 
     /**
@@ -760,7 +763,7 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(java.sql.Timestamp value, ZoneId zone) {
-        return toTime(toOffsetDateTime(value, zone));
+        return toTime(toZonedDateTime(value, zone));
     }
 
     /**
@@ -783,8 +786,7 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(LocalDateTime value, ZoneId zone) {
-        var zdt = value.atZone(zone);
-        return java.sql.Time.valueOf(zdt.toLocalTime());
+        return toTime(value.toLocalTime(), zone);
     }
 
     /**
@@ -794,8 +796,7 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(OffsetTime value) {
-        var odt = value.atDate(LocalDate.EPOCH).atZoneSameInstant(DEFAULT_ZONE);
-        return java.sql.Time.valueOf(odt.toLocalTime());
+        return java.sql.Time.valueOf(value.toLocalTime());
     }
 
     /**
@@ -805,8 +806,7 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(OffsetDateTime value) {
-        var odt = value.atZoneSameInstant(DEFAULT_ZONE);
-        return java.sql.Time.valueOf(odt.toLocalTime());
+        return java.sql.Time.valueOf(value.toLocalTime());
     }
 
     /**
@@ -816,7 +816,7 @@ public class TsurugiJdbcConvertUtil {
      * @return time value
      */
     protected java.sql.Time toTime(ZonedDateTime value) {
-        return toTime(value.toOffsetDateTime().toOffsetTime());
+        return java.sql.Time.valueOf(value.toLocalTime());
     }
 
     /**
@@ -890,7 +890,10 @@ public class TsurugiJdbcConvertUtil {
      * @return timestamp value
      */
     protected java.sql.Timestamp toTimestamp(java.sql.Date value, ZoneId zone) {
-        return toTimestamp(toOffsetDateTime(value, zone));
+        if (zone.equals(DEFAULT_ZONE)) {
+            return new java.sql.Timestamp(value.getTime());
+        }
+        return toTimestamp(toZonedDateTime(value, zone));
     }
 
     /**
@@ -901,7 +904,10 @@ public class TsurugiJdbcConvertUtil {
      * @return timestamp value
      */
     protected java.sql.Timestamp toTimestamp(java.sql.Time value, ZoneId zone) {
-        return toTimestamp(toOffsetDateTime(value, zone));
+        if (zone.equals(DEFAULT_ZONE)) {
+            return new java.sql.Timestamp(value.getTime());
+        }
+        return toTimestamp(toZonedDateTime(value, zone));
     }
 
     /**
@@ -912,7 +918,7 @@ public class TsurugiJdbcConvertUtil {
      * @return timestamp value
      */
     protected java.sql.Timestamp toTimestamp(LocalDate value, ZoneId zone) {
-        return toTimestamp(value.atStartOfDay(), zone);
+        return toTimestamp(toZonedDateTime(value, zone));
     }
 
     /**
@@ -923,8 +929,7 @@ public class TsurugiJdbcConvertUtil {
      * @return timestamp value
      */
     protected java.sql.Timestamp toTimestamp(LocalDateTime value, ZoneId zone) {
-        var zdt = value.atZone(zone);
-        return toTimestamp(zdt);
+        return toTimestamp(toZonedDateTime(value, zone));
     }
 
     /**
@@ -934,10 +939,7 @@ public class TsurugiJdbcConvertUtil {
      * @return timestamp value
      */
     protected java.sql.Timestamp toTimestamp(OffsetDateTime value) {
-        long epochSecond = value.toEpochSecond();
-        var timestamp = new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
-        timestamp.setNanos(value.getNano());
-        return timestamp;
+        return java.sql.Timestamp.from(value.toInstant());
     }
 
     /**
@@ -947,10 +949,7 @@ public class TsurugiJdbcConvertUtil {
      * @return timestamp value
      */
     protected java.sql.Timestamp toTimestamp(ZonedDateTime value) {
-        long epochSecond = value.toEpochSecond();
-        var timestamp = new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
-        timestamp.setNanos(value.getNano());
-        return timestamp;
+        return java.sql.Timestamp.from(value.toInstant());
     }
 
     /**
@@ -1024,7 +1023,7 @@ public class TsurugiJdbcConvertUtil {
      * @return local date value
      */
     protected LocalDate toLocalDate(java.sql.Date value, ZoneId zone) {
-        return toOffsetDateTime(value, zone).toLocalDate();
+        return toZonedDateTime(value, zone).toLocalDate();
     }
 
     /**
@@ -1035,7 +1034,7 @@ public class TsurugiJdbcConvertUtil {
      * @return local date value
      */
     protected LocalDate toLocalDate(java.sql.Time value, ZoneId zone) {
-        return toOffsetDateTime(value, zone).toLocalDate();
+        return toZonedDateTime(value, zone).toLocalDate();
     }
 
     /**
@@ -1046,7 +1045,7 @@ public class TsurugiJdbcConvertUtil {
      * @return local date value
      */
     protected LocalDate toLocalDate(java.sql.Timestamp value, ZoneId zone) {
-        return toOffsetDateTime(value, zone).toLocalDate();
+        return toZonedDateTime(value, zone).toLocalDate();
     }
 
     /**
@@ -1153,7 +1152,7 @@ public class TsurugiJdbcConvertUtil {
      * @return local time value
      */
     protected LocalTime toLocalTime(java.sql.Date value, ZoneId zone) {
-        return toOffsetDateTime(value, zone).toLocalTime();
+        return toZonedDateTime(value, zone).toLocalTime();
     }
 
     /**
@@ -1164,7 +1163,7 @@ public class TsurugiJdbcConvertUtil {
      * @return local time value
      */
     protected LocalTime toLocalTime(java.sql.Time value, ZoneId zone) {
-        return toOffsetDateTime(value, zone).toLocalTime();
+        return toZonedDateTime(value, zone).toLocalTime();
     }
 
     /**
@@ -1175,7 +1174,7 @@ public class TsurugiJdbcConvertUtil {
      * @return local time value
      */
     protected LocalTime toLocalTime(java.sql.Timestamp value, ZoneId zone) {
-        return toOffsetDateTime(value, zone).toLocalTime();
+        return toZonedDateTime(value, zone).toLocalTime();
     }
 
     /**
@@ -1289,7 +1288,7 @@ public class TsurugiJdbcConvertUtil {
      * @return local date time value
      */
     protected LocalDateTime toLocalDateTime(java.sql.Date value, ZoneId zone) {
-        return toOffsetDateTime(value, zone).toLocalDateTime();
+        return toZonedDateTime(value, zone).toLocalDateTime();
     }
 
     /**
@@ -1300,7 +1299,7 @@ public class TsurugiJdbcConvertUtil {
      * @return local date time value
      */
     protected LocalDateTime toLocalDateTime(java.sql.Time value, ZoneId zone) {
-        return toOffsetDateTime(value, zone).toLocalDateTime();
+        return toZonedDateTime(value, zone).toLocalDateTime();
     }
 
     /**
@@ -1311,7 +1310,7 @@ public class TsurugiJdbcConvertUtil {
      * @return local date time value
      */
     protected LocalDateTime toLocalDateTime(java.sql.Timestamp value, ZoneId zone) {
-        return toOffsetDateTime(value, zone).toLocalDateTime();
+        return toZonedDateTime(value, zone).toLocalDateTime();
     }
 
     /**
@@ -1392,10 +1391,10 @@ public class TsurugiJdbcConvertUtil {
             return toOffsetTime((OffsetDateTime) value);
         }
         if (value instanceof LocalTime) {
-            return toOffsetTime((LocalTime) value);
+            return toOffsetTime((LocalTime) value, zone);
         }
         if (value instanceof LocalDateTime) {
-            return toOffsetTime((LocalDateTime) value);
+            return toOffsetTime((LocalDateTime) value, zone);
         }
         if (value instanceof java.sql.Timestamp) {
             return toOffsetTime((java.sql.Timestamp) value, zone);
@@ -1447,20 +1446,22 @@ public class TsurugiJdbcConvertUtil {
      * Convert to OffsetTime.
      *
      * @param value value
+     * @param zone  time zone
      * @return offset time value
      */
-    protected OffsetTime toOffsetTime(LocalTime value) {
-        return toOffsetDateTime(value.atDate(LocalDate.EPOCH)).toOffsetTime();
+    protected OffsetTime toOffsetTime(LocalTime value, ZoneId zone) {
+        return toOffsetDateTime(value.atDate(LocalDate.EPOCH), zone).toOffsetTime();
     }
 
     /**
      * Convert to OffsetTime.
      *
      * @param value value
+     * @param zone  time zone
      * @return offset time value
      */
-    protected OffsetTime toOffsetTime(LocalDateTime value) {
-        return toOffsetTime(value.toLocalTime());
+    protected OffsetTime toOffsetTime(LocalDateTime value, ZoneId zone) {
+        return toOffsetTime(value.toLocalTime(), zone);
     }
 
     /**
@@ -1531,10 +1532,10 @@ public class TsurugiJdbcConvertUtil {
             return toOffsetDateTime((java.sql.Timestamp) value, zone);
         }
         if (value instanceof LocalDateTime) {
-            return toOffsetDateTime((LocalDateTime) value);
+            return toOffsetDateTime((LocalDateTime) value, zone);
         }
         if (value instanceof LocalDate) {
-            return toOffsetDateTime((LocalDate) value);
+            return toOffsetDateTime((LocalDate) value, zone);
         }
         if (value instanceof java.sql.Date) {
             return toOffsetDateTime((java.sql.Date) value, zone);
@@ -1583,21 +1584,22 @@ public class TsurugiJdbcConvertUtil {
      * Convert to OffsetDateTime.
      *
      * @param value value
+     * @param zone  time zone
      * @return offset date time value
      */
-    protected OffsetDateTime toOffsetDateTime(LocalDate value) {
-        var ldt = value.atTime(LocalTime.MIN);
-        return toOffsetDateTime(ldt);
+    protected OffsetDateTime toOffsetDateTime(LocalDate value, ZoneId zone) {
+        return toZonedDateTime(value, zone).toOffsetDateTime();
     }
 
     /**
      * Convert to OffsetDateTime.
      *
      * @param value value
+     * @param zone  time zone
      * @return offset date time value
      */
-    protected OffsetDateTime toOffsetDateTime(LocalDateTime value) {
-        return toZonedDateTime(value).toOffsetDateTime();
+    protected OffsetDateTime toOffsetDateTime(LocalDateTime value, ZoneId zone) {
+        return toZonedDateTime(value, zone).toOffsetDateTime();
     }
 
     /**
@@ -1658,10 +1660,10 @@ public class TsurugiJdbcConvertUtil {
             return toZonedDateTime((java.sql.Timestamp) value, zone);
         }
         if (value instanceof LocalDateTime) {
-            return toZonedDateTime((LocalDateTime) value);
+            return toZonedDateTime((LocalDateTime) value, zone);
         }
         if (value instanceof LocalDate) {
-            return toZonedDateTime((LocalDate) value);
+            return toZonedDateTime((LocalDate) value, zone);
         }
         if (value instanceof java.sql.Date) {
             return toZonedDateTime((java.sql.Date) value, zone);
@@ -1682,8 +1684,8 @@ public class TsurugiJdbcConvertUtil {
      */
     protected ZonedDateTime toZonedDateTime(java.sql.Date value, ZoneId zone) {
         long epochMilli = value.getTime();
-        var instant = Instant.ofEpochMilli(epochMilli);
-        return instant.atZone(zone);
+        var zdt = Instant.ofEpochMilli(epochMilli).atZone(DEFAULT_ZONE);
+        return zdt.withZoneSameLocal(zone);
     }
 
     /**
@@ -1695,8 +1697,8 @@ public class TsurugiJdbcConvertUtil {
      */
     protected ZonedDateTime toZonedDateTime(java.sql.Time value, ZoneId zone) {
         long epochMilli = value.getTime();
-        var instant = Instant.ofEpochMilli(epochMilli);
-        return instant.atZone(zone);
+        var zdt = Instant.ofEpochMilli(epochMilli).atZone(DEFAULT_ZONE);
+        return zdt.withZoneSameLocal(zone);
     }
 
     /**
@@ -1707,30 +1709,31 @@ public class TsurugiJdbcConvertUtil {
      * @return offset date time value
      */
     protected ZonedDateTime toZonedDateTime(java.sql.Timestamp value, ZoneId zone) {
-        long epochMilli = value.getTime();
-        var instant = Instant.ofEpochMilli(epochMilli);
-        return instant.atZone(zone).withNano(value.getNanos());
+        var zdt = value.toInstant().atZone(DEFAULT_ZONE);
+        return zdt.withZoneSameLocal(zone);
     }
 
     /**
      * Convert to ZonedDateTime.
      *
      * @param value value
+     * @param zone  time zone
      * @return offset date time value
      */
-    protected ZonedDateTime toZonedDateTime(LocalDate value) {
+    protected ZonedDateTime toZonedDateTime(LocalDate value, ZoneId zone) {
         var ldt = value.atTime(LocalTime.MIN);
-        return toZonedDateTime(ldt);
+        return toZonedDateTime(ldt, zone);
     }
 
     /**
      * Convert to ZonedDateTime.
      *
      * @param value value
+     * @param zone  time zone
      * @return offset date time value
      */
-    protected ZonedDateTime toZonedDateTime(LocalDateTime value) {
-        return ZonedDateTime.of(value, DEFAULT_ZONE);
+    protected ZonedDateTime toZonedDateTime(LocalDateTime value, ZoneId zone) {
+        return ZonedDateTime.of(value, zone);
     }
 
     /**

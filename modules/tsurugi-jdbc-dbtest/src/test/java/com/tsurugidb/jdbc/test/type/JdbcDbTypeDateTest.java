@@ -141,13 +141,13 @@ public class JdbcDbTypeDateTest extends JdbcDbTypeTester<LocalDate> {
     }
 
     private java.sql.Date toSqlDate(LocalDate value) {
-        long epochDay = value.toEpochDay();
-        return new java.sql.Date(TimeUnit.DAYS.toMillis(epochDay));
+        var zdt = value.atStartOfDay(ZoneId.systemDefault());
+        long epochSecond = zdt.toEpochSecond();
+        return new java.sql.Date(TimeUnit.SECONDS.toMillis(epochSecond));
     }
 
     private java.sql.Timestamp toSqlTimestamp(LocalDate value) {
-        var zone = ZoneId.systemDefault();
-        var zdt = value.atStartOfDay(zone);
+        var zdt = value.atStartOfDay(ZoneId.systemDefault());
         long epochSecond = zdt.toEpochSecond();
         return new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
     }

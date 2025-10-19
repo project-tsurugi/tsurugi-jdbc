@@ -25,8 +25,8 @@ import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -181,21 +181,16 @@ public class JdbcDbTypeTimestampTzTest extends JdbcDbTypeTester<OffsetDateTime> 
     }
 
     private java.sql.Date toSqlDate(OffsetDateTime value) {
-        var zdt = value.atZoneSameInstant(ZoneId.systemDefault());
-        long epochDay = zdt.toLocalDate().toEpochDay();
-        return new java.sql.Date(TimeUnit.DAYS.toMillis(epochDay));
+        var odt = value.truncatedTo(ChronoUnit.DAYS);
+        long epochSecond = odt.toEpochSecond();
+        return new java.sql.Date(TimeUnit.SECONDS.toMillis(epochSecond));
     }
 
     private java.sql.Time toSqlTime(OffsetDateTime value) {
-        var zdt = value.atZoneSameInstant(ZoneId.systemDefault());
-        return java.sql.Time.valueOf(zdt.toLocalTime());
+        return java.sql.Time.valueOf(value.toLocalTime());
     }
 
     private java.sql.Timestamp toSqlTimestamp(OffsetDateTime value) {
-        var zdt = value.atZoneSameInstant(ZoneId.systemDefault());
-        long epochSecond = zdt.toEpochSecond();
-        var timestamp = new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
-        timestamp.setNanos(value.getNano());
-        return timestamp;
+        return java.sql.Timestamp.from(value.toInstant());
     }
 }

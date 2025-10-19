@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -166,15 +167,13 @@ public class JdbcDbTypeSqlDateTest extends JdbcDbTypeTester<java.sql.Date> {
     }
 
     private java.sql.Date toSqlDate(LocalDate value) {
-        long epochDay = value.toEpochDay();
-        return new java.sql.Date(TimeUnit.DAYS.toMillis(epochDay));
+        var zdt = value.atStartOfDay(ZoneId.systemDefault());
+        long epochSecond = zdt.toEpochSecond();
+        return new java.sql.Date(TimeUnit.SECONDS.toMillis(epochSecond));
     }
 
     private java.sql.Timestamp toSqlTimestamp(java.sql.Date value) {
-        var zone = ZoneId.systemDefault();
-        var zdt = toLocalDate(value).atStartOfDay(zone);
-        long epochSecond = zdt.toEpochSecond();
-        return new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
+        return new java.sql.Timestamp(value.getTime());
     }
 
     private LocalDate toLocalDate(java.sql.Date value) {
@@ -182,7 +181,8 @@ public class JdbcDbTypeSqlDateTest extends JdbcDbTypeTester<java.sql.Date> {
             return null;
         }
         long epochMilli = value.getTime();
-        return LocalDate.ofEpochDay(TimeUnit.MILLISECONDS.toDays(epochMilli));
+        var zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epochMilli), ZoneId.systemDefault());
+        return zdt.toLocalDate();
     }
 
     private ZonedDateTime toZonedDateTime(java.sql.Date value) {
