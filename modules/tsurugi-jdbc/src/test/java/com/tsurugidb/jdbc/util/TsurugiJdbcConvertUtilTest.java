@@ -1,9 +1,26 @@
+/*
+ * Copyright 2025 Project Tsurugi.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tsurugidb.jdbc.util;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -15,7 +32,9 @@ import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,6 +49,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -257,6 +277,11 @@ class TsurugiJdbcConvertUtilTest {
         assertEquals(sqlDate(1, 1, 1), util.convertToDate(LocalDate.of(1, 1, 1)));
         assertEquals(sqlDate(0, 1, 1), util.convertToDate(LocalDate.of(0, 1, 1)));
         assertEquals(sqlDate(-1, 1, 1), util.convertToDate(LocalDate.of(-1, 1, 1)));
+
+        {
+            var value = "2025-10-17";
+            testConvertToDate(value, 2025, 10, 17, DEFAULT_ZONE);
+        }
     }
 
     private void testConvertToDate(Object value, int y, int m, int d, ZoneId zone) throws SQLException {
@@ -369,6 +394,8 @@ class TsurugiJdbcConvertUtilTest {
         assertEquals(expected, util.convertToTime(ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59), ZoneId.of("UTC"))));
 
         assertEquals(expected, util.convertToTime(java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 30, 59))));
+
+        assertEquals(expected, util.convertToTime("23:30:59"));
     }
 
     @Test
@@ -407,6 +434,11 @@ class TsurugiJdbcConvertUtilTest {
         assertEquals(java.sql.Timestamp.valueOf(LocalDateTime.of(1, 1, 1, 0, 0, 0, 0)), util.convertToTimestamp(java.sql.Date.valueOf(LocalDate.of(1, 1, 1))));
         assertEquals(java.sql.Timestamp.valueOf(LocalDateTime.of(0, 1, 1, 0, 0, 0, 0)), util.convertToTimestamp(java.sql.Date.valueOf(LocalDate.of(0, 1, 1))));
         assertEquals(java.sql.Timestamp.valueOf(LocalDateTime.of(-1, 1, 1, 0, 0, 0, 0)), util.convertToTimestamp(java.sql.Date.valueOf(LocalDate.of(-1, 1, 1))));
+
+        {
+            var value = "2025-10-17 23:30:59.123456789";
+            testConvertToTimestamp(value, 2025, 10, 17, 23, 30, 59, 123456789, DEFAULT_ZONE);
+        }
     }
 
     private void testConvertToTimestamp(Object value, int year, int month, int day, int hour, int minute, int second, int nanos, ZoneId zone) throws SQLException {
@@ -507,6 +539,17 @@ class TsurugiJdbcConvertUtilTest {
 
         assertEquals(expected, util.convertToLocalDate(java.sql.Date.valueOf(LocalDate.of(2025, 10, 17))));
         assertEquals(expected, util.convertToLocalDate(java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789))));
+
+        assertEquals(expected, util.convertToLocalDate("2025-10-17"));
+        assertDateTimeError(() -> util.convertToLocalDate("23:30:59.123456789"));
+        assertEquals(expected, util.convertToLocalDate("2025-10-17 23:30:59.123456789"));
+        assertEquals(expected, util.convertToLocalDate("2025-10-17T23:30:59.123456789"));
+        assertEquals(expected, util.convertToLocalDate("2025-10-17 23:30:59+00:00"));
+        assertEquals(expected, util.convertToLocalDate("2025-10-17 23:30:59+09"));
+        assertEquals(expected, util.convertToLocalDate("2025-10-17 23:30:59+09:00"));
+        assertEquals(expected, util.convertToLocalDate("2025-10-17 23:30:59-09:00"));
+        assertEquals(expected, util.convertToLocalDate("2025-10-17 23:30:59[Asia/Tokyo]"));
+        assertEquals(expected, util.convertToLocalDate("2025-10-17 23:30:59+09:00[Asia/Tokyo]"));
     }
 
     @Test
@@ -523,6 +566,22 @@ class TsurugiJdbcConvertUtilTest {
         assertEquals(expected, util.convertToLocalTime(ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), ZoneId.of("UTC"))));
 
         assertEquals(expected, util.convertToLocalTime(java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789))));
+
+        assertEquals(LocalTime.MIN, util.convertToLocalTime("2025-10-17"));
+        assertEquals(LocalTime.of(23, 59), util.convertToLocalTime("23:59:00"));
+        assertEquals(LocalTime.of(23, 59), util.convertToLocalTime("23:59"));
+        assertEquals(LocalTime.of(23, 30, 59, 100_000_000), util.convertToLocalTime("23:30:59.1"));
+        assertEquals(LocalTime.of(23, 30, 59, 123_000_000), util.convertToLocalTime("23:30:59.123"));
+        assertEquals(expected, util.convertToLocalTime("23:30:59.123456789"));
+        assertEquals(expected, util.convertToLocalTime("23:30:59.123456789+00:00"));
+        assertEquals(expected, util.convertToLocalTime("23:30:59.123456789+09:00"));
+        assertEquals(expected, util.convertToLocalTime("23:30:59.123456789-09:00"));
+        assertEquals(expected, util.convertToLocalTime("23:30:59.123456789[Asia/Tokyo]"));
+        assertEquals(expected, util.convertToLocalTime("2025-10-17 23:30:59.123456789"));
+        assertEquals(expected, util.convertToLocalTime("2025-10-17T23:30:59.123456789"));
+        assertEquals(expected, util.convertToLocalTime("2025-10-17 23:30:59.123456789+09:00"));
+        assertEquals(expected, util.convertToLocalTime("2025-10-17 23:30:59.123456789[Asia/Tokyo]"));
+        assertEquals(expected, util.convertToLocalTime("2025-10-17 23:30:59.123456789+09:00[Asia/Tokyo]"));
     }
 
     @Test
@@ -539,6 +598,19 @@ class TsurugiJdbcConvertUtilTest {
 
         assertEquals(LocalDateTime.of(2025, 10, 17, 0, 0, 0), util.convertToLocalDateTime(java.sql.Date.valueOf(LocalDate.of(2025, 10, 17))));
         assertEquals(expected, util.convertToLocalDateTime(java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789))));
+
+        assertEquals(LocalDateTime.of(2025, 10, 17, 0, 0, 0), util.convertToLocalDateTime("2025-10-17"));
+        assertDateTimeError(() -> util.convertToLocalDateTime("23:30:59.123456789"));
+        assertEquals(expected, util.convertToLocalDateTime("2025-10-17 23:30:59.123456789"));
+        assertEquals(expected, util.convertToLocalDateTime("2025-10-17T23:30:59.123456789"));
+        assertEquals(expected.withNano(0), util.convertToLocalDateTime("2025-10-17 23:30:59"));
+        assertEquals(expected.withNano(100_000_000), util.convertToLocalDateTime("2025-10-17 23:30:59.1"));
+        assertEquals(expected.withNano(123_000_000), util.convertToLocalDateTime("2025-10-17 23:30:59.123"));
+        assertEquals(expected, util.convertToLocalDateTime("2025-10-17 23:30:59.123456789+00:00"));
+        assertEquals(expected, util.convertToLocalDateTime("2025-10-17 23:30:59.123456789+09:00"));
+        assertEquals(expected, util.convertToLocalDateTime("2025-10-17 23:30:59.123456789-09:00"));
+        assertEquals(expected, util.convertToLocalDateTime("2025-10-17 23:30:59.123456789[Asia/Tokyo]"));
+        assertEquals(expected, util.convertToLocalDateTime("2025-10-17 23:30:59.123456789+09:00[Asia/Tokyo]"));
     }
 
     @Test
@@ -553,6 +625,18 @@ class TsurugiJdbcConvertUtilTest {
 
         assertEquals(OffsetTime.of(23, 30, 59, 0, DEFAULT_OFFSET), util.convertToOffsetTime(java.sql.Time.valueOf(LocalTime.of(23, 30, 59, 123456789))));
         assertEquals(expected, util.convertToOffsetTime(java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789))));
+
+        assertEquals(OffsetTime.of(0, 0, 0, 0, DEFAULT_OFFSET), util.convertToOffsetTime("2025-10-17"));
+        assertEquals(expected, util.convertToOffsetTime("23:30:59.123456789"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(0)), util.convertToOffsetTime("23:30:59.123456789+00:00"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(+9)), util.convertToOffsetTime("23:30:59.123456789+09:00"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(-9)), util.convertToOffsetTime("23:30:59.123456789-09:00"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(+9)), util.convertToOffsetTime("23:30:59.123456789[Asia/Tokyo]"));
+        assertEquals(expected, util.convertToOffsetTime("2025-10-17 23:30:59.123456789"));
+        assertEquals(expected, util.convertToOffsetTime("2025-10-17T23:30:59.123456789"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(+9)), util.convertToOffsetTime("2025-10-17 23:30:59.123456789+09:00"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(+9)), util.convertToOffsetTime("2025-10-17 23:30:59.123456789[Asia/Tokyo]"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(+9)), util.convertToOffsetTime("2025-10-17 23:30:59.123456789+09:00[Asia/Tokyo]"));
     }
 
     @Test
@@ -566,6 +650,15 @@ class TsurugiJdbcConvertUtilTest {
 
         assertEquals(OffsetDateTime.of(2025, 10, 17, 0, 0, 0, 0, DEFAULT_OFFSET), util.convertToOffsetDateTime(java.sql.Date.valueOf(LocalDate.of(2025, 10, 17))));
         assertEquals(expected, util.convertToOffsetDateTime(java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789))));
+
+        assertEquals(OffsetDateTime.of(2025, 10, 17, 0, 0, 0, 0, DEFAULT_OFFSET), util.convertToOffsetDateTime("2025-10-17"));
+        assertDateTimeError(() -> util.convertToOffsetDateTime("23:30:59.123456789"));
+        assertEquals(expected, util.convertToOffsetDateTime("2025-10-17 23:30:59.123456789"));
+        assertEquals(expected, util.convertToOffsetDateTime("2025-10-17T23:30:59.123456789"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(0)), util.convertToOffsetDateTime("2025-10-17 23:30:59.123456789Z"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(+9)), util.convertToOffsetDateTime("2025-10-17 23:30:59.123456789+09:00"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(+9)), util.convertToOffsetDateTime("2025-10-17 23:30:59.123456789[Asia/Tokyo]"));
+        assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(+9)), util.convertToOffsetDateTime("2025-10-17 23:30:59.123456789+09:00[Asia/Tokyo]"));
     }
 
     @Test
@@ -581,6 +674,20 @@ class TsurugiJdbcConvertUtilTest {
 
         assertEquals(ZonedDateTime.of(2025, 10, 17, 0, 0, 0, 0, ZoneId.systemDefault()), util.convertToZonedDateTime(java.sql.Date.valueOf(LocalDate.of(2025, 10, 17))));
         assertEquals(expected, util.convertToZonedDateTime(java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789))));
+
+        assertEquals(ZonedDateTime.of(2025, 10, 17, 0, 0, 0, 0, DEFAULT_ZONE), util.convertToZonedDateTime("2025-10-17"));
+        assertDateTimeError(() -> util.convertToZonedDateTime("23:30:59.123456789"));
+        assertEquals(expected, util.convertToZonedDateTime("2025-10-17 23:30:59.123456789"));
+        assertEquals(expected, util.convertToZonedDateTime("2025-10-17T23:30:59.123456789"));
+        assertEquals(expected.withZoneSameLocal(ZoneOffset.ofHours(0)), util.convertToZonedDateTime("2025-10-17 23:30:59.123456789Z"));
+        assertEquals(expected.withZoneSameLocal(ZoneOffset.ofHours(+9)), util.convertToZonedDateTime("2025-10-17 23:30:59.123456789+09:00"));
+        assertEquals(expected.withZoneSameLocal(ZoneId.of("Asia/Tokyo")), util.convertToZonedDateTime("2025-10-17 23:30:59.123456789[Asia/Tokyo]"));
+        assertEquals(expected.withZoneSameLocal(ZoneId.of("Asia/Tokyo")), util.convertToZonedDateTime("2025-10-17 23:30:59.123456789+09:00[Asia/Tokyo]"));
+    }
+
+    private static void assertDateTimeError(Executable executable) {
+        var e = assertThrows(SQLDataException.class, executable);
+        assertInstanceOf(DateTimeException.class, e.getCause());
     }
 
     @Test

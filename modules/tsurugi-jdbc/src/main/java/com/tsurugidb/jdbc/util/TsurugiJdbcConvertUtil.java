@@ -31,8 +31,14 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQueries;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -619,6 +625,10 @@ public class TsurugiJdbcConvertUtil {
             return toDate((ZonedDateTime) value);
         }
 
+        if (value instanceof String) {
+            return toDate((String) value, zone);
+        }
+
         throw getExceptionHandler().dataTypeMismatchException("convertToDate unsupported type", value.getClass());
     }
 
@@ -693,6 +703,17 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to Date.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return date value
+     */
+    protected java.sql.Date toDate(String value, ZoneId zone) {
+        return toDate(toLocalDate(value), zone);
+    }
+
+    /**
      * Convert to time.
      *
      * @param value value
@@ -750,6 +771,10 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof java.sql.Timestamp) {
             return toTime((java.sql.Timestamp) value, zone);
+        }
+
+        if (value instanceof String) {
+            return toTime((String) value, zone);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToTime unsupported type", value.getClass());
@@ -820,6 +845,17 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to Time.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return time value
+     */
+    protected java.sql.Time toTime(String value, ZoneId zone) {
+        return toTime(toLocalTime(value), zone);
+    }
+
+    /**
      * Convert to timestamp.
      *
      * @param value value
@@ -877,6 +913,10 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof java.sql.Time) {
             return toTimestamp((java.sql.Time) value, zone);
+        }
+
+        if (value instanceof String) {
+            return toTimestamp((String) value, zone);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToTimestamp unsupported type", value.getClass());
@@ -953,6 +993,17 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to Timestamp.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return timestamp value
+     */
+    protected java.sql.Timestamp toTimestamp(String value, ZoneId zone) {
+        return toTimestamp(toLocalDateTime(value), zone);
+    }
+
+    /**
      * Convert to LocalDate.
      *
      * @param value value
@@ -1010,6 +1061,10 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof ZonedDateTime) {
             return toLocalDate((ZonedDateTime) value);
+        }
+
+        if (value instanceof String) {
+            return toLocalDate((String) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToLocalDate unsupported type", value.getClass());
@@ -1079,6 +1134,17 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to LocalDate.
+     *
+     * @param value value
+     * @return local date value
+     */
+    protected LocalDate toLocalDate(String value) {
+        var temporal = parseDateTime(value);
+        return LocalDate.from(temporal);
+    }
+
+    /**
      * Convert to LocalTime.
      *
      * @param value value
@@ -1139,6 +1205,10 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof ZonedDateTime) {
             return toLocalTime((ZonedDateTime) value);
+        }
+
+        if (value instanceof String) {
+            return toLocalTime((String) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToLocalTime unsupported type", value.getClass());
@@ -1218,6 +1288,17 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to LocalTime.
+     *
+     * @param value value
+     * @return local time value
+     */
+    protected LocalTime toLocalTime(String value) {
+        var temporal = parseDateTime(value);
+        return LocalTime.from(temporal);
+    }
+
+    /**
      * Convert to LocalDateTime.
      *
      * @param value value
@@ -1275,6 +1356,10 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof ZonedDateTime) {
             return toLocalDateTime((ZonedDateTime) value);
+        }
+
+        if (value instanceof String) {
+            return toLocalDateTime((String) value);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToLocalDateTime unsupported type", value.getClass());
@@ -1344,6 +1429,17 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to LocalDateTime.
+     *
+     * @param value value
+     * @return local date time value
+     */
+    protected LocalDateTime toLocalDateTime(String value) {
+        var temporal = parseDateTime(value);
+        return LocalDateTime.from(temporal);
+    }
+
+    /**
      * Convert to OffsetTime.
      *
      * @param value value
@@ -1404,6 +1500,10 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof ZonedDateTime) {
             return toOffsetTime((ZonedDateTime) value);
+        }
+
+        if (value instanceof String) {
+            return toOffsetTime((String) value, zone);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToOffsetTime unsupported type", value.getClass());
@@ -1485,6 +1585,40 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to OffsetTime.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return offset time value
+     */
+    protected OffsetTime toOffsetTime(String value, ZoneId zone) {
+        var temporal = parseDateTime(value);
+        return toOffsetTime(temporal, zone);
+    }
+
+    /**
+     * Convert to OffsetTime.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return offset time value
+     */
+    protected OffsetTime toOffsetTime(TemporalAccessor value, ZoneId zone) {
+        if (value.isSupported(ChronoField.OFFSET_SECONDS)) {
+            return OffsetTime.from(value);
+        }
+        ZoneId temporalZone = value.query(TemporalQueries.zone());
+        if (temporalZone != null) {
+            var time = LocalTime.from(value);
+            var offset = temporalZone.getRules().getOffset(Instant.now());
+            return OffsetTime.of(time, offset);
+        }
+
+        var time = LocalTime.from(value);
+        return toOffsetTime(time, zone);
+    }
+
+    /**
      * Convert to OffsetDateTime.
      *
      * @param value value
@@ -1542,6 +1676,10 @@ public class TsurugiJdbcConvertUtil {
         }
         if (value instanceof java.sql.Time) {
             return toOffsetDateTime((java.sql.Time) value, zone);
+        }
+
+        if (value instanceof String) {
+            return toOffsetDateTime((String) value, zone);
         }
 
         throw getExceptionHandler().dataTypeMismatchException("convertToOffsetDateTime unsupported type", value.getClass());
@@ -1613,10 +1751,42 @@ public class TsurugiJdbcConvertUtil {
     }
 
     /**
+     * Convert to OffsetDateTime.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return offset date time value
+     */
+    protected OffsetDateTime toOffsetDateTime(String value, ZoneId zone) {
+        var temporal = parseDateTime(value);
+        return toOffsetDateTime(temporal, zone);
+    }
+
+    /**
+     * Convert to OffsetDateTime.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return offset date time value
+     */
+    protected OffsetDateTime toOffsetDateTime(TemporalAccessor value, ZoneId zone) {
+        if (value.isSupported(ChronoField.OFFSET_SECONDS)) {
+            return OffsetDateTime.from(value);
+        }
+        ZoneId temporalZone = value.query(TemporalQueries.zone());
+        if (temporalZone != null) {
+            return ZonedDateTime.from(value).toOffsetDateTime();
+        }
+
+        var ldt = LocalDateTime.from(value);
+        return toOffsetDateTime(ldt, zone);
+    }
+
+    /**
      * Convert to ZonedDateTime.
      *
      * @param value value
-     * @return offset date time value
+     * @return zoned date time value
      * @throws SQLException if data convert error occurs
      */
     public ZonedDateTime convertToZonedDateTime(@Nonnull Object value) throws SQLException {
@@ -1628,7 +1798,7 @@ public class TsurugiJdbcConvertUtil {
      *
      * @param value value
      * @param zone  time zone
-     * @return offset date time value
+     * @return zoned date time value
      * @throws SQLException if data convert error occurs
      */
     public ZonedDateTime convertToZonedDateTime(@Nonnull Object value, ZoneId zone) throws SQLException {
@@ -1646,7 +1816,7 @@ public class TsurugiJdbcConvertUtil {
      *
      * @param value value
      * @param zone  time zone
-     * @return offset date time value
+     * @return zoned date time value
      * @throws Exception if data convert error occurs
      */
     protected ZonedDateTime convertToZonedDateTimeMain(@Nonnull Object value, ZoneId zone) throws Exception {
@@ -1672,6 +1842,10 @@ public class TsurugiJdbcConvertUtil {
             return toZonedDateTime((java.sql.Time) value, zone);
         }
 
+        if (value instanceof String) {
+            return toZonedDateTime((String) value, zone);
+        }
+
         throw getExceptionHandler().dataTypeMismatchException("convertToZonedDateTime unsupported type", value.getClass());
     }
 
@@ -1680,7 +1854,7 @@ public class TsurugiJdbcConvertUtil {
      *
      * @param value value
      * @param zone  time zone
-     * @return offset date time value
+     * @return zoned date time value
      */
     protected ZonedDateTime toZonedDateTime(java.sql.Date value, ZoneId zone) {
         long epochMilli = value.getTime();
@@ -1693,7 +1867,7 @@ public class TsurugiJdbcConvertUtil {
      *
      * @param value value
      * @param zone  time zone
-     * @return offset date time value
+     * @return zoned date time value
      */
     protected ZonedDateTime toZonedDateTime(java.sql.Time value, ZoneId zone) {
         long epochMilli = value.getTime();
@@ -1706,7 +1880,7 @@ public class TsurugiJdbcConvertUtil {
      *
      * @param value value
      * @param zone  time zone
-     * @return offset date time value
+     * @return zoned date time value
      */
     protected ZonedDateTime toZonedDateTime(java.sql.Timestamp value, ZoneId zone) {
         var zdt = value.toInstant().atZone(DEFAULT_ZONE);
@@ -1718,7 +1892,7 @@ public class TsurugiJdbcConvertUtil {
      *
      * @param value value
      * @param zone  time zone
-     * @return offset date time value
+     * @return zoned date time value
      */
     protected ZonedDateTime toZonedDateTime(LocalDate value, ZoneId zone) {
         var ldt = value.atTime(LocalTime.MIN);
@@ -1730,7 +1904,7 @@ public class TsurugiJdbcConvertUtil {
      *
      * @param value value
      * @param zone  time zone
-     * @return offset date time value
+     * @return zoned date time value
      */
     protected ZonedDateTime toZonedDateTime(LocalDateTime value, ZoneId zone) {
         return ZonedDateTime.of(value, zone);
@@ -1740,10 +1914,84 @@ public class TsurugiJdbcConvertUtil {
      * Convert to ZonedDateTime.
      *
      * @param value value
-     * @return offset date time value
+     * @return zoned date time value
      */
     protected ZonedDateTime toZonedDateTime(OffsetDateTime value) {
         return value.toZonedDateTime();
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return zoned date time value
+     */
+    protected ZonedDateTime toZonedDateTime(String value, ZoneId zone) {
+        var temporal = parseDateTime(value);
+        return toZonedDateTime(temporal, zone);
+    }
+
+    /**
+     * Convert to ZonedDateTime.
+     *
+     * @param value value
+     * @param zone  time zone
+     * @return zoned date time value
+     */
+    protected ZonedDateTime toZonedDateTime(TemporalAccessor value, ZoneId zone) {
+        ZoneId temporalZone = value.query(TemporalQueries.zone());
+        if (temporalZone != null) {
+            return ZonedDateTime.from(value);
+        }
+        if (value.isSupported(ChronoField.OFFSET_SECONDS)) {
+            return toZonedDateTime(OffsetDateTime.from(value));
+        }
+
+        var ldt = LocalDateTime.from(value);
+        return toZonedDateTime(ldt, zone);
+    }
+
+    private static final DateTimeFormatter FORMATTER;
+    static {
+        var builder = new DateTimeFormatterBuilder().parseCaseInsensitive().parseLenient()
+                // yyyy-MM-dd
+                .optionalStart().appendValue(ChronoField.YEAR, 4).appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR, 2).appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH, 2).optionalEnd()
+                // splitter
+                .optionalStart().appendPattern("[' ']['T']").optionalEnd()
+                // HH:mm
+                .optionalStart().appendValue(ChronoField.HOUR_OF_DAY, 2).appendLiteral(':').appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+                // ss
+                .optionalStart().appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+                // S9
+                .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd() //
+                .optionalEnd().optionalEnd()
+                // offset
+                .optionalStart().appendOffsetId().optionalEnd()
+                // zone
+                .optionalStart().appendLiteral('[').appendZoneRegionId().appendLiteral(']').optionalEnd()
+                // default
+                .parseDefaulting(ChronoField.HOUR_OF_DAY, 0) //
+                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0) //
+                .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0);
+
+        FORMATTER = builder.toFormatter();
+    }
+
+    /**
+     * parse date time.
+     *
+     * @param value value
+     * @return date time
+     * @throws DateTimeParseException if unable to parse the requested result
+     */
+    protected TemporalAccessor parseDateTime(String value) throws DateTimeParseException {
+        String s = value.trim();
+        if (s.isEmpty()) {
+            throw new DateTimeParseException("empty string", s, 0);
+        }
+
+        return FORMATTER.parse(s);
     }
 
     /**

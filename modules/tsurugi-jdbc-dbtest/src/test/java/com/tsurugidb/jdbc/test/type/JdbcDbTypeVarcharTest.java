@@ -30,6 +30,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +76,9 @@ public class JdbcDbTypeVarcharTest extends JdbcDbTypeTester<String> {
         list.add("123.4");
         list.add("12345e-1");
         list.add("NaN");
+        list.add("2025-10-20");
+        list.add("23:30:59");
+        list.add("2025-10-20 23:30:59.123");
         list.add(null);
         return list;
     }
@@ -177,8 +189,89 @@ public class JdbcDbTypeVarcharTest extends JdbcDbTypeTester<String> {
             }
             fail(e);
             return;
+        case DATE:
+            try {
+                LocalDate.parse(expected);
+            } catch (DateTimeParseException ignore) {
+                assertTrue(e.getMessage().contains("convertToDate error"));
+                return;
+            }
+            fail(e);
+            return;
+        case TIME:
+            try {
+                LocalTime.parse(expected);
+            } catch (DateTimeParseException ignore) {
+                assertTrue(e.getMessage().contains("convertToTime error"));
+                return;
+            }
+            fail(e);
+            return;
+        case TIMESTAMP:
+            try {
+                LocalDateTime.parse(expected);
+            } catch (DateTimeParseException ignore) {
+                assertTrue(e.getMessage().contains("convertToTimestamp error"));
+                return;
+            }
+            fail(e);
+            return;
+        case LOCAL_DATE:
+            try {
+                LocalDate.parse(expected);
+            } catch (DateTimeParseException ignore) {
+                assertTrue(e.getMessage().contains("convertToLocalDate error"));
+                return;
+            }
+            fail(e);
+            return;
+        case LOCAL_TIME:
+            try {
+                LocalTime.parse(expected);
+            } catch (DateTimeParseException ignore) {
+                assertTrue(e.getMessage().contains("convertToLocalTime error"));
+                return;
+            }
+            fail(e);
+            return;
+        case LOCAL_DATE_TIME:
+            try {
+                LocalDateTime.parse(expected);
+            } catch (DateTimeParseException ignore) {
+                assertTrue(e.getMessage().contains("convertToLocalDateTime error"));
+                return;
+            }
+            fail(e);
+            return;
+        case OFFSET_TIME:
+            try {
+                OffsetTime.parse(expected);
+            } catch (DateTimeParseException ignore) {
+                assertTrue(e.getMessage().contains("convertToOffsetTime error"));
+                return;
+            }
+            fail(e);
+            return;
+        case OFFSET_DATE_TIME:
+            try {
+                LocalDateTime.parse(expected);
+            } catch (DateTimeParseException ignore) {
+                assertTrue(e.getMessage().contains("convertToOffsetDateTime error"));
+                return;
+            }
+            fail(e);
+            return;
+        case ZONED_DATE_TIME:
+            try {
+                ZonedDateTime.parse(expected);
+            } catch (DateTimeParseException ignore) {
+                assertTrue(e.getMessage().contains("convertToZonedDateTime error"));
+                return;
+            }
+            fail(e);
+            return;
         default:
-            assertTrue(e.getMessage().contains("unsupported type"), () -> e.getMessage());
+            assertTrue(e.getMessage().contains("unsupported type"), () -> "valueType=" + valueType + ", " + e.getMessage());
             return;
         }
     }
@@ -213,6 +306,37 @@ public class JdbcDbTypeVarcharTest extends JdbcDbTypeTester<String> {
         case DECIMAL:
             assertEquals(new BigDecimal(expected), actual);
             return;
+        case DATE:
+            assertEquals(java.sql.Date.valueOf(localDate(expected)), actual);
+            return;
+        case TIME:
+            assertEquals(java.sql.Time.valueOf(localTime(expected)), actual);
+            return;
+        case TIMESTAMP:
+            assertEquals(java.sql.Timestamp.valueOf(localDateTime(expected)), actual);
+            return;
+        case LOCAL_DATE:
+            assertEquals(localDate(expected), actual);
+            return;
+        case LOCAL_TIME:
+            assertEquals(localTime(expected), actual);
+            return;
+        case LOCAL_DATE_TIME:
+            assertEquals(localDateTime(expected), actual);
+            return;
+        case OFFSET_TIME: {
+            var offset = ZoneId.systemDefault().getRules().getOffset(Instant.now());
+            assertEquals(OffsetTime.of(localTime(expected), offset), actual);
+        }
+            return;
+        case OFFSET_DATE_TIME: {
+            var offset = ZoneId.systemDefault().getRules().getOffset(Instant.now());
+            assertEquals(OffsetDateTime.of(localDateTime(expected), offset), actual);
+        }
+            return;
+        case ZONED_DATE_TIME:
+            assertEquals(ZonedDateTime.of(localDateTime(expected), ZoneId.systemDefault()), actual);
+            return;
         case ASCII_STREAM:
             try {
                 var bytes = ((InputStream) actual).readAllBytes();
@@ -238,6 +362,41 @@ public class JdbcDbTypeVarcharTest extends JdbcDbTypeTester<String> {
         default:
             assertEquals(expected, actual, "valueType=" + valueType);
             return;
+        }
+    }
+
+    private static LocalDate localDate(String value) {
+        try {
+            return LocalDate.parse(value);
+        } catch (DateTimeParseException e) {
+            return LocalDateTime.parse(value.replace(' ', 'T')).toLocalDate();
+        }
+    }
+
+    private static LocalTime localTime(String value) {
+        try {
+            return LocalTime.parse(value);
+        } catch (DateTimeParseException e) {
+            try {
+                return LocalDateTime.parse(value.replace(' ', 'T')).toLocalTime();
+            } catch (DateTimeParseException e1) {
+                if (LocalDate.parse(value) != null) {
+                    return LocalTime.MIN;
+                }
+                throw e;
+            }
+        }
+    }
+
+    private static LocalDateTime localDateTime(String value) {
+        try {
+            return LocalDateTime.parse(value.replace(' ', 'T'));
+        } catch (DateTimeParseException e) {
+            try {
+                return LocalDate.parse(value).atStartOfDay();
+            } catch (DateTimeParseException e1) {
+                return LocalDateTime.of(LocalDate.EPOCH, LocalTime.parse(value));
+            }
         }
     }
 
