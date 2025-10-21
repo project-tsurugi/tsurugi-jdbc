@@ -374,7 +374,7 @@ public class TsurugiJdbcParameterGenerator {
             return Parameters.ofNull(name);
         }
 
-        LocalTime x = getConvertUtil().convertToLocalTime(value, zone);
+        OffsetTime x = getConvertUtil().convertToOffsetTime(value, zone);
         return Parameters.of(name, x);
     }
 
@@ -409,7 +409,7 @@ public class TsurugiJdbcParameterGenerator {
             return Parameters.ofNull(name);
         }
 
-        LocalDateTime x = getConvertUtil().convertToLocalDateTime(value, zone);
+        OffsetDateTime x = getConvertUtil().convertToOffsetDateTime(value, zone);
         return Parameters.of(name, x);
     }
 

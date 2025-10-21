@@ -559,14 +559,14 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     @Override
     public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
-        var atomType = AtomType.TIME_OF_DAY;
+        var atomType = AtomType.TIME_OF_DAY_WITH_TIME_ZONE;
         var zone = cal.getTimeZone().toZoneId();
         setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x, zone));
     }
 
     @Override
     public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal) throws SQLException {
-        var atomType = AtomType.TIME_POINT;
+        var atomType = AtomType.TIME_POINT_WITH_TIME_ZONE;
         var zone = cal.getTimeZone().toZoneId();
         setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x, zone));
     }
