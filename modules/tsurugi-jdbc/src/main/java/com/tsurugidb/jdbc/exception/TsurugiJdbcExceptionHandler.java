@@ -37,6 +37,7 @@ import com.tsurugidb.tsubakuro.exception.ServerException;
 import com.tsurugidb.tsubakuro.sql.exception.CcException;
 import com.tsurugidb.tsubakuro.sql.exception.CompileException;
 import com.tsurugidb.tsubakuro.sql.exception.ConstraintViolationException;
+import com.tsurugidb.tsubakuro.util.Doc;
 
 /**
  * Tsurugi JDBC Exception Handler.
@@ -184,17 +185,21 @@ public class TsurugiJdbcExceptionHandler {
      * @return category code
      */
     protected int serverErrorCategory(DiagnosticCode code) {
+        var doc = code.getClass().getAnnotation(Doc.class);
+        if (doc != null) {
+            return doc.code();
+        }
+
         String structuredCode = code.getStructuredCode();
         int n = structuredCode.indexOf('-');
         String category = structuredCode.substring(0, n);
-
         switch (category) {
         case "SCD":
             return 1;
         case "SQL":
             return 2;
         default: // unknown
-            return 99;
+            return 0;
         }
     }
 
