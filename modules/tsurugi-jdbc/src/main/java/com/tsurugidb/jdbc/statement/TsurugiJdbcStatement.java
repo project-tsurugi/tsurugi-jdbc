@@ -434,7 +434,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     @Override
     @TsurugiJdbcNotSupported
     public ResultSet getGeneratedKeys() throws SQLException {
-        throw new SQLFeatureNotSupportedException("executeUpdate not supported");
+        throw new SQLFeatureNotSupportedException("getGeneratedKeys not supported");
     }
 
     @Override
