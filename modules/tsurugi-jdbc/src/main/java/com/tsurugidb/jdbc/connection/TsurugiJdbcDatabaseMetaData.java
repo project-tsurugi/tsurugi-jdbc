@@ -254,26 +254,31 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public String getSQLKeywords() throws SQLException {
         return ""; // FIXME getSQLKeywords()
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public String getNumericFunctions() throws SQLException {
         return ""; // FIXME getNumericFunctions()
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public String getStringFunctions() throws SQLException {
         return ""; // FIXME getStringFunctions()
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public String getSystemFunctions() throws SQLException {
         return ""; // FIXME getSystemFunctions()
     }
 
     @Override
+    @TsurugiJdbcNotSupported
     public String getTimeDateFunctions() throws SQLException {
         return ""; // FIXME getTimeDateFunctions()
     }
