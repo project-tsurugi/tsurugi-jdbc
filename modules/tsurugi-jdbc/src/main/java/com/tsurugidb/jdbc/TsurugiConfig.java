@@ -61,47 +61,47 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     }
 
     // Session
-    /** user */
+    /** Credential: user */
     public static final String USER = "user";
-    /** password */
+    /** Credential: password */
     public static final String PASSWORD = "password";
-    /** authentication token */
+    /** Credential: authentication token */
     public static final String AUTH_TOKEN = "authToken";
-    /** credential file path */
+    /** Credential: credential file path */
     public static final String CREDENTIALS = "credentials";
-    /** application name */
+    /** SessionOption: application name */
     public static final String APPLICATION_NAME = "applicationName";
-    /** session label */
+    /** SessionOption: session label */
     public static final String SESSION_LABEL = "sessionLabel";
-    /** session keep alive */
+    /** SessionOption: session keep alive (default - {@code true}) */
     public static final String KEEP_ALIVE = "keepAlive";
     /** session connect timeout [seconds] */
     public static final String CONNECT_TIMEOUT = "connectTimeout";
-    /** session shutdown type */
+    /** session shutdown type (default - {@code GRACEFUL}) */
     public static final String SHUTDOWN_TYPE = "shutdownType";
     /** session shutdown timeout [seconds] */
     public static final String SHUTDOWN_TIMEOUT = "shutdownTimeout";
 
     // Transaction
-    /** transaction type */
+    /** TransactionOption: transaction type (default - {@code OCC}) */
     public static final String TRANSACTION_TYPE = "transactionType";
-    /** transaction label */
+    /** TransactionOption: transaction label */
     public static final String TRANSACTION_LABEL = "transactionLabel";
-    /** LTX include DDL */
+    /** TransactionOption: LTX include DDL */
     public static final String INCLUDE_DDL = "includeDdl";
-    /** LTX write preserve */
+    /** TransactionOption: LTX write preserve */
     public static final String WRITE_PRESERVE = "writePreserve";
-    /** LTX inclusive read area */
+    /** TransactionOption: LTX inclusive read area */
     public static final String INCLUSIVE_READ_AREA = "inclusiveReadArea";
-    /** LTX exclusive read area */
+    /** TransactionOption: LTX exclusive read area */
     public static final String EXCLUSIVE_READ_AREA = "exclusiveReadArea";
-    /** RTX scan parallel */
+    /** TransactionOption: RTX scan parallel */
     public static final String SCAN_PARALLEL = "scanParallel";
-    /** auto commit */
+    /** auto commit (default - {@code true}) */
     public static final String AUTO_COMMIT = "autoCommit";
-    /** commit type */
+    /** CommitOption: commit type (default - {@code DEFAULT}) */
     public static final String COMMIT_TYPE = "commitType";
-    /** automatically dispose upon commit */
+    /** CommitOption: automatically dispose upon commit (default - {@code false}) */
     public static final String AUTO_DISPOSE = "autoDispose";
     /** transaction begin timeout [seconds] */
     public static final String BEGIN_TIMEOUT = "beginTimeout";
