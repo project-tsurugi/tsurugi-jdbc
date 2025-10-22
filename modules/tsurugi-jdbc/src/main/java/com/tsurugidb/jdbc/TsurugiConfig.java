@@ -113,6 +113,8 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     // Statement
     /** transaction execute timeout [seconds] */
     public static final String EXECUTE_TIMEOUT = "executeTimeout";
+    /** executeBatch queue size. If negative numbers, enqueue all FutureResponse. */
+    public static final String BATCH_QUEUE_SIZE = "batchQueueSize";
 
     // ResultSet
     /** SELECT timeout [seconds] */
@@ -153,6 +155,7 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     private final TsurugiJdbcPropertyInt rollbackTimeout = new TsurugiJdbcPropertyInt(ROLLBACK_TIMEOUT).description("transaction rollback timeout [seconds]");
 
     private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT).description("transaction execute timeout [seconds]");
+    private final TsurugiJdbcPropertyInt batchQueueSize = new TsurugiJdbcPropertyInt(BATCH_QUEUE_SIZE).defaultValue(-1).description("executeBatch queue size");
 
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT).description("SELECT timeout [seconds]");
 
@@ -165,7 +168,7 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
             transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, //
             autoCommit, commitType, autoDispose, //
             beginTimeout, commitTimeout, rollbackTimeout, //
-            executeTimeout, //
+            executeTimeout, batchQueueSize, //
             queryTimeout, //
             defaultTimeout);
 

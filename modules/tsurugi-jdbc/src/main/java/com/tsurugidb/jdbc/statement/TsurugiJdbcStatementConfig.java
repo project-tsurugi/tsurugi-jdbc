@@ -15,6 +15,7 @@
  */
 package com.tsurugidb.jdbc.statement;
 
+import static com.tsurugidb.jdbc.TsurugiConfig.BATCH_QUEUE_SIZE;
 import static com.tsurugidb.jdbc.TsurugiConfig.DEFAULT_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.EXECUTE_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.QUERY_TIMEOUT;
@@ -42,11 +43,12 @@ public class TsurugiJdbcStatementConfig {
     }
 
     private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT);
+    private final TsurugiJdbcPropertyInt batchQueueSize = new TsurugiJdbcPropertyInt(BATCH_QUEUE_SIZE);
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
     private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
-            executeTimeout, //
+            executeTimeout, batchQueueSize, //
             queryTimeout, //
             defaultTimeout);
 
@@ -67,6 +69,24 @@ public class TsurugiJdbcStatementConfig {
      */
     public int getExecuteTimeout() {
         return executeTimeout.value().orElse(getDefaultTimeout());
+    }
+
+    /**
+     * Set batch queue size.
+     *
+     * @param size size
+     */
+    public void setBatchQueueSize(int size) {
+        batchQueueSize.setValue(size);
+    }
+
+    /**
+     * Get batch queue size.
+     *
+     * @return size
+     */
+    public int getBatchQueueSize() {
+        return batchQueueSize.value().orElse(0);
     }
 
     /**

@@ -34,6 +34,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -54,6 +55,7 @@ import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
 import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 import com.tsurugidb.tsubakuro.sql.Parameters;
 import com.tsurugidb.tsubakuro.sql.Placeholders;
+import com.tsurugidb.tsubakuro.util.FutureResponse;
 
 /**
  * Tsurugi JDBC Prepared Statement.
@@ -494,16 +496,35 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
         var lowPs = getLowPreparedStatement();
 
-        int timeout = config.getExecuteTimeout();
-
         var transaction = connection.getTransaction();
         int[] result = transaction.executeAndAutoCommit(lowTransaction -> {
             int[] count = new int[parameterList.size()];
 
+            int queueSize = getBatchQueueSize(parameterList.size());
+            var queue = new ArrayDeque<FutureResponse<ExecuteResult>>(queueSize);
+
+            var io = getIoUtil();
+            int timeout = config.getExecuteTimeout();
+
             int i = 0;
             for (List<Parameter> parameter : parameterList) {
-                var io = getIoUtil();
-                var er = io.get(lowTransaction.executeStatement(lowPs, parameter), timeout);
+                var future = lowTransaction.executeStatement(lowPs, parameter);
+                if (queueSize == 0) {
+                    var er = io.get(future, timeout);
+                    count[i++] = getUpdateCount(er);
+                } else {
+                    while (queue.size() >= queueSize) {
+                        var future1 = queue.pollFirst();
+                        var er = io.get(future1, timeout);
+                        count[i++] = getUpdateCount(er);
+                    }
+                    queue.addLast(future);
+                }
+            }
+
+            while (!queue.isEmpty()) {
+                var future = queue.pollFirst();
+                var er = io.get(future, timeout);
                 count[i++] = getUpdateCount(er);
             }
 

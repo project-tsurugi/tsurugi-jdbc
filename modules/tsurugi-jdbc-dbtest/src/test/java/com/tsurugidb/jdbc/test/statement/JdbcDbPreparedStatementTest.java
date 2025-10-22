@@ -29,6 +29,8 @@ import java.sql.SQLFeatureNotSupportedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
 import com.tsurugidb.jdbc.test.util.JdbcDbTester;
@@ -512,6 +514,40 @@ public class JdbcDbPreparedStatementTest extends JdbcDbTester {
 
 //  @Test
 //  void executeBatch_closePrevSql() throws SQLException {
+
+    @ParameterizedTest
+    @ValueSource(ints = { -1, 0, 1, 2, 10 })
+    void executeBatch_queueSize(int queueSize) throws SQLException {
+        try (var connection = createConnection()) {
+            try (var ps = connection.prepareStatement("insert into test values(?, ?, ?)")) {
+                ps.setBatchQueueSize(-1);
+
+                int pk = 1;
+                for (int i = 0; i < 4; i++) {
+                    for (int j = 0; j <= i % 3; j++) {
+                        ps.setInt(1, pk++);
+                        ps.setLong(2, i);
+                        ps.setString(3, "");
+                        ps.addBatch();
+                    }
+                }
+                ps.executeBatch();
+            }
+
+            try (var ps = connection.prepareStatement("delete from test where bar=?")) {
+                assertTrue(connection.getAutoCommit());
+                ps.setBatchQueueSize(queueSize);
+
+                for (int i = 0; i < 4; i++) {
+                    ps.setLong(1, i);
+                    ps.addBatch();
+                }
+
+                int[] count = ps.executeBatch();
+                assertArrayEquals(new int[] { 1, 2, 3, 1 }, count);
+            }
+        }
+    }
 
     @Test
     void clearBatch() throws SQLException {

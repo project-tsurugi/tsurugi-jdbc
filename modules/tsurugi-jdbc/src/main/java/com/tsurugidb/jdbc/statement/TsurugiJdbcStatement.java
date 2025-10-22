@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,6 +39,7 @@ import com.tsurugidb.jdbc.util.SqlCloser;
 import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.tsubakuro.sql.ExecuteResult;
 import com.tsurugidb.tsubakuro.sql.PreparedStatement;
+import com.tsurugidb.tsubakuro.util.FutureResponse;
 
 /**
  * Tsurugi JDBC Statement.
@@ -391,6 +393,39 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
         }
     }
 
+    /**
+     * Set batch queue size.
+     *
+     * @param size size
+     */
+    public void setBatchQueueSize(int size) {
+        config.setBatchQueueSize(size);
+    }
+
+    /**
+     * Get batch queue size.
+     *
+     * @return size
+     */
+    public int getBatchQueueSize() {
+        return config.getBatchQueueSize();
+    }
+
+    /**
+     * Get batch queue size.
+     *
+     * @param listSize list size
+     * @return size
+     */
+    public int getBatchQueueSize(int listSize) {
+        int size = getBatchQueueSize();
+        if (size >= 0) {
+            return size;
+        } else {
+            return listSize;
+        }
+    }
+
     @Override
     public int[] executeBatch() throws SQLException {
         closeExecutingResultSet();
@@ -400,16 +435,35 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
             return new int[0];
         }
 
-        int timeout = config.getExecuteTimeout();
-
         var transaction = connection.getTransaction();
         int[] result = transaction.executeAndAutoCommit(lowTransaction -> {
             int[] count = new int[sqlList.size()];
 
+            int queueSize = getBatchQueueSize(sqlList.size());
+            var queue = new ArrayDeque<FutureResponse<ExecuteResult>>(queueSize);
+
+            var io = getIoUtil();
+            int timeout = config.getExecuteTimeout();
+
             int i = 0;
             for (String sql : sqlList) {
-                var io = getIoUtil();
-                var er = io.get(lowTransaction.executeStatement(sql), timeout);
+                var future = lowTransaction.executeStatement(sql);
+                if (queueSize == 0) {
+                    var er = io.get(future, timeout);
+                    count[i++] = getUpdateCount(er);
+                } else {
+                    while (queue.size() >= queueSize) {
+                        var future1 = queue.pollFirst();
+                        var er = io.get(future1, timeout);
+                        count[i++] = getUpdateCount(er);
+                    }
+                    queue.addLast(future);
+                }
+            }
+
+            while (!queue.isEmpty()) {
+                var future = queue.pollFirst();
+                var er = io.get(future, timeout);
                 count[i++] = getUpdateCount(er);
             }
 
@@ -418,6 +472,7 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
 
         clearBatch();
         return result;
+
     }
 
     @Override

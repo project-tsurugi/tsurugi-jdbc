@@ -27,6 +27,8 @@ import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.test.util.JdbcDbTester;
@@ -373,6 +375,23 @@ public class JdbcDbStatementTest extends JdbcDbTester {
                 });
                 assertTrue(e.getMessage().contains("already closed"));
             }
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { -1, 0, 1, 2, 10 })
+    void executeBatch_queueSize(int queueSize) throws SQLException {
+        try (var connection = createConnection(); //
+                var statement = connection.createStatement()) {
+            assertTrue(connection.getAutoCommit());
+            statement.setBatchQueueSize(queueSize);
+
+            statement.addBatch("insert into test values(1, 1, '')");
+            statement.addBatch("insert into test values(21, 2, ''), (22, 2, '')");
+            statement.addBatch("insert into test values(31, 3, ''), (32, 3, ''),  (33, 3, '')");
+            statement.addBatch("insert into test values(4, 4, '')");
+            int[] count = statement.executeBatch();
+            assertArrayEquals(new int[] { 1, 2, 3, 1 }, count);
         }
     }
 

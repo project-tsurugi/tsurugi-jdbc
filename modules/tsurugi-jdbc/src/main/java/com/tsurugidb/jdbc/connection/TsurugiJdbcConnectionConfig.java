@@ -17,6 +17,7 @@ package com.tsurugidb.jdbc.connection;
 
 import static com.tsurugidb.jdbc.TsurugiConfig.AUTO_COMMIT;
 import static com.tsurugidb.jdbc.TsurugiConfig.AUTO_DISPOSE;
+import static com.tsurugidb.jdbc.TsurugiConfig.BATCH_QUEUE_SIZE;
 import static com.tsurugidb.jdbc.TsurugiConfig.BEGIN_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.COMMIT_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.COMMIT_TYPE;
@@ -95,6 +96,7 @@ public class TsurugiJdbcConnectionConfig {
     private final TsurugiJdbcPropertyInt rollbackTimeout = new TsurugiJdbcPropertyInt(ROLLBACK_TIMEOUT);
 
     private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT);
+    private final TsurugiJdbcPropertyInt batchQueueSize = new TsurugiJdbcPropertyInt(BATCH_QUEUE_SIZE);
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
 
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcShutdownType> shutdownType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcShutdownType.class, SHUTDOWN_TYPE);
@@ -106,7 +108,7 @@ public class TsurugiJdbcConnectionConfig {
             transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, //
             autoCommit, commitType, autoDispose, //
             beginTimeout, commitTimeout, rollbackTimeout, //
-            executeTimeout, //
+            executeTimeout, batchQueueSize, //
             queryTimeout, //
             shutdownType, shutdownTimeout, //
             defaultTimeout);
