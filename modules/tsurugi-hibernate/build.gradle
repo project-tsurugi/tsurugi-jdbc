@@ -1,0 +1,22 @@
+plugins {
+    id 'tsurugi-jdbc.libs-conventions'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+dependencies {
+    api "org.hibernate.orm:hibernate-core:7.1.4.Final"
+
+    testImplementation "ch.qos.logback:logback-classic:1.2.3"
+}
+
+javadoc {
+    title "Tsurugi Hibernate ${project.version}"
+    options.overview = 'src/main/javadoc/overview.html'
+}

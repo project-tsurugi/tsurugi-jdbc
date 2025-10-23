@@ -7,6 +7,8 @@ rootProject.name = 'tsurugi-jdbc'
 include 'tsurugi-jdbc'
 include 'tsurugi-jdbc-dbtest'
 include 'tsurugi-jdbc-examples'
+include 'tsurugi-hibernate'
+include 'tsurugi-hibernate-dbtest'
 
 rootProject.children.each { project ->
     project.projectDir = new File(settingsDir, "modules/${project.name}")
