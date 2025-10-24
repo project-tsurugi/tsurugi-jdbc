@@ -35,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.time.DateTimeException;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -60,7 +59,6 @@ class TsurugiJdbcConvertUtilTest {
     private static final TsurugiJdbcConvertUtil util = new TsurugiJdbcConvertUtil(() -> TsurugiJdbcFactory.getDefaultFactory());
 
     private static final ZoneId DEFAULT_ZONE = ZoneId.systemDefault();
-    private static final ZoneOffset DEFAULT_OFFSET = DEFAULT_ZONE.getRules().getOffset(Instant.now());
 
     @Test
     void convertToBoolean() throws SQLException {
@@ -251,7 +249,7 @@ class TsurugiJdbcConvertUtilTest {
             testConvertToDate(value, 2025, 10, 17, DEFAULT_ZONE);
         }
         {
-            var value = OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), DEFAULT_OFFSET);
+            var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), DEFAULT_ZONE).toOffsetDateTime();
             testConvertToDate(value, 2025, 10, 17, DEFAULT_ZONE);
         }
         {
@@ -329,8 +327,8 @@ class TsurugiJdbcConvertUtilTest {
             testConvertToDate(value, zone, 2025, 10, 17, zone);
         }
         {
-            var value = OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), DEFAULT_OFFSET);
-            testConvertToDate(value, zone, 2025, 10, 17, DEFAULT_OFFSET);
+            var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), DEFAULT_ZONE).toOffsetDateTime();
+            testConvertToDate(value, zone, 2025, 10, 17, value.getOffset());
         }
         {
             var value = OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), ZoneOffset.UTC);
@@ -412,8 +410,8 @@ class TsurugiJdbcConvertUtilTest {
             testConvertToTimestamp(value, 2025, 10, 17, 23, 30, 59, 123456789, DEFAULT_ZONE);
         }
         {
-            var value = OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), DEFAULT_OFFSET);
-            testConvertToTimestamp(value, 2025, 10, 17, 23, 30, 59, 123456789, DEFAULT_OFFSET);
+            var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), DEFAULT_ZONE).toOffsetDateTime();
+            testConvertToTimestamp(value, 2025, 10, 17, 23, 30, 59, 123456789, value.getOffset());
         }
         {
             var value = OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), ZoneOffset.UTC);
@@ -470,8 +468,8 @@ class TsurugiJdbcConvertUtilTest {
             testConvertToTimestamp(value, zone, 2025, 10, 17, 23, 30, 59, 123456789, zone);
         }
         {
-            var value = OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), DEFAULT_OFFSET);
-            testConvertToTimestamp(value, zone, 2025, 10, 17, 23, 30, 59, 123456789, DEFAULT_OFFSET);
+            var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), DEFAULT_ZONE).toOffsetDateTime();
+            testConvertToTimestamp(value, zone, 2025, 10, 17, 23, 30, 59, 123456789, value.getOffset());
         }
         {
             var value = OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), ZoneOffset.UTC);
@@ -615,18 +613,19 @@ class TsurugiJdbcConvertUtilTest {
 
     @Test
     void convertToOffsetTime() throws SQLException {
-        var expected = OffsetTime.of(23, 30, 59, 123456789, DEFAULT_OFFSET);
-        assertEquals(expected, util.convertToOffsetTime(OffsetTime.of(23, 30, 59, 123456789, DEFAULT_OFFSET)));
+        var defaultOffset = ZonedDateTime.of(LocalDate.EPOCH, LocalTime.MIN, DEFAULT_ZONE).getOffset();
+        var expected = OffsetTime.of(23, 30, 59, 123456789, defaultOffset);
+        assertEquals(expected, util.convertToOffsetTime(OffsetTime.of(23, 30, 59, 123456789, defaultOffset)));
 
         assertEquals(expected, util.convertToOffsetTime(LocalTime.of(23, 30, 59, 123456789)));
         assertEquals(expected, util.convertToOffsetTime(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789)));
-        assertEquals(expected, util.convertToOffsetTime(OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), DEFAULT_OFFSET)));
+        assertEquals(expected, util.convertToOffsetTime(OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), defaultOffset)));
         assertEquals(expected, util.convertToOffsetTime(ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), ZoneId.systemDefault())));
 
-        assertEquals(OffsetTime.of(23, 30, 59, 0, DEFAULT_OFFSET), util.convertToOffsetTime(java.sql.Time.valueOf(LocalTime.of(23, 30, 59, 123456789))));
+        assertEquals(OffsetTime.of(23, 30, 59, 0, defaultOffset), util.convertToOffsetTime(java.sql.Time.valueOf(LocalTime.of(23, 30, 59, 123456789))));
         assertEquals(expected, util.convertToOffsetTime(java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789))));
 
-        assertEquals(OffsetTime.of(0, 0, 0, 0, DEFAULT_OFFSET), util.convertToOffsetTime("2025-10-17"));
+        assertEquals(OffsetTime.of(0, 0, 0, 0, defaultOffset), util.convertToOffsetTime("2025-10-17"));
         assertEquals(expected, util.convertToOffsetTime("23:30:59.123456789"));
         assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(0)), util.convertToOffsetTime("23:30:59.123456789+00:00"));
         assertEquals(expected.withOffsetSameLocal(ZoneOffset.ofHours(+9)), util.convertToOffsetTime("23:30:59.123456789+09:00"));
@@ -641,17 +640,18 @@ class TsurugiJdbcConvertUtilTest {
 
     @Test
     void convertToOffsetDateTime() throws SQLException {
-        var expected = OffsetDateTime.of(2025, 10, 17, 23, 30, 59, 123456789, DEFAULT_OFFSET);
-        assertEquals(expected, util.convertToOffsetDateTime(OffsetDateTime.of(2025, 10, 17, 23, 30, 59, 123456789, DEFAULT_OFFSET)));
+        var expected = ZonedDateTime.of(2025, 10, 17, 23, 30, 59, 123456789, DEFAULT_ZONE).toOffsetDateTime();
+        var defaultOffset = expected.getOffset();
+        assertEquals(expected, util.convertToOffsetDateTime(OffsetDateTime.of(2025, 10, 17, 23, 30, 59, 123456789, defaultOffset)));
 
-        assertEquals(OffsetDateTime.of(2025, 10, 17, 0, 0, 0, 0, DEFAULT_OFFSET), util.convertToOffsetDateTime(LocalDate.of(2025, 10, 17)));
+        assertEquals(OffsetDateTime.of(2025, 10, 17, 0, 0, 0, 0, defaultOffset), util.convertToOffsetDateTime(LocalDate.of(2025, 10, 17)));
         assertEquals(expected, util.convertToOffsetDateTime(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789)));
         assertEquals(expected, util.convertToOffsetDateTime(ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), ZoneId.systemDefault())));
 
-        assertEquals(OffsetDateTime.of(2025, 10, 17, 0, 0, 0, 0, DEFAULT_OFFSET), util.convertToOffsetDateTime(java.sql.Date.valueOf(LocalDate.of(2025, 10, 17))));
+        assertEquals(OffsetDateTime.of(2025, 10, 17, 0, 0, 0, 0, defaultOffset), util.convertToOffsetDateTime(java.sql.Date.valueOf(LocalDate.of(2025, 10, 17))));
         assertEquals(expected, util.convertToOffsetDateTime(java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789))));
 
-        assertEquals(OffsetDateTime.of(2025, 10, 17, 0, 0, 0, 0, DEFAULT_OFFSET), util.convertToOffsetDateTime("2025-10-17"));
+        assertEquals(OffsetDateTime.of(2025, 10, 17, 0, 0, 0, 0, defaultOffset), util.convertToOffsetDateTime("2025-10-17"));
         assertDateTimeError(() -> util.convertToOffsetDateTime("23:30:59.123456789"));
         assertEquals(expected, util.convertToOffsetDateTime("2025-10-17 23:30:59.123456789"));
         assertEquals(expected, util.convertToOffsetDateTime("2025-10-17T23:30:59.123456789"));
@@ -668,8 +668,8 @@ class TsurugiJdbcConvertUtilTest {
 
         assertEquals(ZonedDateTime.of(2025, 10, 17, 0, 0, 0, 0, ZoneId.systemDefault()), util.convertToZonedDateTime(LocalDate.of(2025, 10, 17)));
         assertEquals(expected, util.convertToZonedDateTime(LocalDateTime.of(2025, 10, 17, 23, 30, 59, 123456789)));
-        assertEquals(OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), DEFAULT_OFFSET).toZonedDateTime(),
-                util.convertToZonedDateTime(OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), DEFAULT_OFFSET)));
+        assertEquals(ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), DEFAULT_ZONE).toOffsetDateTime().toZonedDateTime(),
+                util.convertToZonedDateTime(ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), DEFAULT_ZONE).toOffsetDateTime()));
         assertEquals(expected, util.convertToZonedDateTime(ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 30, 59, 123456789), ZoneId.systemDefault())));
 
         assertEquals(ZonedDateTime.of(2025, 10, 17, 0, 0, 0, 0, ZoneId.systemDefault()), util.convertToZonedDateTime(java.sql.Date.valueOf(LocalDate.of(2025, 10, 17))));

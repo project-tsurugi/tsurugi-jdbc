@@ -24,8 +24,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -137,7 +139,7 @@ public class JdbcDbTypeTimestampTest extends JdbcDbTypeTester<LocalDateTime> {
             assertEquals(expected.toLocalTime(), actual);
             return;
         case OFFSET_TIME:
-            assertEquals(toOffsetDateTime(expected).toOffsetTime(), actual);
+            assertEquals(toOffsetTime(expected), actual);
             return;
         case OFFSET_DATE_TIME:
             assertEquals(toOffsetDateTime(expected), actual);
@@ -168,6 +170,11 @@ public class JdbcDbTypeTimestampTest extends JdbcDbTypeTester<LocalDateTime> {
         var timestamp = new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
         timestamp.setNanos(value.getNano());
         return timestamp;
+    }
+
+    private OffsetTime toOffsetTime(LocalDateTime value) {
+        var zdt = toZonedDateTime(value.toLocalTime().atDate(LocalDate.EPOCH));
+        return zdt.toOffsetDateTime().toOffsetTime();
     }
 
     private OffsetDateTime toOffsetDateTime(LocalDateTime value) {

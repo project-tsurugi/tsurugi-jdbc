@@ -24,9 +24,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -170,7 +171,7 @@ public class JdbcDbTypeSqlTimestampTest extends JdbcDbTypeTester<java.sql.Timest
             assertEquals(toLocalDateTime(expected), actual);
             return;
         case OFFSET_TIME:
-            assertEquals(toOffsetDateTime(expected).toOffsetTime(), actual);
+            assertEquals(toOffsetTime(expected), actual);
             return;
         case OFFSET_DATE_TIME:
             assertEquals(toOffsetDateTime(expected), actual);
@@ -197,10 +198,7 @@ public class JdbcDbTypeSqlTimestampTest extends JdbcDbTypeTester<java.sql.Timest
 
     private java.sql.Timestamp toSqlTimestamp(LocalDateTime value) {
         var zdt = value.atZone(ZoneId.systemDefault());
-        long epochSecond = zdt.toEpochSecond();
-        var timestamp = new java.sql.Timestamp(TimeUnit.SECONDS.toMillis(epochSecond));
-        timestamp.setNanos(value.getNano());
-        return timestamp;
+        return java.sql.Timestamp.from(zdt.toInstant());
     }
 
     private LocalDateTime toLocalDateTime(java.sql.Timestamp value) {
@@ -210,12 +208,16 @@ public class JdbcDbTypeSqlTimestampTest extends JdbcDbTypeTester<java.sql.Timest
         return toZonedDateTime(value).toLocalDateTime();
     }
 
+    private OffsetTime toOffsetTime(java.sql.Timestamp value) {
+        var zdt = toZonedDateTime(value).toLocalTime().atDate(LocalDate.EPOCH).atZone(ZoneId.systemDefault());
+        return zdt.toOffsetDateTime().toOffsetTime();
+    }
+
     private OffsetDateTime toOffsetDateTime(java.sql.Timestamp value) {
         return toZonedDateTime(value).toOffsetDateTime();
     }
 
     private ZonedDateTime toZonedDateTime(java.sql.Timestamp value) {
-        var instant = Instant.ofEpochMilli(value.getTime());
-        return instant.atZone(ZoneId.systemDefault()).withNano(value.getNanos());
+        return value.toInstant().atZone(ZoneId.systemDefault());
     }
 }
