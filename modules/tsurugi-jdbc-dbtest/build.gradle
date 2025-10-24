@@ -11,7 +11,7 @@ dependencies {
     implementation "ch.qos.logback:logback-classic:1.5.18"
 }
 
-tasks.named('test') {
+tasks.named('dbtest') {
     systemProperty 'tsurugi.dbtest.endpoint', findProperty('dbtest.endpoint') ?: 'tcp://localhost:12345'
     systemProperty 'tsurugi.dbtest.user', findProperty('dbtest.user') ?: ''
     systemProperty 'tsurugi.dbtest.password', findProperty('dbtest.password') ?: ''
