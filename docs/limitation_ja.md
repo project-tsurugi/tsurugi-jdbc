@@ -13,26 +13,28 @@ Tsurugi JDBCは内部で  [Tsubakuro/Java](https://github.com/project-tsurugi/ts
 
 Tsurugi JDBCが対応しているデータ型は以下の通りです。
 
-| Tsurugiの型              | java.sql.Types                   | Tsubakuro/Javaの型 | Javaの型                          | 備考   |
-| ------------------------ | -------------------------------- | ------------------ | --------------------------------- | ------ |
-| BOOLEAN                  | BIT, BOOLEAN                     | boolean            | boolean                           |        |
-|                          | TINYINT                          |                    | byte                              |        |
-|                          | SMALLINT                         |                    | short                             |        |
-| INT                      | INTEGER                          | int                | int                               |        |
-| BIGINT                   | BIGINT                           | long               | long                              |        |
-| REAL                     | FLOAT, REAL                      | float              | float                             |        |
-| DOUBLE                   | DOUBLE                           | double             | double                            |        |
-| DECIMAL                  | NUMERIC, DECIMAL                 | BigDecimal         | BigDecimal                        |        |
-| CHAR, VARCHAR            | CHAR, VARCHAR, LONGVARCHAR       | String             | String                            |        |
-| BINARY, VARBINARY        | BINARY, VARBINARY, LONGVARBINARY | byte[]             | byte[]                            |        |
-| BLOB                     | BLOB                             | BlobReference      | java.sql.Blob                     | 未対応 |
-| CLOB                     | CLOB                             | ClobReference      | java.sql.Clob                     | 未対応 |
-| DATE                     | DATE                             | LocalDate          | java.sql.Date, LocalDate          |        |
-| TIME                     | TIME                             | LocalTime          | java.sql.Time, LocalTime          |        |
-| TIMESTAMP                | TIMESTAMP                        | LocalDateTime      | java.sql.Timestamp, LocalDateTime |        |
-| TIME WITH TIME ZONE      | TIME_WITH_TIMEZONE               | OffsetTime         | OffsetTime                        |        |
-| TIMESTAMP WITH TIME ZONE | TIMESTAMP_WITH_TIMEZONE          | OffsetDateTime     | OffsetDateTime, ZonedDateTime     |        |
+| Tsurugiの型              | java.sql.Types                   | Tsubakuro/Javaの型 | Javaの型                          | 備考          |
+| ------------------------ | -------------------------------- | ------------------ | --------------------------------- | ------------- |
+| （BOOLEAN）              | BIT, BOOLEAN                     | boolean            | boolean                           | Tsurugi未対応 |
+| （TINYINT）              | TINYINT                          |                    | byte                              | Tsurugi未対応 |
+| （SMALLINT）             | SMALLINT                         |                    | short                             | Tsurugi未対応 |
+| INT                      | INTEGER                          | int                | int                               |               |
+| BIGINT                   | BIGINT                           | long               | long                              |               |
+| REAL                     | FLOAT, REAL                      | float              | float                             |               |
+| DOUBLE                   | DOUBLE                           | double             | double                            |               |
+| DECIMAL                  | NUMERIC, DECIMAL                 | BigDecimal         | BigDecimal                        |               |
+| CHAR, VARCHAR            | CHAR, VARCHAR, LONGVARCHAR       | String             | String                            |               |
+| BINARY, VARBINARY        | BINARY, VARBINARY, LONGVARBINARY | byte[]             | byte[]                            |               |
+| BLOB                     | BLOB                             | BlobReference      | java.sql.Blob                     | 未対応        |
+| CLOB                     | CLOB                             | ClobReference      | java.sql.Clob                     | 未対応        |
+| DATE                     | DATE                             | LocalDate          | java.sql.Date, LocalDate          |               |
+| TIME                     | TIME                             | LocalTime          | java.sql.Time, LocalTime          |               |
+| TIMESTAMP                | TIMESTAMP                        | LocalDateTime      | java.sql.Timestamp, LocalDateTime |               |
+| TIME WITH TIME ZONE      | TIME_WITH_TIMEZONE               | OffsetTime         | OffsetTime                        |               |
+| TIMESTAMP WITH TIME ZONE | TIMESTAMP_WITH_TIMEZONE          | OffsetDateTime     | OffsetDateTime, ZonedDateTime     |               |
 
+- BOOLEAN, TINYINT, SMALLINTはTsurugiサーバー側が未対応です。（将来対応予定）
+- BLOB, CLOBはTsurugi JDBCが未対応です。（将来対応予定）
 - この表に無いjava.sql.Typesには対応していません。（XML型やROWID型等）
 - ResultSet#getObject()は、基本的に「Tsubakuro/Javaの型」を返します。
   - BLOB, CLOBは未対応ですが、Tsubakuro/Javaの型でなくjava.sql.Blob, Clobを返す予定です。
@@ -73,7 +75,7 @@ PreparedStatementにセットするパラメーターの型とTsurugi内で処�
 
 - `setTimestamp(index, timestamp)` はTIMESTAMPとして扱います。
 - `setTimestamp(index, timestamp, calendar)` はTIMESTAMP WITH TIME ZONEとして扱います。
-- `setByte()`, `setShort()` はINTとして扱います。
+- `setByte()`, `setShort()` はINTとして扱います。（TINYINT, SMALLINTが使えるようになったら変更する予定）
 
 また、`getParameterMetaData()` によって返されるParameterMetaDataからは、正しい情報を取得できません。  
 全てのパラメーターをセットした後であればパラメーターの個数や設定したデータ型の基本的な情報は取得できますが（桁数などの詳細な情報は取得できません）、PreparedStatementを生成した直後に取得したParameterMetaDataでパラメーターの個数を取得すると0が返ります。

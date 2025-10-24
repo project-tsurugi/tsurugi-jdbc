@@ -22,7 +22,7 @@ First, check out and install Tsubakuro/Java locally, and build Tsurugi JDBC with
 
 ```bash
 cd tsubakuro
-./gradlew PublishToMavenLocal -PskipBuildNative
+./gradlew publishToMavenLocal -PskipBuildNative
 
 cd tsurugi-jdbc/modules/tsurugi-jdbc
 ../../gradlew build -PmavenLocal
@@ -33,7 +33,7 @@ cd tsurugi-jdbc/modules/tsurugi-jdbc
 Build and deploy the java libraries into Maven Local Repository.
 ```
 cd tsurugi-jdbc/modules/tsurugi-jdbc
-../../gradlew PublishToMavenLocal
+../../gradlew publishToMavenLocal
 ```
 
 ## License

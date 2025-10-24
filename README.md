@@ -24,9 +24,14 @@ dependencies {
 The JDBC URL begins with `jdbc:tsurugi:` and specifies the Tsurugi endpoint.  
 For example, `jdbc:tsurugi:tcp://localhost:12345` or `jdbc:tsurugi:ipc:tsurugi`.
 
-## Example
+## Modules
 
-See [tsurugi-jdbc-examples](modules/tsurugi-jdbc-examples/src/main/java/com/tsurugidb/jdbc/example).
+- [tsurugi-jdbc](modules/tsurugi-jdbc)
+  - Tsurugi JDBC core
+- [tsurugi-jdbc-examples](modules/tsurugi-jdbc-examples/src/main/java/com/tsurugidb/jdbc/example)
+  - Tsurugi JDBC examples
+- [tsurugi-hibernate](modules/tsurugi-hibernate)
+  - Hibernate Dialect for Tsurugi JDBC
 
 ## License
 

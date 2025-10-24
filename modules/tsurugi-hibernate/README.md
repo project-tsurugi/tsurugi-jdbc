@@ -23,6 +23,8 @@ dependencies {
 }
 ```
 
+The Dialect class for Tsurugi Hibernate is `com.tsurugidb.hibernate.TsurugiDialect`.
+
 ## Example
 
 ```java
@@ -53,7 +55,7 @@ cd tsurugi-jdbc/modules/tsurugi-hibernate
 Build and deploy the java libraries into Maven Local Repository.
 ```
 cd tsurugi-jdbc/modules/tsurugi-hibernate
-../../gradlew PublishToMavenLocal
+../../gradlew publishToMavenLocal
 ```
 
 ## License
