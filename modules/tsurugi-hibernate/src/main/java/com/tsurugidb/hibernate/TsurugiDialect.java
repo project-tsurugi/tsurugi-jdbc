@@ -174,6 +174,7 @@ public class TsurugiDialect extends Dialect {
         final var functionFactory = new CommonFunctionFactory(functionContributions);
 
         functionFactory.ceiling_ceil();
+        functionFactory.concat_pipeOperator(); // `concat` function of the Criteria API uses `||`
         functionFactory.length_characterLength();
         functionFactory.localtimeLocaltimestamp();
         functionFactory.lowerUpper();

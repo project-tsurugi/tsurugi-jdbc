@@ -486,4 +486,34 @@ public class HibernateCriteriaApiTest extends HibernateTester {
             assertEquals(3L, result.get(1)[1]);
         }
     }
+
+    @Test
+    void stringFunctions() {
+        { // insert
+            Transaction transaction = session.beginTransaction();
+
+            session.persist(new TestEntity(1, 11, "Abc"));
+
+            transaction.commit();
+        }
+        session.clear();
+
+        { // select
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+            Root<TestEntity> root = cq.from(TestEntity.class);
+
+            var upper = cb.upper(root.get("zzz"));
+            var lower = cb.lower(root.get("zzz"));
+            var concat = cb.concat(root.get("zzz"), " - Def");
+
+            cq.select(cb.array(upper, lower, concat));
+
+            List<Object[]> result = session.createQuery(cq).getResultList();
+            assertEquals(1, result.size());
+            assertEquals("ABC", result.get(0)[0]);
+            assertEquals("abc", result.get(0)[1]);
+            assertEquals("Abc - Def", result.get(0)[2]);
+        }
+    }
 }
