@@ -92,6 +92,12 @@ import org.hibernate.type.descriptor.jdbc.JdbcType;
 import org.hibernate.type.descriptor.jdbc.spi.JdbcTypeRegistry;
 import org.hibernate.type.spi.TypeConfiguration;
 
+import com.tsurugidb.hibernate.type.TsurugiDateJdbcType;
+import com.tsurugidb.hibernate.type.TsurugiTimeJdbcType;
+import com.tsurugidb.hibernate.type.TsurugiTimeUtcJdbcType;
+import com.tsurugidb.hibernate.type.TsurugiTimestampJdbcType;
+import com.tsurugidb.hibernate.type.TsurugiTimestampUtcJdbcType;
+
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.TemporalType;
 import jakarta.persistence.Timeout;
@@ -218,6 +224,12 @@ public class TsurugiDialect extends Dialect {
      */
     protected void contributeTsurugiTypes(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
         JdbcTypeRegistry jdbcTypeRegistry = typeContributions.getTypeConfiguration().getJdbcTypeRegistry();
+
+        jdbcTypeRegistry.addDescriptor(TsurugiDateJdbcType.INSTANCE);
+        jdbcTypeRegistry.addDescriptor(TsurugiTimeJdbcType.INSTANCE);
+        jdbcTypeRegistry.addDescriptor(TsurugiTimestampJdbcType.INSTANCE);
+        jdbcTypeRegistry.addDescriptor(TsurugiTimeUtcJdbcType.INSTANCE);
+        jdbcTypeRegistry.addDescriptor(TsurugiTimestampUtcJdbcType.INSTANCE);
 
         jdbcTypeRegistry.addDescriptor(Types.BLOB, BlobJdbcType.BLOB_BINDING);
         jdbcTypeRegistry.addDescriptor(Types.CLOB, ClobJdbcType.CLOB_BINDING);
