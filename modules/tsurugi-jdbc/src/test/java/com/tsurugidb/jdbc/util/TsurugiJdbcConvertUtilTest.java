@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.time.DateTimeException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -51,10 +52,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 
 class TsurugiJdbcConvertUtilTest {
+    private final Logger LOG = LoggerFactory.getLogger(getClass());
 
     private static final TsurugiJdbcConvertUtil util = new TsurugiJdbcConvertUtil(() -> TsurugiJdbcFactory.getDefaultFactory());
 
@@ -242,32 +246,32 @@ class TsurugiJdbcConvertUtilTest {
 
         {
             var value = LocalDate.of(2025, 10, 17);
-            testConvertToDate(value, 2025, 10, 17, DEFAULT_ZONE);
+            testConvertToDate(value, 2025, 10, 17);
         }
         {
             var value = LocalDateTime.of(2025, 10, 17, 23, 59, 59);
-            testConvertToDate(value, 2025, 10, 17, DEFAULT_ZONE);
+            testConvertToDate(value, 2025, 10, 17);
         }
         {
             var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), DEFAULT_ZONE).toOffsetDateTime();
-            testConvertToDate(value, 2025, 10, 17, DEFAULT_ZONE);
+            testConvertToDate(value, 2025, 10, 17);
         }
         {
             var value = OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), ZoneOffset.UTC);
-            testConvertToDate(value, 2025, 10, 17, ZoneId.of("UTC"));
+            testConvertToDate(value, 2025, 10, 17);
         }
         {
             var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), DEFAULT_ZONE);
-            testConvertToDate(value, 2025, 10, 17, DEFAULT_ZONE);
+            testConvertToDate(value, 2025, 10, 17);
         }
         {
             var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), ZoneId.of("UTC"));
-            testConvertToDate(value, 2025, 10, 17, ZoneId.of("UTC"));
+            testConvertToDate(value, 2025, 10, 17);
         }
 
         {
             var value = java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 59, 59));
-            testConvertToDate(value, 2025, 10, 17, DEFAULT_ZONE);
+            testConvertToDate(value, 2025, 10, 17);
         }
 
         assertEquals(java.sql.Date.valueOf(LocalDate.of(1970, 1, 1)), util.convertToDate(LocalDate.of(1970, 1, 1)));
@@ -278,18 +282,26 @@ class TsurugiJdbcConvertUtilTest {
 
         {
             var value = "2025-10-17";
-            testConvertToDate(value, 2025, 10, 17, DEFAULT_ZONE);
+            testConvertToDate(value, 2025, 10, 17);
         }
     }
 
-    private void testConvertToDate(Object value, int y, int m, int d, ZoneId zone) throws SQLException {
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(zone));
+    private void testConvertToDate(Object value, int y, int m, int d) throws SQLException {
+        Calendar calendar = Calendar.getInstance();
         calendar.clear();
         calendar.set(y, m - 1, d);
         var expected = new java.sql.Date(calendar.getTimeInMillis());
 
         var actual = util.convertToDate(value);
-        assertEquals(expected, actual);
+        try {
+            assertEquals(expected, actual);
+        } catch (Throwable e) {
+            LOG.error("{}\nexpected={}, {}\nactual  ={}, {}", e.getMessage(), //
+                    expected, Instant.ofEpochMilli(expected.getTime()), //
+                    actual, Instant.ofEpochMilli(actual.getTime()) //
+            );
+            throw e;
+        }
     }
 
     private static java.sql.Date sqlDate(int year, int month, int day) {
@@ -320,50 +332,51 @@ class TsurugiJdbcConvertUtilTest {
 
         {
             var value = LocalDate.of(2025, 10, 17);
-            testConvertToDate(value, zone, 2025, 10, 17, zone);
+            testConvertToDate(value, zone, 2025, 10, 17);
         }
         {
             var value = LocalDateTime.of(2025, 10, 17, 23, 59, 59);
-            testConvertToDate(value, zone, 2025, 10, 17, zone);
+            testConvertToDate(value, zone, 2025, 10, 17);
         }
         {
             var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), DEFAULT_ZONE).toOffsetDateTime();
-            testConvertToDate(value, zone, 2025, 10, 17, value.getOffset());
+            testConvertToDate(value, zone, 2025, 10, 17);
         }
         {
             var value = OffsetDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), ZoneOffset.UTC);
-            testConvertToDate(value, zone, 2025, 10, 17, ZoneOffset.UTC);
+            testConvertToDate(value, zone, 2025, 10, 17);
         }
         {
             var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), DEFAULT_ZONE);
-            testConvertToDate(value, zone, 2025, 10, 17, DEFAULT_ZONE);
+            testConvertToDate(value, zone, 2025, 10, 17);
         }
         {
             var value = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), ZoneId.of("UTC"));
-            testConvertToDate(value, zone, 2025, 10, 17, ZoneId.of("UTC"));
+            testConvertToDate(value, zone, 2025, 10, 17);
         }
 
         {
-            var value = java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 10, 17, 23, 59, 59));
-            testConvertToDate(value, zone, 2025, 10, 17, zone);
+            var zdt = ZonedDateTime.of(LocalDate.of(2025, 10, 17), LocalTime.of(23, 59, 59), zone);
+            var value = java.sql.Timestamp.from(zdt.toInstant());
+            testConvertToDate(value, zone, 2025, 10, 17);
         }
 
         {
             var value = LocalDate.of(1970, 1, 1);
-            testConvertToDate(value, zone, 1970, 1, 1, zone);
+            testConvertToDate(value, zone, 1970, 1, 1);
         }
         {
             var value = LocalDate.of(1969, 12, 31);
-            testConvertToDate(value, zone, 1969, 12, 31, zone);
+            testConvertToDate(value, zone, 1969, 12, 31);
         }
 
-        assertEquals(sqlDate(1, 1, 1, zone), util.convertToDate(LocalDate.of(1, 1, 1), zone));
-        assertEquals(sqlDate(0, 1, 1, zone), util.convertToDate(LocalDate.of(0, 1, 1), zone));
-        assertEquals(sqlDate(-1, 1, 1, zone), util.convertToDate(LocalDate.of(-1, 1, 1), zone));
+        assertEquals(sqlDate(1, 1, 1), util.convertToDate(LocalDate.of(1, 1, 1), zone));
+        assertEquals(sqlDate(0, 1, 1), util.convertToDate(LocalDate.of(0, 1, 1), zone));
+        assertEquals(sqlDate(-1, 1, 1), util.convertToDate(LocalDate.of(-1, 1, 1), zone));
     }
 
-    private void testConvertToDate(Object value, ZoneId zone, int y, int m, int d, ZoneId expectedZone) throws SQLException {
-        var calendar = Calendar.getInstance(TimeZone.getTimeZone(expectedZone));
+    private void testConvertToDate(Object value, ZoneId zone, int y, int m, int d) throws SQLException {
+        var calendar = Calendar.getInstance();
         calendar.clear();
         calendar.set(y, m - 1, d);
         var expected = new java.sql.Date(calendar.getTimeInMillis());

@@ -24,7 +24,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -90,15 +89,13 @@ public class JdbcDbTypeSqlTimestampTzTest extends JdbcDbTypeTester<OffsetDateTim
             assertNull(value);
             return null;
         }
-        var instant = Instant.ofEpochMilli(value.getTime());
-        return instant.atOffset(ZoneOffset.UTC).withNano(value.getNanos());
+        return OffsetDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC);
     }
 
     @Override
     protected void setParameter(PreparedStatement ps, int parameterIndex, OffsetDateTime value) throws SQLException {
         if (value != null) {
-            var instant = value.atZoneSimilarLocal(ZoneId.systemDefault()).toInstant();
-            var timestamp = java.sql.Timestamp.from(instant);
+            var timestamp = java.sql.Timestamp.from(value.toInstant());
             var zone = TimeZone.getTimeZone(value.getOffset());
             var calendar = Calendar.getInstance(zone);
             ps.setTimestamp(parameterIndex, timestamp, calendar);
@@ -192,7 +189,11 @@ public class JdbcDbTypeSqlTimestampTzTest extends JdbcDbTypeTester<OffsetDateTim
     }
 
     private java.sql.Date toSqlDate(OffsetDateTime value) {
-        var odt = value.truncatedTo(ChronoUnit.DAYS);
+        if (value.getYear() >= 1900) {
+            return java.sql.Date.valueOf(value.toLocalDate());
+        }
+
+        var odt = value.atZoneSimilarLocal(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS);
         long epochSecond = odt.toEpochSecond();
         return new java.sql.Date(TimeUnit.SECONDS.toMillis(epochSecond));
     }

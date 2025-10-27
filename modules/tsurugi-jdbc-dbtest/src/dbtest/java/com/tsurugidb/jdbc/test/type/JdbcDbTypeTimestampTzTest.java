@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -181,7 +182,11 @@ public class JdbcDbTypeTimestampTzTest extends JdbcDbTypeTester<OffsetDateTime> 
     }
 
     private java.sql.Date toSqlDate(OffsetDateTime value) {
-        var odt = value.truncatedTo(ChronoUnit.DAYS);
+        if (value.getYear() >= 1900) {
+            return java.sql.Date.valueOf(value.toLocalDate());
+        }
+
+        var odt = value.atZoneSimilarLocal(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS);
         long epochSecond = odt.toEpochSecond();
         return new java.sql.Date(TimeUnit.SECONDS.toMillis(epochSecond));
     }
