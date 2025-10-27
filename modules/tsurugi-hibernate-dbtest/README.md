@@ -15,7 +15,7 @@ Tsurugi Hibernate test for connecting to [Tsurugi](https://github.com/project-ts
 
 ```bash
 cd tsurugi-jdbc/modules/tsurugi-hibernate-dbtest
-../../gradlew test
+../../gradlew dbtest
 ```
 
 ### Execute with Iceaxe, Tsubakuro that installed locally
@@ -24,19 +24,19 @@ Execute with Gradle Property `mavenLocal` .
 
 ```bash
 cd tsurugi-jdbc/modules/tsurugi-hibernate-dbtest
-../../gradlew test -PmavenLocal
+../../gradlew dbtest -PmavenLocal
 ```
 
 ### Execute with endpoint
 
 ```bash
-../../gradlew test -Pdbtest.endpoint=tcp://localhost:12345
+../../gradlew dbtest -Pdbtest.endpoint=tcp://localhost:12345
 ```
 
 ### Execute with credential
 
 ```bash
-../../gradlew test \
+../../gradlew dbtest \
 -Pdbtest.user=user \
 -Pdbtest.password=password \
 -Pdbtest.auth-token=token \

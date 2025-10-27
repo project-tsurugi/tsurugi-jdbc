@@ -11,17 +11,17 @@ java {
 dependencies {
     implementation project(':tsurugi-hibernate')
 
-    testImplementation 'com.zaxxer:HikariCP:7.0.2'
-    testImplementation project(':tsurugi-jdbc')
+    dbtestImplementation 'com.zaxxer:HikariCP:7.0.2'
+    dbtestImplementation project(':tsurugi-jdbc')
 
 //  testImplementation 'com.tsurugidb.iceaxe:iceaxe-core:1.12.0-SNAPSHOT'
 //  testImplementation 'com.tsurugidb.tsubakuro:tsubakuro-debug:1.12.0-SNAPSHOT'
 
-    testImplementation 'org.slf4j:jul-to-slf4j:2.0.17'
-    testImplementation "ch.qos.logback:logback-classic:1.5.18"
+    dbtestImplementation 'org.slf4j:jul-to-slf4j:2.0.17'
+    dbtestImplementation "ch.qos.logback:logback-classic:1.5.18"
 }
 
-tasks.named('test') {
+tasks.named('dbtest') {
     systemProperty 'tsurugi.dbtest.endpoint', findProperty('dbtest.endpoint') ?: 'tcp://localhost:12345'
     systemProperty 'tsurugi.dbtest.user', findProperty('dbtest.user') ?: ''
     systemProperty 'tsurugi.dbtest.password', findProperty('dbtest.password') ?: ''

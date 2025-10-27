@@ -42,7 +42,11 @@ jobs:
 
       - name: Check
         run: |
-          ./gradlew -i check --continue --warning-mode all -Pdbtest.endpoint=tcp://tsurugi:12345
+          ./gradlew -i check --continue --warning-mode all
+
+      - name: DBTest
+        run: |
+          ./gradlew -i dbtest --continue --warning-mode all -Pdbtest.endpoint=tcp://tsurugi:12345
 
       - name: Verify
         uses: project-tsurugi/tsurugi-annotations-action@v1
