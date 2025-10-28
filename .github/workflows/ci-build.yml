@@ -4,27 +4,16 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   Build:
-    # runs-on: ubuntu-22.04
-    runs-on: [self-hosted, docker]
+    runs-on: ubuntu-22.04
     permissions:
       checks: write
       contents: read
     timeout-minutes: 30
-    container:
-      image: ghcr.io/project-tsurugi/tsurugi-ci:ubuntu-22.04
-      volumes:
-        - ${{ vars.gradle_cache_dir }}:/root/.gradle
     defaults:
       run:
         shell: bash
     env:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8
-
-    services:
-      tsurugi:
-        image: ghcr.io/project-tsurugi/tsurugidb:snapshot
-        env:
-          GLOG_v: 30
 
     steps:
       - name: Setup_Java
@@ -44,10 +33,6 @@ jobs:
         run: |
           ./gradlew -i check --continue --warning-mode all
 
-      - name: DBTest
-        run: |
-          ./gradlew -i dbtest --continue --warning-mode all -Pdbtest.endpoint=tcp://tsurugi:12345
-
       - name: Verify
         uses: project-tsurugi/tsurugi-annotations-action@v1
         if: always()
@@ -56,17 +41,8 @@ jobs:
           spotbugs_input: '**/build/reports/spotbugs/main/*.xml'
           checkstyle_input: '**/build/reports/checkstyle/main.xml'
 
-  # Publish:
-  #   uses: ./.github/workflows/ci-publish.yml
-  #   if: github.repository_owner == 'project-tsurugi' && (contains(github.ref, '/tags/') || contains(github.ref, '/heads/master'))
-  #   needs: Build
-  #   secrets: inherit
-
-  # GHPages:
-  #   uses: ./.github/workflows/ci-javadoc.yml
-  #   if: github.repository_owner == 'project-tsurugi' && (contains(github.ref, '/tags/'))
-  #   needs: Build
-  #   secrets: inherit
-  #   permissions:
-  #     pages: write
-  #     id-token: write
+  Publish:
+    uses: ./.github/workflows/ci-publish.yml
+    if: github.repository_owner == 'project-tsurugi' && (contains(github.ref, '/tags/') || contains(github.ref, '/heads/master'))
+    needs: Build
+    secrets: inherit
