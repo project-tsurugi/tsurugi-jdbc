@@ -2,7 +2,7 @@
 
 Tsurugi JDBC is a JDBC library that executes SQL on [Tsurugi](https://github.com/project-tsurugi/tsurugidb).
 
-> [!WARNING]
+> [!IMPORTANT]
 >
 > This project is in an early stage and may introduce breaking changes in the future.
 
