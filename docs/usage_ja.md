@@ -34,7 +34,7 @@ Tsurugi JDBCのJDBC URLの接頭辞は `jdbc:tsurugi:` です。
   - JDBC URLの例 - `jdbc:tsurugi:tcp://localhost:12345`
   - JDBC Type4（Pure Java Driver）に相当します。
 - IPC接続
-  - Linuxのプロセス間通信（IPC）でTsurugiと通信します。このため、Tsurugiと同一のサーバー上でしか使用できません。
+  - Linuxの共有メモリーを介してTsurugiと通信します。このため、Tsurugiと同一のサーバー上でしか使用できません。
   - JDBC URLの例 - `jdbc:tsurugi:ipc:tsurugi`
   - Tsubakuro/Javaがネイティブライブラリーを使用するため、JDBC Type2（Native API Driver）に相当します。
     - Tsurugi側にインストールされているネイティブライブラリーを使用するので、ユーザーがネイティブライブラリーをインストールする必要はありません。
