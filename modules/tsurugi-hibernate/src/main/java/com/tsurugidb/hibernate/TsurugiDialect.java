@@ -110,7 +110,7 @@ public class TsurugiDialect extends Dialect {
 
     private static final DatabaseVersion MINIMUM_VERSION;
     static {
-        var tsurugiVersion = "1.6.0";
+        var tsurugiVersion = "1.7.0";
         String[] ss = tsurugiVersion.split(Pattern.quote("."));
         int major = Integer.parseInt(ss[0]);
         int minor = Integer.parseInt(ss[1]);

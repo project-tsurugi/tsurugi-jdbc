@@ -50,7 +50,7 @@ public class TsurugiDriver implements Driver, HasFactory {
     /** Driver version. */
     public static final String DRIVER_VERSION = "0.1.0";
     /** Tsurugi version. */
-    public static final String TSURUGI_VERSION = "1.6.0"; // FIXME tsurugidbのバージョンが取れるようになるまでの暫定用
+    public static final String TSURUGI_VERSION = "1.7.0"; // FIXME tsurugidbのバージョンが取れるようになるまでの暫定用
 
     /** Driver major version. */
     public static final int DRIVER_VERSION_MAJOR;

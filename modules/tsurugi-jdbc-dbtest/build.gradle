@@ -4,8 +4,8 @@ plugins {
 
 dependencies {
     implementation project(':tsurugi-jdbc')
-    implementation 'com.tsurugidb.iceaxe:iceaxe-core:1.12.0-SNAPSHOT'
-    implementation 'com.tsurugidb.tsubakuro:tsubakuro-debug:1.12.0-SNAPSHOT'
+    implementation 'com.tsurugidb.iceaxe:iceaxe-core:1.12.0'
+    implementation 'com.tsurugidb.tsubakuro:tsubakuro-debug:1.12.0'
 
     implementation 'org.slf4j:jul-to-slf4j:2.0.17'
     implementation "ch.qos.logback:logback-classic:1.5.18"
