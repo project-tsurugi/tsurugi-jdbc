@@ -71,7 +71,7 @@ Tsurugiのトランザクション分離レベルはシリアライザブル（�
 
 PreparedStatementにセットするパラメーターの型とTsurugi内で処理されるプレースホルダーのデータ型は完全に一致している必要があります。
 
-例えばBIGINTで処理されるプレースホルダーについては `setLong()` を使う（あるいは `setObject()` でLong値を渡す）必要があり、`setInt()` や `setFloat()` といった異なるデータ型のメソッドを使うとTsurugi側でエラーになります。
+例えばBIGINTで処理されるプレースホルダーについては `setLong()` を使う（あるいは `setObject()` でLong値を渡す）必要があり、`setDouble()` や `setFloat()` といった異なるデータ型のメソッドを使うとTsurugi側でエラーになります。
 
 - `setTimestamp(index, timestamp)` はTIMESTAMPとして扱います。
 - `setTimestamp(index, timestamp, calendar)` はTIMESTAMP WITH TIME ZONEとして扱います。
