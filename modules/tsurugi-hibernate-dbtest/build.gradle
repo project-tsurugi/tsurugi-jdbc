@@ -14,8 +14,8 @@ dependencies {
     dbtestImplementation 'com.zaxxer:HikariCP:7.0.2'
     dbtestImplementation project(':tsurugi-jdbc')
 
-//  testImplementation 'com.tsurugidb.iceaxe:iceaxe-core:1.12.0-SNAPSHOT'
-//  testImplementation 'com.tsurugidb.tsubakuro:tsubakuro-debug:1.12.0-SNAPSHOT'
+//  testImplementation "com.tsurugidb.iceaxe:iceaxe-core:${tsubakuroVersion}"
+//  testImplementation "com.tsurugidb.tsubakuro:tsubakuro-debug:${tsubakuroVersion}"
 
     dbtestImplementation 'org.slf4j:jul-to-slf4j:2.0.17'
     dbtestImplementation "ch.qos.logback:logback-classic:1.5.18"
