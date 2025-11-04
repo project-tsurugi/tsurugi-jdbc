@@ -40,7 +40,10 @@ dataSource.setPassword("password");
 var configuration = new Configuration();
 configuration.setProperty("hibernate.dialect", "com.tsurugidb.hibernate.TsurugiDialect");
 
-var serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).applySetting("hibernate.connection.datasource", dataSource).build();
+var serviceRegistry = new StandardServiceRegistryBuilder()
+    .applySettings(configuration.getProperties())
+    .applySetting("hibernate.connection.datasource", dataSource)
+    .build();
 ```
 
 ## How to build
