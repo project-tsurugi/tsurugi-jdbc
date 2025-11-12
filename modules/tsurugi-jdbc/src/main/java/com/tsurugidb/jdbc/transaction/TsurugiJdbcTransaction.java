@@ -78,6 +78,16 @@ public class TsurugiJdbcTransaction implements AutoCloseable {
     }
 
     /**
+     * Get low transaction.
+     *
+     * @return low transaction
+     * @since 0.2.0
+     */
+    public Transaction getLowTransaction() {
+        return this.lowTransaction;
+    }
+
+    /**
      * Get auto commit.
      *
      * @return auto commit

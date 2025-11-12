@@ -321,7 +321,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
      */
     @TsurugiJdbcInternal
     public synchronized TsurugiJdbcTransaction getTransaction() throws SQLException {
-        var transaction = getFieldTransaction();
+        var transaction = getCurrentTransaction();
         if (transaction != null) {
             return transaction;
         }
@@ -361,7 +361,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
      * @throws SQLException if transaction is not active
      */
     protected TsurugiJdbcTransaction checkTransactionActive() throws SQLException {
-        var transaction = getFieldTransaction();
+        var transaction = getCurrentTransaction();
         if (transaction == null) {
             throw getExceptionHandler().transactionNotFoundException();
         }
@@ -374,13 +374,20 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
      * @throws SQLException if transaction is active
      */
     protected void checkTransactionInactive() throws SQLException {
-        var transaction = getFieldTransaction();
+        var transaction = getCurrentTransaction();
         if (transaction != null) {
             throw getExceptionHandler().transactionFoundException();
         }
     }
 
-    private synchronized TsurugiJdbcTransaction getFieldTransaction() {
+    /**
+     * Get current transaction.
+     *
+     * @return transaction. null when no transaction has been started.
+     * @since 0.2.0
+     */
+    @TsurugiJdbcInternal
+    public @Nullable synchronized TsurugiJdbcTransaction getCurrentTransaction() {
         var transaction = this.transaction;
         if (transaction != null && transaction.isClosed()) {
             this.transaction = null;
@@ -462,7 +469,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     private void doCommit() throws SQLException {
-        var transaction = getFieldTransaction();
+        var transaction = getCurrentTransaction();
         if (transaction != null) {
             try {
                 transaction.commit();
@@ -482,7 +489,7 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     private void doRollback() throws SQLException {
-        var transaction = getFieldTransaction();
+        var transaction = getCurrentTransaction();
         if (transaction != null) {
             try {
                 transaction.rollback();
