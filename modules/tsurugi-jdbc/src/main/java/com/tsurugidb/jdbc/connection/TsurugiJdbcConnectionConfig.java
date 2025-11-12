@@ -307,30 +307,41 @@ public class TsurugiJdbcConnectionConfig {
         if (this.transactionOption == null) {
             var builder = TransactionOption.newBuilder();
 
-            transactionType.ifPresent(t -> builder.setType(t.getLowTransactionType()));
+            TsurugiJdbcTransactionType type = transactionType.value();
+            builder.setType(type.getLowTransactionType());
+
             transactionLabel.ifPresent(builder::setLabel);
-            if (includeDdl.value()) {
-                builder.setModifiesDefinitions(true);
+
+            switch (type) {
+            case LTX:
+                if (includeDdl.value()) {
+                    builder.setModifiesDefinitions(true);
+                }
+                writePreserve.ifPresent(list -> {
+                    for (String tableName : list) {
+                        var wp = WritePreserve.newBuilder().setTableName(tableName).build();
+                        builder.addWritePreserves(wp);
+                    }
+                });
+                inclusiveReadArea.ifPresent(list -> {
+                    for (String tableName : list) {
+                        var area = ReadArea.newBuilder().setTableName(tableName).build();
+                        builder.addInclusiveReadAreas(area);
+                    }
+                });
+                exclusiveReadArea.ifPresent(list -> {
+                    for (String tableName : list) {
+                        var area = ReadArea.newBuilder().setTableName(tableName).build();
+                        builder.addExclusiveReadAreas(area);
+                    }
+                });
+                break;
+            case RTX:
+                scanParallel.ifPresent(builder::setScanParallel);
+                break;
+            default:
+                break;
             }
-            writePreserve.ifPresent(list -> {
-                for (String tableName : list) {
-                    var wp = WritePreserve.newBuilder().setTableName(tableName).build();
-                    builder.addWritePreserves(wp);
-                }
-            });
-            inclusiveReadArea.ifPresent(list -> {
-                for (String tableName : list) {
-                    var area = ReadArea.newBuilder().setTableName(tableName).build();
-                    builder.addInclusiveReadAreas(area);
-                }
-            });
-            exclusiveReadArea.ifPresent(list -> {
-                for (String tableName : list) {
-                    var area = ReadArea.newBuilder().setTableName(tableName).build();
-                    builder.addExclusiveReadAreas(area);
-                }
-            });
-            scanParallel.ifPresent(builder::setScanParallel);
 
             this.transactionOption = builder.build();
         }

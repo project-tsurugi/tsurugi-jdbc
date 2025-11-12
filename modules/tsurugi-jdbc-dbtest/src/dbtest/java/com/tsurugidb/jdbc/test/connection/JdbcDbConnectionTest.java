@@ -74,6 +74,8 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     @Test
     void setTransactionIncludeDdl() throws SQLException {
         try (var connection = createConnection()) {
+            connection.setTransactionType(TsurugiJdbcTransactionType.LTX);
+
             assertFalse(connection.getTransactionIncludeDdl());
             assertFalse(connection.getConfig().getLowTransactionOption().getModifiesDefinitions());
 
@@ -86,6 +88,8 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     @Test
     void setWritePreserve() throws SQLException {
         try (var connection = createConnection()) {
+            connection.setTransactionType(TsurugiJdbcTransactionType.LTX);
+
             assertNull(connection.getWritePreserve());
             assertEquals(List.of(), connection.getConfig().getLowTransactionOption().getWritePreservesList());
 
@@ -98,6 +102,8 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     @Test
     void setInclusiveReadArea() throws SQLException {
         try (var connection = createConnection()) {
+            connection.setTransactionType(TsurugiJdbcTransactionType.LTX);
+
             assertNull(connection.getInclusiveReadArea());
             assertEquals(List.of(), connection.getConfig().getLowTransactionOption().getInclusiveReadAreasList());
 
@@ -110,6 +116,8 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     @Test
     void setExclusiveReadArea() throws SQLException {
         try (var connection = createConnection()) {
+            connection.setTransactionType(TsurugiJdbcTransactionType.LTX);
+
             assertNull(connection.getExclusiveReadArea());
             assertEquals(List.of(), connection.getConfig().getLowTransactionOption().getExclusiveReadAreasList());
 
@@ -122,6 +130,8 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
     @Test
     void setTransactionScanParallel() throws SQLException {
         try (var connection = createConnection()) {
+            connection.setTransactionType(TsurugiJdbcTransactionType.RTX);
+
             assertEquals(OptionalInt.empty(), connection.getTransactionScanParallel());
             assertEquals(0, connection.getConfig().getLowTransactionOption().getScanParallel());
 
@@ -254,7 +264,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
             assertEquals(TransactionType.LONG, lowTransactionOption.getType());
             assertEquals("test", lowTransactionOption.getLabel());
             assertTrue(lowTransactionOption.getModifiesDefinitions());
-            assertEquals(123, lowTransactionOption.getScanParallel());
+            assertEquals(0, lowTransactionOption.getScanParallel());
         }
     }
 
@@ -312,7 +322,7 @@ public class JdbcDbConnectionTest extends JdbcDbTester {
             assertEquals(TransactionType.LONG, lowTransactionOption.getType());
             assertEquals("test", lowTransactionOption.getLabel());
             assertTrue(lowTransactionOption.getModifiesDefinitions());
-            assertEquals(123, lowTransactionOption.getScanParallel());
+            assertEquals(0, lowTransactionOption.getScanParallel());
         }
     }
 
