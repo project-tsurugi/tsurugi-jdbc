@@ -52,3 +52,5 @@ jobs:
     if: github.repository_owner == 'project-tsurugi' && (contains(github.ref, '/tags/') || contains(github.ref, '/heads/master'))
     needs: Build
     secrets: inherit
+    permissions:
+      contents: write
