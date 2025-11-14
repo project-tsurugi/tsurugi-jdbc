@@ -1,5 +1,7 @@
 plugins {
     id 'tsurugi-jdbc.libs-conventions'
+    id 'distribution'
+    id 'com.gradleup.shadow' version '8.3.9'
 }
 
 dependencies {
@@ -18,4 +20,24 @@ spotbugs {
 javadoc {
     title "Tsurugi JDBC ${project.version}"
     options.overview = 'src/main/javadoc/overview.html'
+}
+
+distributions {
+    main {
+        contents {
+            from(shadowJar)
+        }
+    }
+}
+
+tasks.named('distTar') {
+    enabled = false
+}
+
+shadowJar {
+    mergeServiceFiles()
+}
+
+components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
+    skip()
 }

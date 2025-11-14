@@ -16,6 +16,11 @@ cd tsurugi-jdbc/modules/tsurugi-jdbc
 ../../gradlew build
 ```
 
+This will create the following distribution archives:
+
+* `build/distributions/tsurugi-jdbc-<version>.zip`
+  * contains `tsurugi-jdbc-<version>-all.jar` (shadow jar including dependencies).
+
 ### Build with Tsubakuro/Java that installed locally
 
 First, check out and install Tsubakuro/Java locally, and build Tsurugi JDBC with Gradle Property `mavenLocal` .
