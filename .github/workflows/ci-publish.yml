@@ -5,6 +5,8 @@ on: [workflow_dispatch, workflow_call]
 jobs:
   Publish:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     timeout-minutes: 30
     defaults:
       run:
@@ -31,3 +33,14 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+
+      - name: Create_Release
+        if: contains(github.ref, '/tags/')
+        run: |
+          ./gradlew -i distZip --warning-mode all
+
+          set -x
+          gh release create ${TSURUGI_JDBC_VERSION} modules/tsurugi-jdbc/build/distributions/tsurugi-jdbc-${TSURUGI_JDBC_VERSION}.zip --title ${TSURUGI_JDBC_VERSION} --latest --repo project-tsurugi/tsurugi-jdbc
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TSURUGI_JDBC_VERSION: ${{ github.ref_name }}
