@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
 import com.tsurugidb.iceaxe.TsurugiConnector;
+import com.tsurugidb.iceaxe.system.TsurugiSystemInfo;
 import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.test.util.JdbcDbTestConnector;
 import com.tsurugidb.jdbc.test.util.JdbcDbTester;
@@ -59,6 +60,7 @@ public class JdbcDbDatabaseMetaDataTest extends JdbcDbTester {
         try (var connection = createConnection()) {
             getUrl(connection);
             getUserName(connection);
+            getDatabaseProductVersion(connection);
             getDriverVersion(connection);
             getTableTypes(connection);
             getColumns(connection);
@@ -86,17 +88,6 @@ public class JdbcDbDatabaseMetaDataTest extends JdbcDbTester {
         assertEquals(expected, user);
     }
 
-    void getDriverVersion(Connection connection) throws SQLException {
-        var metaData = connection.getMetaData();
-        String version = metaData.getDriverVersion();
-        int major = metaData.getDriverMajorVersion();
-        int minor = metaData.getDriverMinorVersion();
-
-        String[] ss = version.split(Pattern.quote("."));
-        assertEquals(Integer.parseInt(ss[0]), major);
-        assertEquals(Integer.parseInt(ss[1]), minor);
-    }
-
     private String getUserNameFromIceaxe() {
         var connector = TsurugiConnector.of(JdbcDbTestConnector.getEndPoint(), JdbcDbTestConnector.getIceaxeCredential());
         try (var session = connector.createSession()) {
@@ -106,6 +97,44 @@ public class JdbcDbDatabaseMetaDataTest extends JdbcDbTester {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    void getDatabaseProductVersion(Connection connection) throws SQLException {
+        var metaData = connection.getMetaData();
+        String name = metaData.getDatabaseProductName();
+        String version = metaData.getDatabaseProductVersion();
+        int major = metaData.getDatabaseMajorVersion();
+        int minor = metaData.getDatabaseMinorVersion();
+
+        var expected = getSystemInfoFromIceaxe();
+        assertEquals(expected.getLowSystemInfo().getName(), name);
+        assertEquals(expected.getVersion(), version);
+
+        String[] ss = version.split(Pattern.quote("."));
+        assertEquals(Integer.parseInt(ss[0]), major);
+        assertEquals(Integer.parseInt(ss[1]), minor);
+    }
+
+    private TsurugiSystemInfo getSystemInfoFromIceaxe() {
+        var connector = TsurugiConnector.of(JdbcDbTestConnector.getEndPoint(), JdbcDbTestConnector.getIceaxeCredential());
+        try (var session = connector.createSession()) {
+            return session.getSystemInfo();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void getDriverVersion(Connection connection) throws SQLException {
+        var metaData = connection.getMetaData();
+        String version = metaData.getDriverVersion();
+        int major = metaData.getDriverMajorVersion();
+        int minor = metaData.getDriverMinorVersion();
+
+        String[] ss = version.split(Pattern.quote("."));
+        assertEquals(Integer.parseInt(ss[0]), major);
+        assertEquals(Integer.parseInt(ss[1]), minor);
     }
 
     void getTableTypes(Connection connection) throws SQLException {

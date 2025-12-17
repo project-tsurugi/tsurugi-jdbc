@@ -7,6 +7,7 @@ plugins {
 dependencies {
     api "com.tsurugidb.tsubakuro:tsubakuro-session:${tsubakuroVersion}"
     api "com.tsurugidb.tsubakuro:tsubakuro-connector:${tsubakuroVersion}"
+    api "com.tsurugidb.tsubakuro:tsubakuro-system:${tsubakuroVersion}"
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 

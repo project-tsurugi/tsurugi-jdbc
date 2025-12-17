@@ -38,8 +38,10 @@ import com.tsurugidb.jdbc.resultset.FixedResultSetColumn;
 import com.tsurugidb.jdbc.util.TableNameMatcher;
 import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
+import com.tsurugidb.system.proto.SystemResponse.SystemInfo;
 import com.tsurugidb.tsubakuro.sql.TableMetadata;
 import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
+import com.tsurugidb.tsubakuro.system.SystemClient;
 
 /**
  * Tsurugi JDBC Database Meta Data.
@@ -47,6 +49,8 @@ import com.tsurugidb.tsubakuro.sql.exception.TargetNotFoundException;
 public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory {
 
     private final TsurugiJdbcConnection ownerConnection;
+
+    private SystemInfo lowSystemInfo = null;
 
     /**
      * Creates a new instance.
@@ -168,14 +172,33 @@ public class TsurugiJdbcDatabaseMetaData implements DatabaseMetaData, GetFactory
 
     @Override
     public String getDatabaseProductName() throws SQLException {
-        return "Tsurugi";
+        return getLowSystemInfo().getName();
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public String getDatabaseProductVersion() throws SQLException {
-        // FIXME DBのバージョンを取得する
-        return TsurugiDriver.TSURUGI_VERSION;
+        return getLowSystemInfo().getVersion();
+    }
+
+    /**
+     * Get low system info.
+     *
+     * @return low system info
+     * @throws SQLException if a database access error occurs
+     */
+    protected SystemInfo getLowSystemInfo() throws SQLException {
+        if (this.lowSystemInfo == null) {
+            var lowSession = ownerConnection.getLowSession();
+            int timeout = getConfig().getDefaultTimeout();
+
+            try (var systemClient = SystemClient.attach(lowSession)) {
+                var io = getIoUtil();
+                this.lowSystemInfo = io.get(systemClient.getSystemInfo(), timeout);
+            } catch (Exception e) {
+                throw getExceptionHandler().sqlException("getSystemInfo error", e);
+            }
+        }
+        return this.lowSystemInfo;
     }
 
     @Override

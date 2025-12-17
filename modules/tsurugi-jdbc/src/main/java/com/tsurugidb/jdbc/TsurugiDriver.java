@@ -49,8 +49,6 @@ public class TsurugiDriver implements Driver, HasFactory {
     public static final String DRIVER_NAME = "Tsurugi JDBC Driver";
     /** Driver version. */
     public static final String DRIVER_VERSION = "0.2.0-SNAPSHOT";
-    /** Tsurugi version. */
-    public static final String TSURUGI_VERSION = "1.8.0-SNAPSHOT"; // FIXME tsurugidbのバージョンが取れるようになるまでの暫定用
 
     /** Driver major version. */
     public static final int DRIVER_VERSION_MAJOR;
