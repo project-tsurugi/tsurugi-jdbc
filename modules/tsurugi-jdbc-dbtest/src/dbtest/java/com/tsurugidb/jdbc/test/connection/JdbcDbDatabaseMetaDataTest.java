@@ -107,7 +107,7 @@ public class JdbcDbDatabaseMetaDataTest extends JdbcDbTester {
         int minor = metaData.getDatabaseMinorVersion();
 
         var expected = getSystemInfoFromIceaxe();
-        assertEquals(expected.getLowSystemInfo().getName(), name);
+        assertEquals(expected.getName(), name);
         assertEquals(expected.getVersion(), version);
 
         String[] ss = version.split(Pattern.quote("."));
