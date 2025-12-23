@@ -98,10 +98,6 @@ ResultSetを使った更新はできません。
 
 ## DatabaseMetaDataに関する制限事項
 
-### Tsurugiのバージョン
-
-接続しているTsurugiのバージョンを取得することはできません。（ `getDatabaseProductVersion()` は固定値を返します）
-
 ### Tsurugiに無い機能
 
 以下の機能（抜粋）はTsurugiが対応していないため、情報を取得できません。
