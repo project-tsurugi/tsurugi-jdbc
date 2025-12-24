@@ -8,7 +8,7 @@ Tsurugi JDBC is a JDBC library that executes SQL on [Tsurugi](https://github.com
 
 ## Target
 
-* Tsurugi 1.7.0 or later.
+* Tsurugi 1.8.0 or later.
 * Java `>= 11`
 
 ## How to use
@@ -21,7 +21,7 @@ To use on Gradle, add Tsurugi JDBC library to dependencies.
 
 ```
 dependencies {
-    implementation 'com.tsurugidb.jdbc:tsurugi-jdbc:0.1.0'
+    implementation 'com.tsurugidb.jdbc:tsurugi-jdbc:0.2.0'
 }
 ```
 

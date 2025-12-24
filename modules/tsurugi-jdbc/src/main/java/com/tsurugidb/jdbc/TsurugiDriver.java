@@ -48,7 +48,7 @@ public class TsurugiDriver implements Driver, HasFactory {
     /** Driver name. */
     public static final String DRIVER_NAME = "Tsurugi JDBC Driver";
     /** Driver version. */
-    public static final String DRIVER_VERSION = "0.2.0-SNAPSHOT";
+    public static final String DRIVER_VERSION = "0.2.0";
 
     /** Driver major version. */
     public static final int DRIVER_VERSION_MAJOR;

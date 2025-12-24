@@ -18,8 +18,8 @@ To use on Gradle, add Tsurugi Hibernate library to dependencies.
 ```
 dependencies {
     implementation 'org.hibernate.orm:hibernate-core:7.1.4.Final'
-    implementation 'com.tsurugidb.jdbc:tsurugi-jdbc:0.1.0'
-    implementation 'com.tsurugidb.jdbc:tsurugi-hibernate:0.1.0'
+    implementation 'com.tsurugidb.jdbc:tsurugi-jdbc:0.2.0'
+    implementation 'com.tsurugidb.jdbc:tsurugi-hibernate:0.2.0'
 }
 ```
 
