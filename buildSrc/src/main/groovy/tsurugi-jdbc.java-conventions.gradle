@@ -38,11 +38,6 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 8, 'hours'
 }
 
-configurations {
-    dbtestImplementation.extendsFrom implementation
-    dbtestRuntimeOnly.extendsFrom runtimeOnly
-}
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(11)
@@ -58,7 +53,10 @@ sourceSets {
     }
 }
 
-
+configurations {
+    dbtestImplementation.extendsFrom implementation
+    dbtestRuntimeOnly.extendsFrom runtimeOnly
+}
 
 tasks.withType(Javadoc) {
     options.encoding = 'UTF-8'
