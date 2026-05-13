@@ -26,11 +26,14 @@ import static com.tsurugidb.jdbc.TsurugiConfig.EXCLUSIVE_READ_AREA;
 import static com.tsurugidb.jdbc.TsurugiConfig.EXECUTE_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.INCLUDE_DDL;
 import static com.tsurugidb.jdbc.TsurugiConfig.INCLUSIVE_READ_AREA;
+import static com.tsurugidb.jdbc.TsurugiConfig.LOB_DOWNLOAD_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.LOB_UPLOAD_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.QUERY_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.ROLLBACK_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.SCAN_PARALLEL;
 import static com.tsurugidb.jdbc.TsurugiConfig.SHUTDOWN_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.SHUTDOWN_TYPE;
+import static com.tsurugidb.jdbc.TsurugiConfig.TMP_DIR;
 import static com.tsurugidb.jdbc.TsurugiConfig.TRANSACTION_LABEL;
 import static com.tsurugidb.jdbc.TsurugiConfig.TRANSACTION_TYPE;
 import static com.tsurugidb.jdbc.TsurugiConfig.WRITE_PRESERVE;
@@ -95,23 +98,26 @@ public class TsurugiJdbcConnectionConfig {
     private final TsurugiJdbcPropertyInt commitTimeout = new TsurugiJdbcPropertyInt(COMMIT_TIMEOUT);
     private final TsurugiJdbcPropertyInt rollbackTimeout = new TsurugiJdbcPropertyInt(ROLLBACK_TIMEOUT);
 
+    private final TsurugiJdbcPropertyInt lobUploadTimeout = new TsurugiJdbcPropertyInt(LOB_UPLOAD_TIMEOUT);
     private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT);
     private final TsurugiJdbcPropertyInt batchQueueSize = new TsurugiJdbcPropertyInt(BATCH_QUEUE_SIZE);
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
+    private final TsurugiJdbcPropertyInt lobDownloadTimeout = new TsurugiJdbcPropertyInt(LOB_DOWNLOAD_TIMEOUT);
 
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcShutdownType> shutdownType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcShutdownType.class, SHUTDOWN_TYPE);
     private final TsurugiJdbcPropertyInt shutdownTimeout = new TsurugiJdbcPropertyInt(SHUTDOWN_TIMEOUT);
 
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
+    private final TsurugiJdbcPropertyString tmpDir = new TsurugiJdbcPropertyString(TMP_DIR);
 
     private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
             transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, //
             autoCommit, commitType, autoDispose, //
             beginTimeout, commitTimeout, rollbackTimeout, //
-            executeTimeout, batchQueueSize, //
-            queryTimeout, //
+            lobUploadTimeout, executeTimeout, batchQueueSize, //
+            queryTimeout, lobDownloadTimeout, //
             shutdownType, shutdownTimeout, //
-            defaultTimeout);
+            defaultTimeout, tmpDir);
 
     /**
      * Creates a new instance.
@@ -464,6 +470,28 @@ public class TsurugiJdbcConnectionConfig {
         return rollbackTimeout.value().orElse(getDefaultTimeout());
     }
 
+    // Statement
+
+    /**
+     * Set large object upload timeout.
+     *
+     * @param timeout large object upload timeout [seconds]
+     * @since 0.5.0
+     */
+    public void setLobUploadTimeout(int timeout) {
+        this.lobUploadTimeout.setValue(timeout);
+    }
+
+    /**
+     * Get large object upload timeout.
+     *
+     * @return large object upload timeout [seconds]
+     * @since 0.5.0
+     */
+    public int getLobUploadTimeout() {
+        return lobUploadTimeout.value().orElse(getDefaultTimeout());
+    }
+
     // Session
 
     /**
@@ -511,5 +539,29 @@ public class TsurugiJdbcConnectionConfig {
      */
     public int getDefaultTimeout() {
         return defaultTimeout.value().orElse(0);
+    }
+
+    /**
+     * Set temporary directory.
+     *
+     * @param tmpDir temporary directory
+     * @since 0.5.0
+     */
+    public void setTmpDir(String tmpDir) {
+        this.tmpDir.setValue(tmpDir);
+    }
+
+    /**
+     * Get temporary directory.
+     *
+     * @return temporary directory
+     * @since 0.5.0
+     */
+    public String getTmpDir() {
+        String dir = tmpDir.value();
+        if (dir == null || dir.isEmpty()) {
+            dir = System.getProperty("java.io.tmpdir");
+        }
+        return dir;
     }
 }

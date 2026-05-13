@@ -18,6 +18,8 @@ package com.tsurugidb.jdbc.statement;
 import static com.tsurugidb.jdbc.TsurugiConfig.BATCH_QUEUE_SIZE;
 import static com.tsurugidb.jdbc.TsurugiConfig.DEFAULT_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.EXECUTE_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.LOB_DOWNLOAD_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.LOB_UPLOAD_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.QUERY_TIMEOUT;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
@@ -42,14 +44,16 @@ public class TsurugiJdbcStatementConfig {
         return config;
     }
 
+    private final TsurugiJdbcPropertyInt lobUploadTimeout = new TsurugiJdbcPropertyInt(LOB_UPLOAD_TIMEOUT);
     private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT);
     private final TsurugiJdbcPropertyInt batchQueueSize = new TsurugiJdbcPropertyInt(BATCH_QUEUE_SIZE);
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
+    private final TsurugiJdbcPropertyInt lobDownloadTimeout = new TsurugiJdbcPropertyInt(LOB_DOWNLOAD_TIMEOUT);
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
     private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
-            executeTimeout, batchQueueSize, //
-            queryTimeout, //
+            lobUploadTimeout, executeTimeout, batchQueueSize, //
+            queryTimeout, lobDownloadTimeout, //
             defaultTimeout);
 
     /**
@@ -60,6 +64,26 @@ public class TsurugiJdbcStatementConfig {
     @TsurugiJdbcInternal
     public TsurugiJdbcProperties getInternalProperties() {
         return this.properties;
+    }
+
+    /**
+     * Set large object upload timeout.
+     *
+     * @param timeout large object upload timeout [seconds]
+     * @since 0.5.0
+     */
+    public void setLobUploadTimeout(int timeout) {
+        lobUploadTimeout.setValue(timeout);
+    }
+
+    /**
+     * Get large object upload timeout.
+     *
+     * @return large object upload timeout [seconds]
+     * @since 0.5.0
+     */
+    public int getLobUploadTimeout() {
+        return lobUploadTimeout.value().orElse(getDefaultTimeout());
     }
 
     /**
@@ -107,6 +131,26 @@ public class TsurugiJdbcStatementConfig {
         return queryTimeout.value().orElse(getDefaultTimeout());
     }
 
+    /**
+     * Set large object download timeout.
+     *
+     * @param timeout large object download timeout [seconds]
+     * @since 0.5.0
+     */
+    public void setLobDownloadTimeout(int timeout) {
+        lobDownloadTimeout.setValue(timeout);
+    }
+
+    /**
+     * Get large object download timeout.
+     *
+     * @return large object download timeout [seconds]
+     * @since 0.5.0
+     */
+    public int getLobDownloadTimeout() {
+        return lobDownloadTimeout.value().orElse(getDefaultTimeout());
+    }
+
     // Common
 
     /**
@@ -117,4 +161,5 @@ public class TsurugiJdbcStatementConfig {
     public int getDefaultTimeout() {
         return defaultTimeout.value().orElse(0);
     }
+
 }

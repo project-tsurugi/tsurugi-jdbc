@@ -24,6 +24,7 @@ import java.util.OptionalInt;
 import java.util.Properties;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcLobTransferType;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
@@ -73,6 +74,24 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     public static final String APPLICATION_NAME = "applicationName";
     /** SessionOption: session label */
     public static final String SESSION_LABEL = "sessionLabel";
+    /**
+     * SessionOption: large object transfer type
+     *
+     * @since 0.5.0
+     */
+    public static final String LOB_TRANSFER_TYPE = "lobTransferType";
+    /**
+     * SessionOption: large object path mapping on send
+     *
+     * @since 0.5.0
+     */
+    public static final String LOB_PATH_MAPPING_ON_SEND = "lobPathMappingOnSend";
+    /**
+     * SessionOption: large object path mapping on receive
+     *
+     * @since 0.5.0
+     */
+    public static final String LOB_PATH_MAPPING_ON_RECEIVE = "lobPathMappingOnReceive";
     /** SessionOption: session keep alive (default - {@code true}) */
     public static final String KEEP_ALIVE = "keepAlive";
     /** session connect timeout [seconds] */
@@ -115,14 +134,32 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     public static final String EXECUTE_TIMEOUT = "executeTimeout";
     /** executeBatch queue size. If negative numbers, enqueue all FutureResponse. */
     public static final String BATCH_QUEUE_SIZE = "batchQueueSize";
+    /**
+     * large object upload timeout [seconds]
+     *
+     * @since 0.5.0
+     */
+    public static final String LOB_UPLOAD_TIMEOUT = "lobUploadTimeout";
 
     // ResultSet
     /** SELECT timeout [seconds] */
     public static final String QUERY_TIMEOUT = "queryTimeout";
+    /**
+     * large object download timeout [seconds]
+     *
+     * @since 0.5.0
+     */
+    public static final String LOB_DOWNLOAD_TIMEOUT = "lobDownloadTimeout";
 
     // Common
     /** default timeout [seconds] */
     public static final String DEFAULT_TIMEOUT = "defaultTimeout";
+    /**
+     * temporary directory
+     *
+     * @since 0.5.0
+     */
+    public static final String TMP_DIR = "tmpDir";
 
     private String endpoint;
 
@@ -132,6 +169,10 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     private final TsurugiJdbcPropertyString credentials = new TsurugiJdbcPropertyString(CREDENTIALS).description("credential file path");
     private final TsurugiJdbcPropertyString applicationName = new TsurugiJdbcPropertyString(APPLICATION_NAME).description("application name");
     private final TsurugiJdbcPropertyString sessionLabel = new TsurugiJdbcPropertyString(SESSION_LABEL).description("session label");
+    private final TsurugiJdbcPropertyEnum<TsurugiJdbcLobTransferType> lobTransferType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcLobTransferType.class, LOB_TRANSFER_TYPE)
+            .defaultValue(TsurugiJdbcLobTransferType.DEFAULT).description("large object transfer type");
+    private final TsurugiJdbcPropertyStringList lobPathMappingOnSend = new TsurugiJdbcPropertyStringList(LOB_PATH_MAPPING_ON_SEND).description("large object path mapping on send");
+    private final TsurugiJdbcPropertyStringList lobPathMappingOnReceive = new TsurugiJdbcPropertyStringList(LOB_PATH_MAPPING_ON_RECEIVE).description("large object path mapping on receive");
     private final TsurugiJdbcPropertyBoolean keepAlive = new TsurugiJdbcPropertyBoolean(KEEP_ALIVE).defaultValue(true).description("session keep alive");
     private final TsurugiJdbcPropertyInt connectTimeout = new TsurugiJdbcPropertyInt(CONNECT_TIMEOUT).description("connect timeout [seconds]").defaultValue(() -> DriverManager.getLoginTimeout());
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcShutdownType> shutdownType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcShutdownType.class, SHUTDOWN_TYPE)
@@ -154,23 +195,27 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     private final TsurugiJdbcPropertyInt commitTimeout = new TsurugiJdbcPropertyInt(COMMIT_TIMEOUT).description("transaction commit timeout [seconds]");
     private final TsurugiJdbcPropertyInt rollbackTimeout = new TsurugiJdbcPropertyInt(ROLLBACK_TIMEOUT).description("transaction rollback timeout [seconds]");
 
+    private final TsurugiJdbcPropertyInt lobUploadTimeout = new TsurugiJdbcPropertyInt(LOB_UPLOAD_TIMEOUT).description("large object upload timeout [seconds]");
     private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT).description("transaction execute timeout [seconds]");
     private final TsurugiJdbcPropertyInt batchQueueSize = new TsurugiJdbcPropertyInt(BATCH_QUEUE_SIZE).defaultValue(-1).description("executeBatch queue size");
 
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT).description("SELECT timeout [seconds]");
+    private final TsurugiJdbcPropertyInt lobDownloadTimeout = new TsurugiJdbcPropertyInt(LOB_DOWNLOAD_TIMEOUT).description("large object download timeout [seconds]");
 
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT).description("default timeout [seconds]").defaultValue(0);
+    private final TsurugiJdbcPropertyString tmpDir = new TsurugiJdbcPropertyString(TMP_DIR).description("temporary directory");
 
     private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
             user, password, authToken, credentials, //
             applicationName, sessionLabel, keepAlive, connectTimeout, //
+            lobTransferType, lobPathMappingOnSend, lobPathMappingOnReceive, //
             shutdownType, shutdownTimeout, //
             transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, //
             autoCommit, commitType, autoDispose, //
             beginTimeout, commitTimeout, rollbackTimeout, //
-            executeTimeout, batchQueueSize, //
-            queryTimeout, //
-            defaultTimeout);
+            lobUploadTimeout, executeTimeout, batchQueueSize, //
+            queryTimeout, lobDownloadTimeout, //
+            defaultTimeout, tmpDir);
 
     /**
      * Put property value.
@@ -394,6 +439,96 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
      */
     public String getSessionLabel() {
         return sessionLabel.value();
+    }
+
+    /**
+     * Set large object transfer type.
+     *
+     * @param lobTransferType large object transfer type
+     * @since 0.5.0
+     */
+    public void setLobTransferType(TsurugiJdbcLobTransferType lobTransferType) {
+        this.lobTransferType.setValue(lobTransferType);
+    }
+
+    /**
+     * Get large object transfer type.
+     *
+     * @return large object transfer type
+     * @since 0.5.0
+     */
+    public TsurugiJdbcLobTransferType getLobTransferType() {
+        return lobTransferType.value();
+    }
+
+    /**
+     * Set large object path mapping on send.
+     * <p>
+     * The format of path mapping is "client-path:server-path".
+     * </p>
+     *
+     * @param pathMapping large object path mapping on send
+     * @since 0.5.0
+     */
+    public void setLobPathMappingOnSend(List<String> pathMapping) {
+        this.lobPathMappingOnSend.setValue(pathMapping);
+    }
+
+    /**
+     * Add large object path mapping on send.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @since 0.5.0
+     */
+    public void addLobPathMappingOnSend(String clientPath, String serverPath) {
+        String pathMapping = clientPath + ":" + serverPath;
+        this.lobPathMappingOnSend.addValue(pathMapping);
+    }
+
+    /**
+     * Get large object path mapping on send.
+     *
+     * @return large object path mapping on send
+     * @since 0.5.0
+     */
+    public List<String> getLobPathMappingOnSend() {
+        return lobPathMappingOnSend.value();
+    }
+
+    /**
+     * Set large object path mapping on receive.
+     * <p>
+     * The format of path mapping is "client-path:server-path".
+     * </p>
+     *
+     * @param pathMapping large object path mapping on receive
+     * @since 0.5.0
+     */
+    public void setLobPathMappingOnReceive(List<String> pathMapping) {
+        this.lobPathMappingOnReceive.setValue(pathMapping);
+    }
+
+    /**
+     * Add large object path mapping on receive.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @since 0.5.0
+     */
+    public void addLobPathMappingOnReceive(String clientPath, String serverPath) {
+        String pathMapping = clientPath + ":" + serverPath;
+        this.lobPathMappingOnReceive.addValue(pathMapping);
+    }
+
+    /**
+     * Get large object path mapping on receive.
+     *
+     * @return large object path mapping on receive
+     * @since 0.5.0
+     */
+    public List<String> getLobPathMappingOnReceive() {
+        return lobPathMappingOnReceive.value();
     }
 
     /**
@@ -707,6 +842,24 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     // Statement
 
     /**
+     * Set large object upload timeout.
+     * 
+     * @param timeout large object upload timeout [seconds]
+     */
+    public void setLobUploadTimeout(int timeout) {
+        this.lobUploadTimeout.setValue(timeout);
+    }
+
+    /**
+     * Get large object upload timeout.
+     * 
+     * @return large object upload timeout [seconds]
+     */
+    public OptionalInt getLobUploadTimeout() {
+        return lobUploadTimeout.value();
+    }
+
+    /**
      * Set statement execute timeout.
      *
      * @param timeout execute timeout [seconds]
@@ -744,6 +897,26 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
         return queryTimeout.value();
     }
 
+    /**
+     * Set large object download timeout.
+     *
+     * @param timeout large object download timeout [seconds]
+     * @since 0.5.0
+     */
+    public void setLobDownloadTimeout(int timeout) {
+        this.lobDownloadTimeout.setValue(timeout);
+    }
+
+    /**
+     * Get large object download timeout.
+     *
+     * @return large object download timeout [seconds]
+     * @since 0.5.0
+     */
+    public OptionalInt getLobDownloadTimeout() {
+        return lobDownloadTimeout.value();
+    }
+
     // Common
 
     /**
@@ -762,5 +935,25 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
      */
     public OptionalInt getDefaultTimeout() {
         return defaultTimeout.value();
+    }
+
+    /**
+     * Set temporary directory.
+     *
+     * @param tmpDir temporary directory
+     * @since 0.5.0
+     */
+    public void setTmpDir(String tmpDir) {
+        this.tmpDir.setValue(tmpDir);
+    }
+
+    /**
+     * Get temporary directory.
+     *
+     * @return temporary directory
+     * @since 0.5.0
+     */
+    public String getTmpDir() {
+        return tmpDir.value();
     }
 }

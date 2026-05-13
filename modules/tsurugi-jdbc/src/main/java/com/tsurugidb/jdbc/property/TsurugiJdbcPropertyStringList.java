@@ -79,6 +79,25 @@ public class TsurugiJdbcPropertyStringList extends TsurugiJdbcProperty {
         }
     }
 
+    /**
+     * Add value.
+     *
+     * @param value value
+     * @since 0.5.0
+     */
+    public void addValue(String value) {
+        List<String> old = value();
+        List<String> list;
+        if (old != null) {
+            list = new ArrayList<>(old.size() + 1);
+            list.addAll(old);
+            list.add(value);
+        } else {
+            list = List.of(value);
+        }
+        setValue(list);
+    }
+
     @Override
     public void setStringValue(String value) {
         var list = toList(value);

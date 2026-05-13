@@ -28,6 +28,7 @@ import javax.sql.DataSource;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcLobTransferType;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
@@ -185,6 +186,64 @@ public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCre
      */
     public void setSessionLabel(String sessionLabel) {
         config.setSessionLabel(sessionLabel);
+    }
+
+    /**
+     * Set large object transfer type.
+     *
+     * @param lobTransferType large object transfer type
+     * @since 0.5.0
+     */
+    public void setLobTransferType(TsurugiJdbcLobTransferType lobTransferType) {
+        config.setLobTransferType(lobTransferType);
+    }
+
+    /**
+     * Set large object path mapping on send.
+     * <p>
+     * The format of path mapping is "client-path:server-path".
+     * </p>
+     *
+     * @param pathMapping large object path mapping on send
+     * @since 0.5.0
+     */
+    public void setLobPathMappingOnSend(List<String> pathMapping) {
+        config.setLobPathMappingOnSend(pathMapping);
+    }
+
+    /**
+     * Add large object path mapping on send.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @since 0.5.0
+     */
+    public void addLobPathMappingOnSend(String clientPath, String serverPath) {
+        config.addLobPathMappingOnSend(clientPath, serverPath);
+    }
+
+    /**
+     * Set large object path mapping on receive.
+     * <p>
+     * The format of path mapping is "client-path:server-path".
+     * </p>
+     *
+     * @param pathMapping large object path mapping on receive
+     * @since 0.5.0
+     */
+    public void setLobPathMappingOnReceive(List<String> pathMapping) {
+        config.setLobPathMappingOnReceive(pathMapping);
+    }
+
+    /**
+     * Add large object path mapping on receive.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @since 0.5.0
+     */
+    public void addLobPathMappingOnReceive(String clientPath, String serverPath) {
+        config.addLobPathMappingOnReceive(clientPath, serverPath);
     }
 
     /**
@@ -373,6 +432,15 @@ public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCre
      */
     public void setDefaultTimeout(int seconds) {
         config.setDefaultTimeout(seconds);
+    }
+
+    /**
+     * Set temporary directory.
+     *
+     * @param tmpDir temporary directory
+     */
+    public void setTmpDir(String tmpDir) {
+        config.setTmpDir(tmpDir);
     }
 
     // connect

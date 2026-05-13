@@ -38,6 +38,8 @@ import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.resultset.type.TsurugiJdbcBlobReference;
 import com.tsurugidb.jdbc.resultset.type.TsurugiJdbcClobReference;
+import com.tsurugidb.jdbc.statement.type.TsurugiJdbcBlobUploader;
+import com.tsurugidb.jdbc.statement.type.TsurugiJdbcClobUploader;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 import com.tsurugidb.sql.proto.SqlRequest.Parameter;
@@ -50,6 +52,8 @@ public class TsurugiJdbcParameterGenerator {
 
     private final TsurugiJdbcPreparedStatement ownerPreparedStatement;
     private TsurugiJdbcConvertUtil convertUtil = null;
+    private TsurugiJdbcBlobUploader blobUploader = null;
+    private TsurugiJdbcClobUploader clobUploader = null;
 
     /**
      * Creates a new instance.
@@ -411,6 +415,80 @@ public class TsurugiJdbcParameterGenerator {
 
         OffsetDateTime x = getConvertUtil().convertToOffsetDateTime(value, zone);
         return Parameters.of(name, x);
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value Blob value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     * @since 0.5.0
+     */
+    public Parameter create(String name, java.sql.Blob value) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+        return createBlob(name, value.getBinaryStream());
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value Blob value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     * @since 0.5.0
+     */
+    public Parameter createBlob(String name, InputStream value) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+
+        if (this.blobUploader == null) {
+            this.blobUploader = new TsurugiJdbcBlobUploader(ownerPreparedStatement);
+        }
+        var lobInfo = blobUploader.upload(value);
+        return Parameters.blobOf(name, lobInfo);
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value Clob value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     * @since 0.5.0
+     */
+    public Parameter create(String name, java.sql.Clob value) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+        return createClob(name, value.getCharacterStream());
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value Clob value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     * @since 0.5.0
+     */
+    public Parameter createClob(String name, Reader value) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+
+        if (this.clobUploader == null) {
+            this.clobUploader = new TsurugiJdbcClobUploader(ownerPreparedStatement);
+        }
+        var lobInfo = clobUploader.upload(value);
+        return Parameters.clobOf(name, lobInfo);
     }
 
     /**

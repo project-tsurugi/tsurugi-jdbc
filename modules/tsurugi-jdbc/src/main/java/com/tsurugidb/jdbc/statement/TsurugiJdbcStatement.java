@@ -89,6 +89,16 @@ public class TsurugiJdbcStatement implements Statement, HasFactory {
     }
 
     /**
+     * Get statement configuration.
+     *
+     * @return statement configuration
+     * @since 0.5.0
+     */
+    public TsurugiJdbcStatementConfig getConfig() {
+        return this.config;
+    }
+
+    /**
      * Get exception handler.
      *
      * @return exception handler

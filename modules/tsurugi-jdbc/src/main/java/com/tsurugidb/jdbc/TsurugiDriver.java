@@ -15,11 +15,13 @@
  */
 package com.tsurugidb.jdbc;
 
+import java.nio.file.Path;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +37,7 @@ import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.property.TsurugiJdbcProperty;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
+import com.tsurugidb.tsubakuro.common.BlobPathMapping;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.common.SessionBuilder;
 
@@ -165,11 +168,68 @@ public class TsurugiDriver implements Driver, HasFactory {
             builder.withLabel(label);
         }
 
+        var lobTransferType = config.getLobTransferType();
+        LOG.config(() -> String.format("lobTransferType=%s", lobTransferType));
+        if (lobTransferType != null) {
+            builder.withBlobTransfer(lobTransferType.getLowLobTransferType());
+        }
+
+        List<String> pathMappingOnSend = config.getLobPathMappingOnSend();
+        List<String> pathMappingOnReceive = config.getLobPathMappingOnReceive();
+        LOG.config(() -> String.format("lobPathMappingOnSend=%s", pathMappingOnSend));
+        LOG.config(() -> String.format("lobPathMappingOnReceive=%s", pathMappingOnReceive));
+        if (pathMappingOnSend != null || pathMappingOnReceive != null) {
+            var mapping = BlobPathMapping.newBuilder();
+
+            if (pathMappingOnSend != null) {
+                for (String s : pathMappingOnSend) {
+                    PathMapping m = parsePathMapping(s);
+                    mapping.onSend(Path.of(m.clientPath()), m.serverPath());
+                }
+            }
+            if (pathMappingOnReceive != null) {
+                for (String s : pathMappingOnReceive) {
+                    PathMapping m = parsePathMapping(s);
+                    mapping.onReceive(m.serverPath(), Path.of(m.clientPath()));
+                }
+            }
+
+            builder.withBlobPathMapping(mapping.build());
+        }
+
         boolean keepAlive = config.getKeepAlive();
         LOG.config(() -> String.format("keepAlive=%b", keepAlive));
         builder.withKeepAlive(keepAlive);
 
         return builder;
+    }
+
+    static class PathMapping {
+        private final String clientPath;
+        private final String serverPath;
+
+        public PathMapping(String clientPath, String serverPath) {
+            this.clientPath = clientPath;
+            this.serverPath = serverPath;
+        }
+
+        public String clientPath() {
+            return this.clientPath;
+        }
+
+        public String serverPath() {
+            return this.serverPath;
+        }
+    }
+
+    static PathMapping parsePathMapping(String pathMapping) {
+        int n = pathMapping.lastIndexOf(':');
+        if (n < 0) {
+            throw new IllegalArgumentException("Invalid path mapping: " + pathMapping);
+        }
+        String clientPath = pathMapping.substring(0, n).trim();
+        String serverPath = pathMapping.substring(n + 1).trim();
+        return new PathMapping(clientPath, serverPath);
     }
 
     @Override

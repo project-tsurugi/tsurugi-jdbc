@@ -120,6 +120,44 @@ public class TsurugiJdbcConnectionBuilder implements ConnectionBuilder {
     }
 
     /**
+     * Set large object transfer type.
+     *
+     * @param lobTransferType large object transfer type
+     * @return this
+     * @since 0.5.0
+     */
+    public TsurugiJdbcConnectionBuilder lobTransferType(TsurugiJdbcLobTransferType lobTransferType) {
+        config.setLobTransferType(lobTransferType);
+        return this;
+    }
+
+    /**
+     * Add large object path mapping on send.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @return this
+     * @since 0.5.0
+     */
+    public TsurugiJdbcConnectionBuilder lobPathMappingOnSend(String clientPath, String serverPath) {
+        config.addLobPathMappingOnSend(clientPath, serverPath);
+        return this;
+    }
+
+    /**
+     * Add large object path mapping on receive.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @return this
+     * @since 0.5.0
+     */
+    public TsurugiJdbcConnectionBuilder lobPathMappingOnReceive(String clientPath, String serverPath) {
+        config.addLobPathMappingOnReceive(clientPath, serverPath);
+        return this;
+    }
+
+    /**
      * Set session keep alive.
      *
      * @param keepAlive keep alive
@@ -383,6 +421,18 @@ public class TsurugiJdbcConnectionBuilder implements ConnectionBuilder {
      */
     public TsurugiJdbcConnectionBuilder defaultTimeout(int seconds) {
         config.setDefaultTimeout(seconds);
+        return this;
+    }
+
+    /**
+     * Set temporary directory.
+     *
+     * @param tmpDir temporary directory
+     * @return this
+     * @since 0.5.0
+     */
+    public TsurugiJdbcConnectionBuilder tmpDir(String tmpDir) {
+        config.setTmpDir(tmpDir);
         return this;
     }
 

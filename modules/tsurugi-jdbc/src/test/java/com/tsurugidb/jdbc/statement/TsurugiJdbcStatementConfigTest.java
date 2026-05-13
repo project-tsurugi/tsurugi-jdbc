@@ -30,6 +30,17 @@ class TsurugiJdbcStatementConfigTest {
     private final TsurugiJdbcFactory factory = new TsurugiJdbcFactory();
 
     @Test
+    void getLobUploadTimeout() throws SQLException {
+        var root = new TsurugiConfig();
+        root.put(factory, "lobUploadTimeout", "123");
+
+        var connection = TsurugiJdbcConnectionConfig.of(root);
+        var target = TsurugiJdbcStatementConfig.of(connection);
+
+        assertEquals(123, target.getLobUploadTimeout());
+    }
+
+    @Test
     void getBatchQueueSize() throws SQLException {
         var root = new TsurugiConfig();
         root.put(factory, "batchQueueSize", "123");

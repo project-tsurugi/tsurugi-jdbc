@@ -33,6 +33,8 @@ import com.tsurugidb.jdbc.statement.TsurugiJdbcPlaceholderType;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatement;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcStatementConfig;
+import com.tsurugidb.jdbc.statement.type.TsurugiJdbcBlob;
+import com.tsurugidb.jdbc.statement.type.TsurugiJdbcClob;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransaction;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
@@ -132,6 +134,26 @@ public class TsurugiJdbcFactory {
      */
     public TsurugiJdbcConnection createConnection(Session lowSession, TsurugiJdbcConnectionConfig config) {
         return new TsurugiJdbcConnection(this, lowSession, config);
+    }
+
+    /**
+     * Create Tsurugi JDBC Blob.
+     *
+     * @return Blob
+     * @since 0.5.0
+     */
+    public java.sql.Blob createBlob() {
+        return new TsurugiJdbcBlob(1024);
+    }
+
+    /**
+     * Create Tsurugi JDBC Clob.
+     *
+     * @return Clob
+     * @since 0.5.0
+     */
+    public java.sql.Clob createClob() {
+        return new TsurugiJdbcClob(1024);
     }
 
     /**
