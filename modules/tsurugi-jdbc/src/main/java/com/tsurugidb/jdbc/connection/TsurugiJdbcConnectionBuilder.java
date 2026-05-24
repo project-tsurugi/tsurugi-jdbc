@@ -15,6 +15,7 @@
  */
 package com.tsurugidb.jdbc.connection;
 
+import java.net.URI;
 import java.sql.ConnectionBuilder;
 import java.sql.SQLException;
 import java.sql.ShardingKey;
@@ -154,6 +155,18 @@ public class TsurugiJdbcConnectionBuilder implements ConnectionBuilder {
      */
     public TsurugiJdbcConnectionBuilder lobPathMappingOnReceive(String clientPath, String serverPath) {
         config.addLobPathMappingOnReceive(clientPath, serverPath);
+        return this;
+    }
+
+    /**
+     * Set blob relay service endpoint.
+     *
+     * @param endpoint blob relay service endpoint
+     * @return this
+     * @since 0.5.0
+     */
+    public TsurugiJdbcConnectionBuilder blobRelayServiceEndpoint(URI endpoint) {
+        config.setBlobRelayServiceEndpoint(endpoint);
         return this;
     }
 

@@ -52,7 +52,7 @@ public class TsurugiJdbcBlobReference implements Blob {
 
     /**
      * Set download timeout.
-     * 
+     *
      * @param timeout download timeout [seconds]
      * @since 0.5.0
      */

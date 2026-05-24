@@ -55,7 +55,7 @@ public class TsurugiJdbcClobReference implements Clob {
 
     /**
      * Set download timeout.
-     * 
+     *
      * @param timeout download timeout [seconds]
      * @since 0.5.0
      */

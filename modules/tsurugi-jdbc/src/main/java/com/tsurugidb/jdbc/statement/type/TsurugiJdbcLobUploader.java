@@ -103,21 +103,21 @@ public abstract class TsurugiJdbcLobUploader<T> {
 
     /**
      * Get temporary file prefix for privileged mode.
-     * 
+     *
      * @return temporary file prefix
      */
     protected abstract String getTmpFilePrefix();
 
     /**
      * Get temporary file suffix for privileged mode.
-     * 
+     *
      * @return temporary file suffix
      */
     protected abstract String getTmpFileSuffix();
 
     /**
      * Write value to file for privileged mode.
-     * 
+     *
      * @param value   value to write
      * @param dstFile temporary file path
      * @throws IOException if an I/O error occurs while writing the file
@@ -131,7 +131,7 @@ public abstract class TsurugiJdbcLobUploader<T> {
 
     /**
      * Upload value (for non-privileged mode).
-     * 
+     *
      * @param lowLargeObjectClient LargeObjectClient
      * @param value                value to upload
      * @return FutureResponse of LargeObjectInfo
@@ -141,7 +141,7 @@ public abstract class TsurugiJdbcLobUploader<T> {
 
     /**
      * Get upload timeout.
-     * 
+     *
      * @return upload timeout [seconds]
      */
     protected int getTimeout() {

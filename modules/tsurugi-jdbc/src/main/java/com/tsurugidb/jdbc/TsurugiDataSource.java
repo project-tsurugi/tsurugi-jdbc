@@ -16,6 +16,7 @@
 package com.tsurugidb.jdbc;
 
 import java.io.PrintWriter;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -244,6 +245,16 @@ public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCre
      */
     public void addLobPathMappingOnReceive(String clientPath, String serverPath) {
         config.addLobPathMappingOnReceive(clientPath, serverPath);
+    }
+
+    /**
+     * Set blob relay service endpoint.
+     *
+     * @param endpoint blob relay service endpoint
+     * @since 0.5.0
+     */
+    public void setBlobRelayServiceEndpoint(URI endpoint) {
+        config.setBlobRelayServiceEndpoint(endpoint);
     }
 
     /**
