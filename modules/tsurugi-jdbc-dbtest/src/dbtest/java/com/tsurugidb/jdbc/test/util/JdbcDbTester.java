@@ -15,6 +15,8 @@
  */
 package com.tsurugidb.jdbc.test.util;
 
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+
 import java.lang.reflect.Method;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -26,7 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import com.tsurugidb.jdbc.TsurugiConfig;
+import com.tsurugidb.jdbc.TsurugiDataSource;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
 
 public class JdbcDbTester {
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
@@ -107,5 +112,43 @@ public class JdbcDbTester {
     protected static TsurugiJdbcConnection createConnection() throws SQLException {
         String url = JdbcDbTestConnector.getJdbcUrlWithCredential();
         return DriverManager.getConnection(url).unwrap(TsurugiJdbcConnection.class);
+    }
+
+    protected static TsurugiConfig createTsurugiConfig() {
+        var config = new TsurugiConfig();
+        config.setEndpoint(JdbcDbTestConnector.getEndPoint());
+        JdbcDbTestConnector.setCredentialTo(config);
+        JdbcDbTestConnector.setLobSettingTo(config);
+        return config;
+    }
+
+    protected static TsurugiDataSource createDataSource() {
+        var ds = new TsurugiDataSource();
+        ds.setEndpoint(JdbcDbTestConnector.getEndPoint());
+        JdbcDbTestConnector.setCredentialTo(ds);
+        JdbcDbTestConnector.setLobSettingTo(ds);
+        return ds;
+    }
+
+    protected static TsurugiJdbcConnectionBuilder createConnectionBuilder() throws SQLException {
+        var builder = new TsurugiDataSource().createConnectionBuilder() //
+                .endpoint(JdbcDbTestConnector.getEndPoint());
+        JdbcDbTestConnector.setCredentialTo(builder);
+        JdbcDbTestConnector.setLobSettingTo(builder);
+        return builder;
+    }
+
+    protected void assumeLobTest(String lobTransferType) throws Exception {
+        disabledIfEnvironmentVariable("JdbcDbLobTest_" + lobTransferType);
+    }
+
+    protected static void disabledIfEnvironmentVariable(String value) {
+        String env = System.getenv("JDBC_DBTEST_DISABLE");
+        if (env == null) {
+            return;
+        }
+
+        boolean matched = env.contains(value);
+        assumeFalse(matched, () -> "JDBC_DBTEST_DISABLE contains " + value);
     }
 }

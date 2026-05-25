@@ -16,6 +16,7 @@
 package com.tsurugidb.jdbc.resultset;
 
 import static com.tsurugidb.jdbc.TsurugiConfig.DEFAULT_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.LOB_DOWNLOAD_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.QUERY_TIMEOUT;
 
 import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
@@ -40,10 +41,11 @@ public class TsurugiJdbcResultSetConfig {
     }
 
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
+    private final TsurugiJdbcPropertyInt lobDownloadTimeout = new TsurugiJdbcPropertyInt(LOB_DOWNLOAD_TIMEOUT);
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
 
     private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
-            queryTimeout, //
+            queryTimeout, lobDownloadTimeout, //
             defaultTimeout);
 
     /**
@@ -53,6 +55,16 @@ public class TsurugiJdbcResultSetConfig {
      */
     public int getQueryTimeout() {
         return queryTimeout.value().orElse(getDefaultTimeout());
+    }
+
+    /**
+     * Get large object download timeout.
+     *
+     * @return large object download timeout [seconds]
+     * @since 0.5.0
+     */
+    public int getLobDownloadTimeout() {
+        return lobDownloadTimeout.value().orElse(getDefaultTimeout());
     }
 
     // Common

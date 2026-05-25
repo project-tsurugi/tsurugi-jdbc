@@ -15,16 +15,16 @@
  */
 package com.tsurugidb.jdbc.resultset.type;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.concurrent.TimeUnit;
 
-import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
+import com.tsurugidb.jdbc.statement.type.TsurugiJdbcBlob;
 import com.tsurugidb.jdbc.util.TsurugiJdbcIoUtil;
 import com.tsurugidb.tsubakuro.sql.BlobReference;
 
@@ -35,6 +35,9 @@ public class TsurugiJdbcBlobReference implements Blob {
 
     private final TsurugiJdbcResultSet ownerResultSet;
     private final BlobReference lowBlob;
+    private int timeout;
+    private TsurugiJdbcBlob cachedBlob = null;
+    private boolean freed = false;
 
     /**
      * Creates a new instance.
@@ -45,6 +48,17 @@ public class TsurugiJdbcBlobReference implements Blob {
     public TsurugiJdbcBlobReference(TsurugiJdbcResultSet ownerResultSet, BlobReference lowBlob) {
         this.ownerResultSet = ownerResultSet;
         this.lowBlob = lowBlob;
+        this.timeout = ownerResultSet.getConfig().getLobDownloadTimeout();
+    }
+
+    /**
+     * Set download timeout.
+     *
+     * @param timeout download timeout [seconds]
+     * @since 0.5.0
+     */
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 
     /**
@@ -74,79 +88,110 @@ public class TsurugiJdbcBlobReference implements Blob {
      * @throws SQLException if a database access error occurs
      */
     public InputStream openInputStream(long timeout, TimeUnit unit) throws SQLException {
-        var transaction = ownerResultSet.getTransaction();
+        checkFreed();
+
         try {
-            return transaction.executeOnly(tx -> {
-                var io = getIoUtil();
-                return io.get(tx.openInputStream(lowBlob), timeout, unit);
-            });
+            var transaction = ownerResultSet.getTransaction();
+            var tx = transaction.getLowTransaction();
+            var io = getIoUtil();
+            return io.get(tx.openInputStream(lowBlob), timeout, unit);
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("BLOB open error", e);
         }
     }
 
-    @Override
-    @TsurugiJdbcNotSupported
-    public long length() throws SQLException {
-        throw new SQLFeatureNotSupportedException("length not supported");
+    private synchronized TsurugiJdbcBlob getCachedBlob() throws SQLException {
+        if (this.cachedBlob == null) {
+            byte[] data;
+            try (var is = openInputStream(timeout, TimeUnit.SECONDS)) {
+                data = is.readAllBytes();
+            } catch (IOException e) {
+                throw getExceptionHandler().sqlException("BLOB read error", e);
+            }
+            this.cachedBlob = new TsurugiJdbcBlob(data);
+        }
+        return this.cachedBlob;
     }
 
     @Override
-    @TsurugiJdbcNotSupported
+    public long length() throws SQLException {
+        checkFreed();
+        return getCachedBlob().length();
+    }
+
+    @Override
     public byte[] getBytes(long pos, int length) throws SQLException {
-        throw new SQLFeatureNotSupportedException("getBytes not supported");
+        checkFreed();
+        return getCachedBlob().getBytes(pos, length);
     }
 
     @Override
     public InputStream getBinaryStream() throws SQLException {
-        int timeout = 0; // TODO timeout
+        checkFreed();
+
+        if (this.cachedBlob != null) {
+            return cachedBlob.getBinaryStream();
+        }
+
         return openInputStream(timeout, TimeUnit.SECONDS);
     }
 
     @Override
-    @TsurugiJdbcNotSupported
+    public InputStream getBinaryStream(long pos, long length) throws SQLException {
+        checkFreed();
+        return getCachedBlob().getBinaryStream(pos, length);
+    }
+
+    @Override
     public long position(byte[] pattern, long start) throws SQLException {
-        throw new SQLFeatureNotSupportedException("position not supported");
+        checkFreed();
+        return getCachedBlob().position(pattern, start);
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public long position(Blob pattern, long start) throws SQLException {
-        throw new SQLFeatureNotSupportedException("position not supported");
+        checkFreed();
+        return getCachedBlob().position(pattern, start);
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public int setBytes(long pos, byte[] bytes) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setBytes not supported");
+        checkFreed();
+        return getCachedBlob().setBytes(pos, bytes);
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public int setBytes(long pos, byte[] bytes, int offset, int len) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setBytes not supported");
+        checkFreed();
+        return getCachedBlob().setBytes(pos, bytes, offset, len);
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public OutputStream setBinaryStream(long pos) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setBinaryStream not supported");
+        checkFreed();
+        return getCachedBlob().setBinaryStream(pos);
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public void truncate(long len) throws SQLException {
-        throw new SQLFeatureNotSupportedException("truncate not supported");
+        checkFreed();
+        getCachedBlob().truncate(len);
     }
 
     @Override
     public void free() throws SQLException {
-        // do nothing
+        if (!this.freed) {
+            this.freed = true;
+
+            if (this.cachedBlob != null) {
+                cachedBlob.free();
+            }
+        }
     }
 
-    @Override
-    @TsurugiJdbcNotSupported
-    public InputStream getBinaryStream(long pos, long length) throws SQLException {
-        throw new SQLFeatureNotSupportedException("getBinaryStream not supported");
+    private void checkFreed() throws SQLException {
+        if (freed) {
+            throw new SQLException("Blob has been freed");
+        }
     }
 }

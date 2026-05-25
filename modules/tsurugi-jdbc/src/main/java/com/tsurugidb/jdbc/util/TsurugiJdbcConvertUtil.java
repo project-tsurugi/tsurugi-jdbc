@@ -502,7 +502,7 @@ public class TsurugiJdbcConvertUtil {
      */
     public String convertToString(@Nonnull Reader reader, int length) throws SQLException {
         try (var br = new BufferedReader(reader)) {
-            var sb = new StringBuilder();
+            var sb = new StringBuilder(1024);
             var buffer = new char[1024];
             for (;;) {
                 int len = br.read(buffer);

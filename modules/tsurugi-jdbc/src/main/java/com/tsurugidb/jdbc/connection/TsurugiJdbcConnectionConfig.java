@@ -26,6 +26,8 @@ import static com.tsurugidb.jdbc.TsurugiConfig.EXCLUSIVE_READ_AREA;
 import static com.tsurugidb.jdbc.TsurugiConfig.EXECUTE_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.INCLUDE_DDL;
 import static com.tsurugidb.jdbc.TsurugiConfig.INCLUSIVE_READ_AREA;
+import static com.tsurugidb.jdbc.TsurugiConfig.LOB_DOWNLOAD_TIMEOUT;
+import static com.tsurugidb.jdbc.TsurugiConfig.LOB_UPLOAD_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.QUERY_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.ROLLBACK_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.SCAN_PARALLEL;
@@ -35,6 +37,7 @@ import static com.tsurugidb.jdbc.TsurugiConfig.TRANSACTION_LABEL;
 import static com.tsurugidb.jdbc.TsurugiConfig.TRANSACTION_TYPE;
 import static com.tsurugidb.jdbc.TsurugiConfig.WRITE_PRESERVE;
 
+import java.nio.file.Path;
 import java.sql.ClientInfoStatus;
 import java.sql.SQLException;
 import java.util.List;
@@ -46,6 +49,7 @@ import javax.annotation.Nullable;
 
 import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcLobPathMappingEntry;
 import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyBoolean;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyEnum;
@@ -73,7 +77,19 @@ public class TsurugiJdbcConnectionConfig {
     public static TsurugiJdbcConnectionConfig of(TsurugiConfig from) {
         var config = new TsurugiJdbcConnectionConfig(from.getEndpoint());
         config.properties.copyFrom(from.getInternalProperties());
+        config.lobTmpDir = getLobTmpDir(from);
         return config;
+    }
+
+    static Path getLobTmpDir(TsurugiConfig config) {
+        var list = config.getLobPathMappingOnSend();
+        if (list != null) {
+            for (String mapping : list) {
+                var entry = TsurugiJdbcLobPathMappingEntry.parse(mapping);
+                return entry.clientPath();
+            }
+        }
+        return null;
     }
 
     private final String endpoint;
@@ -95,9 +111,11 @@ public class TsurugiJdbcConnectionConfig {
     private final TsurugiJdbcPropertyInt commitTimeout = new TsurugiJdbcPropertyInt(COMMIT_TIMEOUT);
     private final TsurugiJdbcPropertyInt rollbackTimeout = new TsurugiJdbcPropertyInt(ROLLBACK_TIMEOUT);
 
+    private final TsurugiJdbcPropertyInt lobUploadTimeout = new TsurugiJdbcPropertyInt(LOB_UPLOAD_TIMEOUT);
     private final TsurugiJdbcPropertyInt executeTimeout = new TsurugiJdbcPropertyInt(EXECUTE_TIMEOUT);
     private final TsurugiJdbcPropertyInt batchQueueSize = new TsurugiJdbcPropertyInt(BATCH_QUEUE_SIZE);
     private final TsurugiJdbcPropertyInt queryTimeout = new TsurugiJdbcPropertyInt(QUERY_TIMEOUT);
+    private final TsurugiJdbcPropertyInt lobDownloadTimeout = new TsurugiJdbcPropertyInt(LOB_DOWNLOAD_TIMEOUT);
 
     private final TsurugiJdbcPropertyEnum<TsurugiJdbcShutdownType> shutdownType = new TsurugiJdbcPropertyEnum<>(TsurugiJdbcShutdownType.class, SHUTDOWN_TYPE);
     private final TsurugiJdbcPropertyInt shutdownTimeout = new TsurugiJdbcPropertyInt(SHUTDOWN_TIMEOUT);
@@ -108,10 +126,12 @@ public class TsurugiJdbcConnectionConfig {
             transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, //
             autoCommit, commitType, autoDispose, //
             beginTimeout, commitTimeout, rollbackTimeout, //
-            executeTimeout, batchQueueSize, //
-            queryTimeout, //
+            lobUploadTimeout, executeTimeout, batchQueueSize, //
+            queryTimeout, lobDownloadTimeout, //
             shutdownType, shutdownTimeout, //
             defaultTimeout);
+
+    private Path lobTmpDir = null;
 
     /**
      * Creates a new instance.
@@ -464,6 +484,28 @@ public class TsurugiJdbcConnectionConfig {
         return rollbackTimeout.value().orElse(getDefaultTimeout());
     }
 
+    // Statement
+
+    /**
+     * Set large object upload timeout.
+     *
+     * @param timeout large object upload timeout [seconds]
+     * @since 0.5.0
+     */
+    public void setLobUploadTimeout(int timeout) {
+        this.lobUploadTimeout.setValue(timeout);
+    }
+
+    /**
+     * Get large object upload timeout.
+     *
+     * @return large object upload timeout [seconds]
+     * @since 0.5.0
+     */
+    public int getLobUploadTimeout() {
+        return lobUploadTimeout.value().orElse(getDefaultTimeout());
+    }
+
     // Session
 
     /**
@@ -511,5 +553,18 @@ public class TsurugiJdbcConnectionConfig {
      */
     public int getDefaultTimeout() {
         return defaultTimeout.value().orElse(0);
+    }
+
+    /**
+     * Get large object temporary directory.
+     *
+     * @return large object temporary directory
+     * @since 0.5.0
+     */
+    public Path getLobTmpDir() {
+        if (this.lobTmpDir == null) {
+            this.lobTmpDir = Path.of(System.getProperty("java.io.tmpdir"));
+        }
+        return this.lobTmpDir;
     }
 }

@@ -696,15 +696,13 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public Clob createClob() throws SQLException {
-        throw new SQLFeatureNotSupportedException("createClob not supported");
+        return factory.createClob();
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public Blob createBlob() throws SQLException {
-        throw new SQLFeatureNotSupportedException("createBlob not supported");
+        return factory.createBlob();
     }
 
     @Override

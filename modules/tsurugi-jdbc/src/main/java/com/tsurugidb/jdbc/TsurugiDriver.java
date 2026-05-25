@@ -20,6 +20,7 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -29,12 +30,14 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcLobPathMappingEntry;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.property.TsurugiJdbcProperty;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
+import com.tsurugidb.tsubakuro.common.BlobPathMapping;
 import com.tsurugidb.tsubakuro.common.Session;
 import com.tsurugidb.tsubakuro.common.SessionBuilder;
 
@@ -163,6 +166,41 @@ public class TsurugiDriver implements Driver, HasFactory {
         LOG.config(() -> String.format("label=%s", label));
         if (label != null) {
             builder.withLabel(label);
+        }
+
+        var lobTransferType = config.getLobTransferType();
+        LOG.config(() -> String.format("lobTransferType=%s", lobTransferType));
+        if (lobTransferType != null) {
+            builder.withBlobTransfer(lobTransferType.getLowLobTransferType());
+        }
+
+        List<String> pathMappingOnSend = config.getLobPathMappingOnSend();
+        List<String> pathMappingOnReceive = config.getLobPathMappingOnReceive();
+        LOG.config(() -> String.format("lobPathMappingOnSend=%s", pathMappingOnSend));
+        LOG.config(() -> String.format("lobPathMappingOnReceive=%s", pathMappingOnReceive));
+        if (pathMappingOnSend != null || pathMappingOnReceive != null) {
+            var mapping = BlobPathMapping.newBuilder();
+
+            if (pathMappingOnSend != null) {
+                for (String s : pathMappingOnSend) {
+                    var entry = TsurugiJdbcLobPathMappingEntry.parse(s);
+                    mapping.onSend(entry.clientPath(), entry.serverPath());
+                }
+            }
+            if (pathMappingOnReceive != null) {
+                for (String s : pathMappingOnReceive) {
+                    var entry = TsurugiJdbcLobPathMappingEntry.parse(s);
+                    mapping.onReceive(entry.serverPath(), entry.clientPath());
+                }
+            }
+
+            builder.withBlobPathMapping(mapping.build());
+        }
+
+        var blobRelayServiceEndpoint = config.getBlobRelayServiceEndpoint();
+        LOG.config(() -> String.format("blobRelayServiceEndpoint=%s", blobRelayServiceEndpoint));
+        if (blobRelayServiceEndpoint != null) {
+            builder.withBlobRelayEndpoint(blobRelayServiceEndpoint);
         }
 
         boolean keepAlive = config.getKeepAlive();

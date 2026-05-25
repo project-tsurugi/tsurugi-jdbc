@@ -44,6 +44,19 @@ class TsurugiJdbcResultSetConfigTest {
     }
 
     @Test
+    void getLobDownloadTimeout() throws SQLException {
+        var root = new TsurugiConfig();
+        root.put(factory, "lobDownloadTimeout", "123");
+
+        var connection = TsurugiJdbcConnectionConfig.of(root);
+        var statement = TsurugiJdbcStatementConfig.of(connection);
+        var target = TsurugiJdbcResultSetConfig.of(statement);
+
+        assertEquals(123, target.getLobDownloadTimeout());
+        assertEquals(0, target.getDefaultTimeout());
+    }
+
+    @Test
     void getDefaultTimeout() throws SQLException {
         var root = new TsurugiConfig();
         root.put(factory, "defaultTimeout", "123");

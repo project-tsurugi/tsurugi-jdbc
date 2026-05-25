@@ -15,6 +15,7 @@
  */
 package com.tsurugidb.jdbc.statement;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -38,6 +39,8 @@ import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.resultset.type.TsurugiJdbcBlobReference;
 import com.tsurugidb.jdbc.resultset.type.TsurugiJdbcClobReference;
+import com.tsurugidb.jdbc.statement.type.TsurugiJdbcBlobUploader;
+import com.tsurugidb.jdbc.statement.type.TsurugiJdbcClobUploader;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 import com.tsurugidb.sql.proto.SqlRequest.Parameter;
@@ -50,6 +53,8 @@ public class TsurugiJdbcParameterGenerator {
 
     private final TsurugiJdbcPreparedStatement ownerPreparedStatement;
     private TsurugiJdbcConvertUtil convertUtil = null;
+    private TsurugiJdbcBlobUploader blobUploader = null;
+    private TsurugiJdbcClobUploader clobUploader = null;
 
     /**
      * Creates a new instance.
@@ -416,6 +421,90 @@ public class TsurugiJdbcParameterGenerator {
     /**
      * Create parameter.
      *
+     * @param name  parameter name
+     * @param value Blob value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     * @since 0.5.0
+     */
+    public Parameter create(String name, java.sql.Blob value) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+
+        try (var is = value.getBinaryStream()) {
+            return createBlob(name, is);
+        } catch (IOException e) {
+            throw getExceptionHandler().dataException("Create parameter of BinaryStream error", e);
+        }
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value Blob value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     * @since 0.5.0
+     */
+    public Parameter createBlob(String name, InputStream value) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+
+        if (this.blobUploader == null) {
+            this.blobUploader = new TsurugiJdbcBlobUploader(ownerPreparedStatement);
+        }
+        var lobInfo = blobUploader.upload(value);
+        return Parameters.blobOf(name, lobInfo);
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value Clob value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     * @since 0.5.0
+     */
+    public Parameter create(String name, java.sql.Clob value) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+
+        try (var reader = value.getCharacterStream()) {
+            return createClob(name, reader);
+        } catch (IOException e) {
+            throw getExceptionHandler().dataException("Create parameter of CharacterStream error", e);
+        }
+    }
+
+    /**
+     * Create parameter.
+     *
+     * @param name  parameter name
+     * @param value Clob value
+     * @return parameter
+     * @throws SQLException if data convert error occurs
+     * @since 0.5.0
+     */
+    public Parameter createClob(String name, Reader value) throws SQLException {
+        if (value == null) {
+            return Parameters.ofNull(name);
+        }
+
+        if (this.clobUploader == null) {
+            this.clobUploader = new TsurugiJdbcClobUploader(ownerPreparedStatement);
+        }
+        var lobInfo = clobUploader.upload(value);
+        return Parameters.clobOf(name, lobInfo);
+    }
+
+    /**
+     * Create parameter.
+     *
      * @param name   parameter name
      * @param value  Reader value
      * @param length length
@@ -545,6 +634,10 @@ public class TsurugiJdbcParameterGenerator {
             return create(name, util.convertToOffsetTime(value));
         case TIME_POINT_WITH_TIME_ZONE:
             return create(name, util.convertToOffsetDateTime(value));
+        case BLOB:
+            return createBlob(name, util.convertToBinaryStream(value));
+        case CLOB:
+            return createClob(name, util.convertToCharacterStream(value));
         default:
             var e = new UnsupportedOperationException(MessageFormat.format("Unsupported AtomType.{0}", atomType));
             throw getExceptionHandler().dataException("Create parameter error", e);

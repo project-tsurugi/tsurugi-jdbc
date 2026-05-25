@@ -15,6 +15,7 @@
  */
 package com.tsurugidb.jdbc.statement;
 
+import java.io.Closeable;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -49,6 +50,9 @@ import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.util.SqlCloser;
 import com.tsurugidb.jdbc.util.TsurugiJdbcConvertUtil;
 import com.tsurugidb.jdbc.util.TsurugiJdbcSqlTypeUtil;
+import com.tsurugidb.jdbc.util.io.CloseableSet;
+import com.tsurugidb.jdbc.util.io.LimitInputStream;
+import com.tsurugidb.jdbc.util.io.LimitReader;
 import com.tsurugidb.sql.proto.SqlCommon.AtomType;
 import com.tsurugidb.sql.proto.SqlRequest.Parameter;
 import com.tsurugidb.sql.proto.SqlRequest.Placeholder;
@@ -68,6 +72,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     private final List<Placeholder> lowPlaceholderList = new ArrayList<>();
     private final List<Parameter> lowParameterList = new ArrayList<>();
     private List<List<Parameter>> batchParameterList = null;
+    private final CloseableSet closeableSet = new CloseableSet();
 
     private com.tsurugidb.tsubakuro.sql.PreparedStatement lowPreparedStatement = null;
 
@@ -147,6 +152,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         });
 
         setExecutingResultSet(rs);
+        closeCloseableSet();
         return rs;
     }
 
@@ -163,6 +169,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
             var io = getIoUtil();
             return io.get(lowTransaction.executeStatement(lowPs, lowParameterList), timeout);
         });
+        closeCloseableSet();
 
         long count = 0;
         for (long c : result.getCounters().values()) {
@@ -415,6 +422,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     @Override
     public void clearParameters() throws SQLException {
         this.lowParameterList.clear();
+        closeCloseableSet();
     }
 
     @Override
@@ -449,6 +457,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
             });
 
             setExecutingResultSet(rs);
+            closeCloseableSet();
             return true;
         } else {
             int timeout = config.getExecuteTimeout();
@@ -458,6 +467,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
             });
 
             setLowUpdateResult(lowResult);
+            closeCloseableSet();
             return false;
         }
     }
@@ -483,6 +493,7 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
         if (parameterList != null) {
             parameterList.clear();
         }
+        closeCloseableSet();
     }
 
     @Override
@@ -548,15 +559,15 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public void setBlob(int parameterIndex, Blob x) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setBlob not supported");
+        var atomType = AtomType.BLOB;
+        setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x));
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public void setClob(int parameterIndex, Clob x) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setClob not supported");
+        var atomType = AtomType.CLOB;
+        setParameter(parameterIndex, atomType, name -> parameterGenerator.create(name, x));
     }
 
     @Override
@@ -636,15 +647,25 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setClob not supported");
+        if (length < 0) {
+            throw new SQLException("Negative length not allowed for setClob");
+        }
+
+        var atomType = AtomType.CLOB;
+        var in = LimitReader.of(reader, length);
+        setParameter(parameterIndex, atomType, name -> parameterGenerator.createClob(name, in));
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setBlob not supported");
+        if (length < 0) {
+            throw new SQLException("Negative length not allowed for setBlob");
+        }
+
+        var atomType = AtomType.BLOB;
+        var in = LimitInputStream.of(inputStream, length);
+        setParameter(parameterIndex, atomType, name -> parameterGenerator.createBlob(name, in));
     }
 
     @Override
@@ -723,15 +744,15 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public void setClob(int parameterIndex, Reader reader) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setClob not supported");
+        var atomType = AtomType.CLOB;
+        setParameter(parameterIndex, atomType, name -> parameterGenerator.createClob(name, reader));
     }
 
     @Override
-    @TsurugiJdbcNotSupported
     public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setBlob not supported");
+        var atomType = AtomType.BLOB;
+        setParameter(parameterIndex, atomType, name -> parameterGenerator.createBlob(name, inputStream));
     }
 
     @Override
@@ -747,13 +768,31 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
             super.close();
         };
 
-        try (superCloser) {
+        try (superCloser; closeableSet) {
             var ps = this.lowPreparedStatement;
             if (ps != null) {
                 ps.close();
             }
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("PreparedStatement close error", e);
+        }
+    }
+
+    /**
+     * Add closeable to be closed when the statement is closed.
+     *
+     * @param closeable closeable
+     */
+    @TsurugiJdbcInternal
+    public void addCloseable(Closeable closeable) {
+        closeableSet.add(closeable);
+    }
+
+    private void closeCloseableSet() throws SQLException {
+        try {
+            closeableSet.close();
+        } catch (Exception e) {
+            throw getExceptionHandler().sqlException("PreparedStatement.closeableSet close error", e);
         }
     }
 }

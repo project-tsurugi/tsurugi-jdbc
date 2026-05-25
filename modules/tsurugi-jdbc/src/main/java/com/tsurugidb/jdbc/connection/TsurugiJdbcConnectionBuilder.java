@@ -15,6 +15,8 @@
  */
 package com.tsurugidb.jdbc.connection;
 
+import java.net.URI;
+import java.nio.file.Path;
 import java.sql.ConnectionBuilder;
 import java.sql.SQLException;
 import java.sql.ShardingKey;
@@ -23,6 +25,7 @@ import java.util.Objects;
 
 import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.TsurugiDriver;
+import com.tsurugidb.jdbc.TsurugiJdbcLobTransferType;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
@@ -116,6 +119,56 @@ public class TsurugiJdbcConnectionBuilder implements ConnectionBuilder {
      */
     public TsurugiJdbcConnectionBuilder sessionLabel(String sessionLabel) {
         config.setSessionLabel(sessionLabel);
+        return this;
+    }
+
+    /**
+     * Set large object transfer type.
+     *
+     * @param lobTransferType large object transfer type
+     * @return this
+     * @since 0.5.0
+     */
+    public TsurugiJdbcConnectionBuilder lobTransferType(TsurugiJdbcLobTransferType lobTransferType) {
+        config.setLobTransferType(lobTransferType);
+        return this;
+    }
+
+    /**
+     * Add large object path mapping on send.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @return this
+     * @since 0.5.0
+     */
+    public TsurugiJdbcConnectionBuilder lobPathMappingOnSend(Path clientPath, String serverPath) {
+        config.addLobPathMappingOnSend(clientPath, serverPath);
+        return this;
+    }
+
+    /**
+     * Add large object path mapping on receive.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @return this
+     * @since 0.5.0
+     */
+    public TsurugiJdbcConnectionBuilder lobPathMappingOnReceive(Path clientPath, String serverPath) {
+        config.addLobPathMappingOnReceive(clientPath, serverPath);
+        return this;
+    }
+
+    /**
+     * Set blob relay service endpoint.
+     *
+     * @param endpoint blob relay service endpoint
+     * @return this
+     * @since 0.5.0
+     */
+    public TsurugiJdbcConnectionBuilder blobRelayServiceEndpoint(URI endpoint) {
+        config.setBlobRelayServiceEndpoint(endpoint);
         return this;
     }
 

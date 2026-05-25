@@ -16,6 +16,8 @@
 package com.tsurugidb.jdbc;
 
 import java.io.PrintWriter;
+import java.net.URI;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -30,6 +32,7 @@ import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcLobSettingSetter;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
@@ -39,7 +42,7 @@ import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 /**
  * Tsurugi JDBC DataSource.
  */
-public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCredentialSetter {
+public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCredentialSetter, TsurugiJdbcLobSettingSetter {
     private static final Logger PARENT_LOGGER = Logger.getLogger(TsurugiDataSource.class.getPackageName());
 
     private TsurugiJdbcFactory factory = TsurugiJdbcFactory.getDefaultFactory();
@@ -185,6 +188,48 @@ public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCre
      */
     public void setSessionLabel(String sessionLabel) {
         config.setSessionLabel(sessionLabel);
+    }
+
+    @Override
+    public void setLobTransferType(TsurugiJdbcLobTransferType lobTransferType) {
+        config.setLobTransferType(lobTransferType);
+    }
+
+    @Override
+    public void setLobPathMappingOnSend(List<String> pathMapping) {
+        config.setLobPathMappingOnSend(pathMapping);
+    }
+
+    /**
+     * Add large object path mapping on send.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @since 0.5.0
+     */
+    public void addLobPathMappingOnSend(Path clientPath, String serverPath) {
+        config.addLobPathMappingOnSend(clientPath, serverPath);
+    }
+
+    @Override
+    public void setLobPathMappingOnReceive(List<String> pathMapping) {
+        config.setLobPathMappingOnReceive(pathMapping);
+    }
+
+    /**
+     * Add large object path mapping on receive.
+     *
+     * @param clientPath client path
+     * @param serverPath server path
+     * @since 0.5.0
+     */
+    public void addLobPathMappingOnReceive(Path clientPath, String serverPath) {
+        config.addLobPathMappingOnReceive(clientPath, serverPath);
+    }
+
+    @Override
+    public void setBlobRelayServiceEndpoint(URI endpoint) {
+        config.setBlobRelayServiceEndpoint(endpoint);
     }
 
     /**

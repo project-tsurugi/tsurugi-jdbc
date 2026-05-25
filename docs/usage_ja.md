@@ -97,6 +97,17 @@ Tsurugiに接続する際のオプション（セッション情報）です。
 
 - アプリケーション名（ `applicationName`）
 - セッションラベル（ `sessionLabel` ）
+- LOB転送関連
+  - LOB転送モード（ `lobTransferType` ）
+    - `DEFAULT` - BLOB中継サービスを使用します。Tsurugi側でBLOB中継サービスが使用できなくても、セッション接続は成功します。（デフォルト）
+    - `NOT_USE` - LOB転送を行いません。
+    - `PRIVILEGED` - 特権モードを使用します。Tsurugi側で特権モードが使用できない場合、セッション接続が失敗します。
+    - `RELAY` - BLOB中継サービスを使用します。Tsurugi側でBLOB中継サービスが使用できない場合、セッション接続が失敗します。
+  - 特権モード送信用パスマッピング（ `lobPathMappingOnSend` ）
+    - `<client_path>:<server_path>` 形式
+  - 特権モード受信用パスマッピング（ `lobPathMappingOnReceive` ）
+    - `<client_path>:<server_path>` 形式
+  - BLOB中継サービスのエンドポイント（ `blobRelayServiceEndpoint` ）
 
 #### トランザクションオプション
 

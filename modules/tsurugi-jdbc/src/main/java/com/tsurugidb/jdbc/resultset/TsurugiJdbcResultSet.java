@@ -92,6 +92,17 @@ public class TsurugiJdbcResultSet extends AbstractResultSet {
     }
 
     /**
+     * Get configuration.
+     *
+     * @return configuration
+     * @since 0.5.0
+     */
+    @TsurugiJdbcInternal
+    public TsurugiJdbcResultSetConfig getConfig() {
+        return this.config;
+    }
+
+    /**
      * Get low ResultSet.
      *
      * @return low ResultSet
