@@ -37,6 +37,11 @@ public final /* record */ class TsurugiJdbcLobPathMappingEntry {
         }
         String clientPath = pathMapping.substring(0, n).trim();
         String serverPath = pathMapping.substring(n + 1).trim();
+
+        if (clientPath.isEmpty() || serverPath.isEmpty()) {
+            throw new IllegalArgumentException("Invalid path mapping, both client and server paths must be non-empty: " + pathMapping);
+        }
+
         return new TsurugiJdbcLobPathMappingEntry(Path.of(clientPath), serverPath);
     }
 

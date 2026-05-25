@@ -19,6 +19,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A set of closeable resources that can be closed together.
@@ -34,7 +35,7 @@ public class CloseableSet implements Closeable {
      * @param closeable the closeable resource to add
      */
     public synchronized void add(Closeable closeable) {
-        closeables.add(closeable);
+        closeables.add(Objects.requireNonNull(closeable));
     }
 
     @Override
@@ -47,6 +48,12 @@ public class CloseableSet implements Closeable {
             } catch (IOException e) {
                 if (exception == null) {
                     exception = e;
+                } else {
+                    exception.addSuppressed(e);
+                }
+            } catch (Exception e) {
+                if (exception == null) {
+                    exception = new IOException("Failed to close resource", e);
                 } else {
                     exception.addSuppressed(e);
                 }
