@@ -170,6 +170,9 @@ public class TsurugiJdbcClob implements Clob {
 
     @Override
     public int setString(long pos, String str, int offset, int len) throws SQLException {
+        if (str == null) {
+            throw new SQLException("str must not be null");
+        }
         return setString(pos, str.substring(offset, offset + len));
     }
 

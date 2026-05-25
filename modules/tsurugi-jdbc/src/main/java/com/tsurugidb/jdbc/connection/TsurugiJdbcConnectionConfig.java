@@ -89,7 +89,7 @@ public class TsurugiJdbcConnectionConfig {
                 return entry.clientPath();
             }
         }
-        return Path.of(System.getProperty("java.io.tmpdir"));
+        return null;
     }
 
     private final String endpoint;
@@ -562,6 +562,9 @@ public class TsurugiJdbcConnectionConfig {
      * @since 0.5.0
      */
     public Path getLobTmpDir() {
+        if (this.lobTmpDir == null) {
+            this.lobTmpDir = Path.of(System.getProperty("java.io.tmpdir"));
+        }
         return this.lobTmpDir;
     }
 }

@@ -167,6 +167,16 @@ public class TsurugiJdbcBlob implements Blob {
         if (bytes == null) {
             throw new SQLException("bytes must not be null");
         }
+        if (offset < 0) {
+            throw new SQLException("Invalid offset: " + offset);
+        }
+        if (len < 0) {
+            throw new SQLException("Invalid length: " + len);
+        }
+
+        if (offset > bytes.length || offset + len > bytes.length) {
+            throw new SQLException("Invalid offset/length: offset=" + offset + ", len=" + len + ", bytes.length=" + bytes.length);
+        }
 
         ensureCapacity(index + len);
 

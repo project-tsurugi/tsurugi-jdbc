@@ -86,11 +86,6 @@ public class JdbcDbTestConnector {
         encoding(queryParts, "lobPathMappingOnSend", lobSendPathMapping);
         String lobRecvPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_RECV_PATH_MAPPING);
         encoding(queryParts, "lobPathMappingOnReceive", lobRecvPathMapping);
-        if (lobSendPathMapping != null) {
-            var entry = TsurugiJdbcLobPathMappingEntry.parse(lobSendPathMapping);
-            encoding(queryParts, "tmpDir", entry.clientPath().toString());
-        }
-
         String blobRelayServiceEndpoint = getSystemProperty(SYSPROP_DBTEST_BLOB_RELAY_SERVICE_ENDPOINT);
         encoding(queryParts, "blobRelayServiceEndpoint", blobRelayServiceEndpoint);
 
