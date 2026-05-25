@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import com.tsurugidb.jdbc.TsurugiJdbcLobTransferType;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.exception.SQLRuntimeException;
@@ -144,6 +145,27 @@ public class TsurugiJdbcConnection implements Connection, HasFactory {
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return iface.isInstance(this);
+    }
+
+    /**
+     * Get large object transfer type.
+     *
+     * @return large object transfer type
+     * @since 0.5.0
+     */
+    public TsurugiJdbcLobTransferType getLobTransferType() {
+        var lowTransferMedium = lowSession.getBlobTransferMedium();
+        var lowTransferType = lowTransferMedium.getBlobTransferType();
+        switch (lowTransferType) {
+        case DOES_NOT_USE:
+            return TsurugiJdbcLobTransferType.NOT_USE;
+        case PRIVILEGED:
+            return TsurugiJdbcLobTransferType.PRIVILEGED;
+        case RELAY:
+            return TsurugiJdbcLobTransferType.RELAY;
+        default:
+            return null;
+        }
     }
 
     @Override

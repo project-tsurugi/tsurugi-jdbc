@@ -16,6 +16,7 @@
 package com.tsurugidb.jdbc.test.driver;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +29,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.tsurugidb.jdbc.TsurugiDriver;
 import com.tsurugidb.jdbc.TsurugiJdbcLobTransferType;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.test.util.JdbcDbTestConnector;
 import com.tsurugidb.jdbc.test.util.JdbcDbTester;
 
@@ -76,7 +78,9 @@ public class JdbcDbLobTransferTypeTest extends JdbcDbTester {
         }
         url += "lobTransferType=" + lobTransferType;
 
+        var type = TsurugiJdbcLobTransferType.valueOf(lobTransferType);
         try (var connection = DriverManager.getConnection(url)) {
+            assertEquals(type, connection.unwrap(TsurugiJdbcConnection.class).getLobTransferType());
             assertSelect(connection);
         }
     }
@@ -87,9 +91,11 @@ public class JdbcDbLobTransferTypeTest extends JdbcDbTester {
         assumeLobTest(lobTransferType);
 
         var config = createTsurugiConfig();
-        config.setLobTransferType(TsurugiJdbcLobTransferType.valueOf(lobTransferType));
+        var type = TsurugiJdbcLobTransferType.valueOf(lobTransferType);
+        config.setLobTransferType(type);
 
         try (var connection = TsurugiDriver.getTsurugiDriver().connect(config)) {
+            assertEquals(type, connection.unwrap(TsurugiJdbcConnection.class).getLobTransferType());
             assertSelect(connection);
         }
     }
@@ -100,9 +106,11 @@ public class JdbcDbLobTransferTypeTest extends JdbcDbTester {
         assumeLobTest(lobTransferType);
 
         var dataSource = createDataSource();
-        dataSource.setLobTransferType(TsurugiJdbcLobTransferType.valueOf(lobTransferType));
+        var type = TsurugiJdbcLobTransferType.valueOf(lobTransferType);
+        dataSource.setLobTransferType(type);
 
         try (var connection = dataSource.getConnection()) {
+            assertEquals(type, connection.unwrap(TsurugiJdbcConnection.class).getLobTransferType());
             assertSelect(connection);
         }
     }
@@ -113,9 +121,11 @@ public class JdbcDbLobTransferTypeTest extends JdbcDbTester {
         assumeLobTest(lobTransferType);
 
         var builder = createConnectionBuilder();
-        builder.lobTransferType(TsurugiJdbcLobTransferType.valueOf(lobTransferType));
+        var type = TsurugiJdbcLobTransferType.valueOf(lobTransferType);
+        builder.lobTransferType(type);
 
         try (var connection = builder.build()) {
+            assertEquals(type, connection.unwrap(TsurugiJdbcConnection.class).getLobTransferType());
             assertSelect(connection);
         }
     }

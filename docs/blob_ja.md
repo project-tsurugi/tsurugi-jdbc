@@ -63,13 +63,20 @@ try (var connection = TsurugiDriver.getTsurugiDriver().connect(config)) {
 ```
 
 - `DEFAULT`
-  - BLOB中継サービスを使用します。Tsurugi側でBLOB中継サービスが使用できなくても、セッション接続は成功します。（デフォルト）
+  - BLOB中継サービスを使用します。Tsurugi側でBLOB中継サービスが使用できなくても、コネクション生成は成功します。（デフォルト）
 - `NOT_USE`
   - LOB転送を行いません。
 - `PRIVILEGED`
-  - 特権モードを使用します。Tsurugi側で特権モードが使用できない場合、セッション接続が失敗します。
+  - 特権モードを使用します。Tsurugi側で特権モードが使用できない場合、コネクション生成が失敗します。
 - `RELAY`
-  - BLOB中継サービスを使用します。Tsurugi側でBLOB中継サービスが使用できない場合、セッション接続が失敗します。
+  - BLOB中継サービスを使用します。Tsurugi側でBLOB中継サービスが使用できない場合、コネクション生成が失敗します。
+
+コネクションの現在のLOB転送モードは以下の方法で取得できます。
+（ここでは、`DEFAULT` が返ることはありません）
+
+```java
+TsurugiJdbcLobTransferType lobTransferType = connection.unwrap(TsurugiJdbcConnection.class).getLobTransferType()
+```
 
 ## 特権モードのパスマッピング
 
