@@ -71,12 +71,11 @@ public class TsurugiJdbcClob implements Clob {
         }
 
         int start = (int) pos - 1;
-        if (start > buffer.length()) {
-            throw new SQLException("Position out of range: " + pos);
-        }
-
         if (buffer.length() == 0 && start == 0) {
             return "";
+        }
+        if (start >= buffer.length()) {
+            throw new SQLException("Position out of range: " + pos);
         }
 
         int end = Math.min(buffer.length(), start + length);
@@ -170,6 +169,8 @@ public class TsurugiJdbcClob implements Clob {
 
     @Override
     public int setString(long pos, String str, int offset, int len) throws SQLException {
+        checkValid();
+
         if (str == null) {
             throw new SQLException("str must not be null");
         }
@@ -190,6 +191,7 @@ public class TsurugiJdbcClob implements Clob {
 
     @Override
     public Writer setCharacterStream(long pos) throws SQLException {
+        checkValid();
         return new TsurugiJdbcClobWriter(pos);
     }
 
@@ -239,6 +241,7 @@ public class TsurugiJdbcClob implements Clob {
 
     @Override
     public OutputStream setAsciiStream(long pos) throws SQLException {
+        checkValid();
         return new TsurugiJdbcClobOutputStream(pos);
     }
 

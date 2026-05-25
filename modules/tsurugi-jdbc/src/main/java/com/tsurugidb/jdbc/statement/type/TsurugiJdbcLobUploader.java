@@ -77,8 +77,11 @@ public abstract class TsurugiJdbcLobUploader<T> {
             if (lowTransferType == BlobTransferType.PRIVILEGED) {
                 return uploadForPrivileged(lowLargeObjectClient, config, value);
             } else {
-                return upload(lowLargeObjectClient, config, value);
+                return upload(lowLargeObjectClient, value);
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw getExceptionHandler().dataException("Upload large object interrupted", e);
         } catch (Exception e) {
             throw getExceptionHandler().dataException("Upload large object error", e);
         }
@@ -120,7 +123,7 @@ public abstract class TsurugiJdbcLobUploader<T> {
      */
     protected abstract void writeFile(T value, Path dstFile) throws IOException;
 
-    private LargeObjectInfo upload(LargeObjectClient lowLargeObjectClient, TsurugiJdbcConnectionConfig config, T value) throws IOException, ServerException, InterruptedException, TimeoutException {
+    private LargeObjectInfo upload(LargeObjectClient lowLargeObjectClient, T value) throws IOException, ServerException, InterruptedException, TimeoutException {
         int timeout = getTimeout();
         return uploadValue(lowLargeObjectClient, value).await(timeout, TimeUnit.SECONDS);
     }
