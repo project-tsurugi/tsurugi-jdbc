@@ -176,7 +176,13 @@ public class TsurugiJdbcBlob implements Blob {
     @Override
     public OutputStream setBinaryStream(long pos) throws SQLException {
         checkValid();
-        return new TsurugiJdbcBlobOutputStream((int) pos - 1);
+
+        int index = (int) pos - 1;
+        if (index < 0) {
+            throw new SQLException("Invalid position: " + pos);
+        }
+
+        return new TsurugiJdbcBlobOutputStream(index);
     }
 
     class TsurugiJdbcBlobOutputStream extends OutputStream {

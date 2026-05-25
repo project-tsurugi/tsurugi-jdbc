@@ -63,10 +63,22 @@ public class TsurugiJdbcClob implements Clob {
     public String getSubString(long pos, int length) throws SQLException {
         checkValid();
 
+        if (pos < 1) {
+            throw new SQLException("Invalid position: " + pos);
+        }
+        if (length < 0) {
+            throw new SQLException("Invalid length: " + length);
+        }
+
         int start = (int) pos - 1;
+        if (start > buffer.length()) {
+            throw new SQLException("Position out of range: " + pos);
+        }
+
         if (buffer.length() == 0 && start == 0) {
             return "";
         }
+
         int end = Math.min(buffer.length(), start + length);
         return buffer.substring(start, end);
     }

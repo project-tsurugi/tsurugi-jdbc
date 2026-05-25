@@ -88,7 +88,13 @@ public class LimitInputStream extends InputStream {
 
     @Override
     public int available() throws IOException {
-        return in.available();
+        long remaining = this.limit - this.readCount;
+
+        if (remaining <= 0) {
+            return 0;
+        }
+
+        return (int) Math.min(in.available(), remaining);
     }
 
     @Override

@@ -97,7 +97,7 @@ try (var connection = DriverManager.getConnection(url)) {
 ```java
 var config = new TsurugiConfig();
 config.setLobTransferType(TsurugiJdbcLobTransferType.PRIVILEGED); // 特権モード
-config.addLargeObjectPathMappingOnSend(Path.of("C:/tmp/client"), "/mnt/client")
+config.addLargeObjectPathMappingOnSend(Path.of("C:/tmp/client"), "/mnt/client");
 config.addLargeObjectPathMappingOnReceive("/opt/tsurugi/var/data/log", Path.of("C:/tmp/tsurugi"));
 ```
 
