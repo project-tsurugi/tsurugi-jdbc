@@ -40,6 +40,7 @@ public class TsurugiJdbcClobReference implements Clob {
     private final ClobReference lowClob;
     private int timeout;
     private TsurugiJdbcClob cachedClob = null;
+    private boolean freed = false;
 
     /**
      * Creates a new instance.
@@ -90,6 +91,8 @@ public class TsurugiJdbcClobReference implements Clob {
      * @throws SQLException if a database access error occurs
      */
     public Reader openReader(long timeout, TimeUnit unit) throws SQLException {
+        checkFreed();
+
         try {
             var transaction = ownerResultSet.getTransaction();
             var tx = transaction.getLowTransaction();
@@ -117,16 +120,20 @@ public class TsurugiJdbcClobReference implements Clob {
 
     @Override
     public long length() throws SQLException {
+        checkFreed();
         return getCachedClob().length();
     }
 
     @Override
     public String getSubString(long pos, int length) throws SQLException {
+        checkFreed();
         return getCachedClob().getSubString(pos, length);
     }
 
     @Override
     public Reader getCharacterStream() throws SQLException {
+        checkFreed();
+
         if (cachedClob != null) {
             return cachedClob.getCharacterStream();
         }
@@ -136,53 +143,72 @@ public class TsurugiJdbcClobReference implements Clob {
 
     @Override
     public Reader getCharacterStream(long pos, long length) throws SQLException {
+        checkFreed();
         return getCachedClob().getCharacterStream(pos, length);
     }
 
     @Override
     public InputStream getAsciiStream() throws SQLException {
+        checkFreed();
         return getCachedClob().getAsciiStream();
     }
 
     @Override
     public long position(String searchstr, long start) throws SQLException {
+        checkFreed();
         return getCachedClob().position(searchstr, start);
     }
 
     @Override
     public long position(Clob searchstr, long start) throws SQLException {
+        checkFreed();
         return getCachedClob().position(searchstr, start);
     }
 
     @Override
     public int setString(long pos, String str) throws SQLException {
+        checkFreed();
         return getCachedClob().setString(pos, str);
     }
 
     @Override
     public int setString(long pos, String str, int offset, int len) throws SQLException {
+        checkFreed();
         return getCachedClob().setString(pos, str, offset, len);
     }
 
     @Override
     public OutputStream setAsciiStream(long pos) throws SQLException {
+        checkFreed();
         return getCachedClob().setAsciiStream(pos);
     }
 
     @Override
     public Writer setCharacterStream(long pos) throws SQLException {
+        checkFreed();
         return getCachedClob().setCharacterStream(pos);
     }
 
     @Override
     public void truncate(long len) throws SQLException {
+        checkFreed();
         getCachedClob().truncate(len);
     }
 
     @Override
     public void free() throws SQLException {
-        if (cachedClob != null) {
-            cachedClob.free();
+        if (!this.freed) {
+            this.freed = true;
+
+            if (cachedClob != null) {
+                cachedClob.free();
+            }
+        }
+    }
+
+    private void checkFreed() throws SQLException {
+        if (freed) {
+            throw new SQLException("Clob has been freed");
         }
     }
 }

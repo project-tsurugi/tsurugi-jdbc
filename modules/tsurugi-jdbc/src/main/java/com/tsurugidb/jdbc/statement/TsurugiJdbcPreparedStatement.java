@@ -648,6 +648,10 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     @Override
     public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
+        if (length < 0) {
+            throw new SQLException("Negative length not allowed for setClob");
+        }
+
         var atomType = AtomType.CLOB;
         var in = LimitReader.of(reader, length);
         setParameter(parameterIndex, atomType, name -> parameterGenerator.createClob(name, in));
@@ -655,6 +659,10 @@ public class TsurugiJdbcPreparedStatement extends TsurugiJdbcStatement implement
 
     @Override
     public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
+        if (length < 0) {
+            throw new SQLException("Negative length not allowed for setBlob");
+        }
+
         var atomType = AtomType.BLOB;
         var in = LimitInputStream.of(inputStream, length);
         setParameter(parameterIndex, atomType, name -> parameterGenerator.createBlob(name, in));

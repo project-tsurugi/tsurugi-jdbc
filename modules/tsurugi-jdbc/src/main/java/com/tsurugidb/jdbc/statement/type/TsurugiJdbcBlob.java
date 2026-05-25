@@ -110,10 +110,11 @@ public class TsurugiJdbcBlob implements Blob {
     public long position(byte[] pattern, long start) throws SQLException {
         checkValid();
 
-        int index = (int) start - 1;
-        if (index < 0) {
-            return -1;
+        if (start < 1) {
+            throw new SQLException("Invalid start position: " + start);
         }
+
+        int index = (int) start - 1;
         if (pattern.length == 0) {
             if (this.length == 0 && index == 0) {
                 return 1;

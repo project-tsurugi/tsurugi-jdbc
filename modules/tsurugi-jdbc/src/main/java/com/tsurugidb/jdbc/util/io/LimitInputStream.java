@@ -29,7 +29,7 @@ public class LimitInputStream extends InputStream {
      * Creates a new instance.
      *
      * @param in    the input stream to read from
-     * @param limit the maximum number of bytes that can be read from the input stream
+     * @param limit the maximum number of bytes that can be read from the input stream (must be non-negative)
      * @return a new LimitInputStream instance, or null if the input stream is null
      */
     public static LimitInputStream of(InputStream in, long limit) {
@@ -47,7 +47,7 @@ public class LimitInputStream extends InputStream {
      * Creates a new instance.
      *
      * @param in    the input stream to read from
-     * @param limit the maximum number of bytes that can be read from the input stream
+     * @param limit the maximum number of bytes that can be read from the input stream (must be non-negative)
      */
     public LimitInputStream(InputStream in, long limit) {
         this.in = in;

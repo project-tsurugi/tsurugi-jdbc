@@ -29,7 +29,7 @@ public class LimitReader extends Reader {
      * Creates a new instance.
      *
      * @param in    the reader to read from
-     * @param limit the maximum number of characters that can be read
+     * @param limit the maximum number of characters that can be read (must be non-negative)
      * @return a new LimitReader instance, or null if the input reader is null
      */
     public static LimitReader of(Reader in, long limit) {
@@ -47,7 +47,7 @@ public class LimitReader extends Reader {
      * Creates a new instance.
      *
      * @param in    the reader to read from
-     * @param limit the maximum number of characters that can be read
+     * @param limit the maximum number of characters that can be read (must be non-negative)
      */
     public LimitReader(Reader in, long limit) {
         this.in = in;

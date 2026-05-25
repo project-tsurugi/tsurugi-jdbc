@@ -109,6 +109,10 @@ public class TsurugiJdbcClob implements Clob {
     public long position(String searchstr, long start) throws SQLException {
         checkValid();
 
+        if (start < 1) {
+            throw new SQLException("Invalid start position: " + start);
+        }
+
         int from = (int) start - 1;
         if (searchstr.isEmpty()) {
             if (this.buffer.length() == 0 && from == 0) {
@@ -135,6 +139,10 @@ public class TsurugiJdbcClob implements Clob {
     @Override
     public int setString(long pos, String str) throws SQLException {
         checkValid();
+
+        if (pos < 1) {
+            throw new SQLException("Invalid position: " + pos);
+        }
 
         int start = (int) pos - 1;
         int end = start + str.length();

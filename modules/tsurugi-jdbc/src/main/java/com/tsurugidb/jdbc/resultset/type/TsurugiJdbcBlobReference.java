@@ -37,6 +37,7 @@ public class TsurugiJdbcBlobReference implements Blob {
     private final BlobReference lowBlob;
     private int timeout;
     private TsurugiJdbcBlob cachedBlob = null;
+    private boolean freed = false;
 
     /**
      * Creates a new instance.
@@ -87,6 +88,8 @@ public class TsurugiJdbcBlobReference implements Blob {
      * @throws SQLException if a database access error occurs
      */
     public InputStream openInputStream(long timeout, TimeUnit unit) throws SQLException {
+        checkFreed();
+
         try {
             var transaction = ownerResultSet.getTransaction();
             var tx = transaction.getLowTransaction();
@@ -112,16 +115,20 @@ public class TsurugiJdbcBlobReference implements Blob {
 
     @Override
     public long length() throws SQLException {
+        checkFreed();
         return getCachedBlob().length();
     }
 
     @Override
     public byte[] getBytes(long pos, int length) throws SQLException {
+        checkFreed();
         return getCachedBlob().getBytes(pos, length);
     }
 
     @Override
     public InputStream getBinaryStream() throws SQLException {
+        checkFreed();
+
         if (this.cachedBlob != null) {
             return cachedBlob.getBinaryStream();
         }
@@ -131,43 +138,60 @@ public class TsurugiJdbcBlobReference implements Blob {
 
     @Override
     public InputStream getBinaryStream(long pos, long length) throws SQLException {
+        checkFreed();
         return getCachedBlob().getBinaryStream(pos, length);
     }
 
     @Override
     public long position(byte[] pattern, long start) throws SQLException {
+        checkFreed();
         return getCachedBlob().position(pattern, start);
     }
 
     @Override
     public long position(Blob pattern, long start) throws SQLException {
+        checkFreed();
         return getCachedBlob().position(pattern, start);
     }
 
     @Override
     public int setBytes(long pos, byte[] bytes) throws SQLException {
+        checkFreed();
         return getCachedBlob().setBytes(pos, bytes);
     }
 
     @Override
     public int setBytes(long pos, byte[] bytes, int offset, int len) throws SQLException {
+        checkFreed();
         return getCachedBlob().setBytes(pos, bytes, offset, len);
     }
 
     @Override
     public OutputStream setBinaryStream(long pos) throws SQLException {
+        checkFreed();
         return getCachedBlob().setBinaryStream(pos);
     }
 
     @Override
     public void truncate(long len) throws SQLException {
+        checkFreed();
         getCachedBlob().truncate(len);
     }
 
     @Override
     public void free() throws SQLException {
-        if (this.cachedBlob != null) {
-            cachedBlob.free();
+        if (!this.freed) {
+            this.freed = true;
+
+            if (this.cachedBlob != null) {
+                cachedBlob.free();
+            }
+        }
+    }
+
+    private void checkFreed() throws SQLException {
+        if (freed) {
+            throw new SQLException("Blob has been freed");
         }
     }
 }
