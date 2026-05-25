@@ -15,7 +15,6 @@
  */
 package com.tsurugidb.jdbc;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,12 +57,5 @@ class TsurugiDriverTest {
 
         int version = driver.getMinorVersion();
         assertTrue(version >= 0, "getMinorVersion() error");
-    }
-
-    @Test
-    void parsePathMapping() {
-        var m = TsurugiDriver.parsePathMapping("D:/tmp/client:/mnt/client");
-        assertEquals(m.clientPath(), "D:/tmp/client");
-        assertEquals(m.serverPath(), "/mnt/client");
     }
 }

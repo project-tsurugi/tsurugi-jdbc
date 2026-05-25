@@ -15,7 +15,6 @@
  */
 package com.tsurugidb.jdbc;
 
-import java.nio.file.Path;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
@@ -31,6 +30,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcLobPathMappingEntry;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
@@ -183,14 +183,14 @@ public class TsurugiDriver implements Driver, HasFactory {
 
             if (pathMappingOnSend != null) {
                 for (String s : pathMappingOnSend) {
-                    PathMapping m = parsePathMapping(s);
-                    mapping.onSend(Path.of(m.clientPath()), m.serverPath());
+                    var entry = TsurugiJdbcLobPathMappingEntry.parse(s);
+                    mapping.onSend(entry.clientPath(), entry.serverPath());
                 }
             }
             if (pathMappingOnReceive != null) {
                 for (String s : pathMappingOnReceive) {
-                    PathMapping m = parsePathMapping(s);
-                    mapping.onReceive(m.serverPath(), Path.of(m.clientPath()));
+                    var entry = TsurugiJdbcLobPathMappingEntry.parse(s);
+                    mapping.onReceive(entry.serverPath(), entry.clientPath());
                 }
             }
 
@@ -208,34 +208,6 @@ public class TsurugiDriver implements Driver, HasFactory {
         builder.withKeepAlive(keepAlive);
 
         return builder;
-    }
-
-    static class PathMapping {
-        private final String clientPath;
-        private final String serverPath;
-
-        public PathMapping(String clientPath, String serverPath) {
-            this.clientPath = clientPath;
-            this.serverPath = serverPath;
-        }
-
-        public String clientPath() {
-            return this.clientPath;
-        }
-
-        public String serverPath() {
-            return this.serverPath;
-        }
-    }
-
-    static PathMapping parsePathMapping(String pathMapping) {
-        int n = pathMapping.lastIndexOf(':');
-        if (n < 0) {
-            throw new IllegalArgumentException("Invalid path mapping: " + pathMapping);
-        }
-        String clientPath = pathMapping.substring(0, n).trim();
-        String serverPath = pathMapping.substring(n + 1).trim();
-        return new PathMapping(clientPath, serverPath);
     }
 
     @Override

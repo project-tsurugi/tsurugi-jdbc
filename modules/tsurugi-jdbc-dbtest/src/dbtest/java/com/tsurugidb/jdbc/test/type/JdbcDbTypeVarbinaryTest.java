@@ -138,6 +138,5 @@ public class JdbcDbTypeVarbinaryTest extends JdbcDbTypeTester<byte[]> {
 
     private static String toString(List<byte[]> list) {
         return list.stream().map(Arrays::toString).collect(Collectors.joining(", ", "[", "]"));
-
     }
 }

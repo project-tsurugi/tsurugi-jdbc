@@ -87,12 +87,11 @@ public class TsurugiJdbcBlobReference implements Blob {
      * @throws SQLException if a database access error occurs
      */
     public InputStream openInputStream(long timeout, TimeUnit unit) throws SQLException {
-        var transaction = ownerResultSet.getTransaction();
         try {
-            return transaction.executeOnly(tx -> {
-                var io = getIoUtil();
-                return io.get(tx.openInputStream(lowBlob), timeout, unit);
-            });
+            var transaction = ownerResultSet.getTransaction();
+            var tx = transaction.getLowTransaction();
+            var io = getIoUtil();
+            return io.get(tx.openInputStream(lowBlob), timeout, unit);
         } catch (Exception e) {
             throw getExceptionHandler().sqlException("BLOB open error", e);
         }

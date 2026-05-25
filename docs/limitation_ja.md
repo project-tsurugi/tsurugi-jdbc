@@ -25,8 +25,8 @@ Tsurugi JDBCが対応しているデータ型は以下の通りです。
 | DECIMAL                  | NUMERIC, DECIMAL                 | BigDecimal         | BigDecimal                        |               |
 | CHAR, VARCHAR            | CHAR, VARCHAR, LONGVARCHAR       | String             | String                            |               |
 | BINARY, VARBINARY        | BINARY, VARBINARY, LONGVARBINARY | byte[]             | byte[]                            |               |
-| BLOB                     | BLOB                             | BlobReference      | java.sql.Blob                     | 未対応        |
-| CLOB                     | CLOB                             | ClobReference      | java.sql.Clob                     | 未対応        |
+| BLOB                     | BLOB                             | BlobReference      | java.sql.Blob                     |               |
+| CLOB                     | CLOB                             | ClobReference      | java.sql.Clob                     |               |
 | DATE                     | DATE                             | LocalDate          | java.sql.Date, LocalDate          |               |
 | TIME                     | TIME                             | LocalTime          | java.sql.Time, LocalTime          |               |
 | TIMESTAMP                | TIMESTAMP                        | LocalDateTime      | java.sql.Timestamp, LocalDateTime |               |
@@ -34,10 +34,9 @@ Tsurugi JDBCが対応しているデータ型は以下の通りです。
 | TIMESTAMP WITH TIME ZONE | TIMESTAMP_WITH_TIMEZONE          | OffsetDateTime     | OffsetDateTime, ZonedDateTime     |               |
 
 - BOOLEAN, TINYINT, SMALLINTはTsurugiサーバー側が未対応です。（将来対応予定）
-- BLOB, CLOBはTsurugi JDBCが未対応です。（将来対応予定）
 - この表に無いjava.sql.Typesには対応していません。（XML型やROWID型等）
 - ResultSet#getObject()は、基本的に「Tsubakuro/Javaの型」を返します。
-  - BLOB, CLOBは未対応ですが、Tsubakuro/Javaの型でなくjava.sql.Blob, Clobを返す予定です。
+  - BLOB, CLOBは、Tsubakuro/Javaの型でなくjava.sql.Blob, Clobを返します。
 - PreparedStatement#setObject()には、この表の「Javaの型」を渡すことができます。
 
 ## Connectionに関する制限事項

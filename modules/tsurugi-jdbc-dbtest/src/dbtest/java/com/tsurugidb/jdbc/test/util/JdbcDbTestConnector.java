@@ -17,13 +17,21 @@ package com.tsurugidb.jdbc.test.util;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import com.tsurugidb.iceaxe.TsurugiConnector;
 import com.tsurugidb.iceaxe.exception.TsurugiIOException;
+import com.tsurugidb.iceaxe.session.TgSessionOption;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcLobPathMappingEntry;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcLobSettingSetter;
 import com.tsurugidb.tsubakuro.channel.common.connection.Credential;
 import com.tsurugidb.tsubakuro.channel.common.connection.FileCredential;
 import com.tsurugidb.tsubakuro.channel.common.connection.NullCredential;
@@ -38,6 +46,9 @@ public class JdbcDbTestConnector {
     private static final String SYSPROP_DBTEST_PASSWORD = "tsurugi.dbtest.password";
     private static final String SYSPROP_DBTEST_AUTH_TOKEN = "tsurugi.dbtest.auth-token";
     private static final String SYSPROP_DBTEST_CREDENTIALS = "tsurugi.dbtest.credentials";
+    private static final String SYSPROP_DBTEST_LOB_SEND_PATH_MAPPING = "tsurugi.dbtest.lob-send-path-mapping";
+    private static final String SYSPROP_DBTEST_LOB_RECV_PATH_MAPPING = "tsurugi.dbtest.lob-recv-path-mapping";
+    private static final String SYSPROP_DBTEST_BLOB_RELAY_SERVICE_ENDPOINT = "tsurugi.dbtest.blob-relay-service-endpoint";
 
     private static String staticEndpoint;
     private static String staticJdbcUrl;
@@ -65,7 +76,41 @@ public class JdbcDbTestConnector {
     }
 
     public static String getJdbcUrlQueryString() {
-        return getCredential().toQueryString();
+        var queryParts = new ArrayList<String>();
+        String credential = getCredential().toQueryString("");
+        if (!credential.isEmpty()) {
+            queryParts.add(credential);
+        }
+
+        String lobSendPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_SEND_PATH_MAPPING);
+        encoding(queryParts, "lobPathMappingOnSend", lobSendPathMapping);
+        String lobRecvPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_RECV_PATH_MAPPING);
+        encoding(queryParts, "lobPathMappingOnReceive", lobRecvPathMapping);
+        if (lobSendPathMapping != null) {
+            var entry = TsurugiJdbcLobPathMappingEntry.parse(lobSendPathMapping);
+            encoding(queryParts, "tmpDir", entry.clientPath().toString());
+        }
+
+        String blobRelayServiceEndpoint = getSystemProperty(SYSPROP_DBTEST_BLOB_RELAY_SERVICE_ENDPOINT);
+        encoding(queryParts, "blobRelayServiceEndpoint", blobRelayServiceEndpoint);
+
+        if (queryParts.isEmpty()) {
+            return "";
+        }
+        return "?" + String.join("&", queryParts);
+    }
+
+    private static void encoding(List<String> queryParts, String key, String value) {
+        if (value == null) {
+            return;
+        }
+
+        var sb = new StringBuilder();
+        sb.append(URLEncoder.encode(key, StandardCharsets.UTF_8));
+        sb.append("=");
+        sb.append(URLEncoder.encode(value, StandardCharsets.UTF_8));
+
+        queryParts.add(sb.toString());
     }
 
     public static Properties getConnectProperties() {
@@ -158,6 +203,58 @@ public class JdbcDbTestConnector {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void setLobSettingTo(TsurugiJdbcLobSettingSetter config) {
+        String lobSendPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_SEND_PATH_MAPPING);
+        if (lobSendPathMapping != null) {
+            config.setLobPathMappingOnSend(List.of(lobSendPathMapping));
+        }
+        String lobRecvPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_RECV_PATH_MAPPING);
+        if (lobRecvPathMapping != null) {
+            config.setLobPathMappingOnReceive(List.of(lobRecvPathMapping));
+        }
+        String blobRelayServiceEndpoint = getSystemProperty(SYSPROP_DBTEST_BLOB_RELAY_SERVICE_ENDPOINT);
+        if (blobRelayServiceEndpoint != null) {
+            var uri = URI.create(blobRelayServiceEndpoint);
+            config.setBlobRelayServiceEndpoint(uri);
+        }
+    }
+
+    public static void setLobSettingTo(TsurugiJdbcConnectionBuilder builder) {
+        String lobSendPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_SEND_PATH_MAPPING);
+        if (lobSendPathMapping != null) {
+            var entry = TsurugiJdbcLobPathMappingEntry.parse(lobSendPathMapping);
+            builder.lobPathMappingOnSend(entry.clientPath(), entry.serverPath());
+        }
+        String lobRecvPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_RECV_PATH_MAPPING);
+        if (lobRecvPathMapping != null) {
+            var entry = TsurugiJdbcLobPathMappingEntry.parse(lobRecvPathMapping);
+            builder.lobPathMappingOnReceive(entry.clientPath(), entry.serverPath());
+        }
+        String blobRelayServiceEndpoint = getSystemProperty(SYSPROP_DBTEST_BLOB_RELAY_SERVICE_ENDPOINT);
+        if (blobRelayServiceEndpoint != null) {
+            var uri = URI.create(blobRelayServiceEndpoint);
+            builder.blobRelayServiceEndpoint(uri);
+        }
+    }
+
+    public static void setLobSettingTo(TgSessionOption option) {
+        String lobSendPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_SEND_PATH_MAPPING);
+        if (lobSendPathMapping != null) {
+            var entry = TsurugiJdbcLobPathMappingEntry.parse(lobSendPathMapping);
+            option.addLargeObjectPathMappingOnSend(entry.clientPath(), entry.serverPath());
+        }
+        String lobRecvPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_RECV_PATH_MAPPING);
+        if (lobRecvPathMapping != null) {
+            var entry = TsurugiJdbcLobPathMappingEntry.parse(lobRecvPathMapping);
+            option.addLargeObjectPathMappingOnReceive(entry.serverPath(), entry.clientPath());
+        }
+        String blobRelayServiceEndpoint = getSystemProperty(SYSPROP_DBTEST_BLOB_RELAY_SERVICE_ENDPOINT);
+        if (blobRelayServiceEndpoint != null) {
+            var uri = URI.create(blobRelayServiceEndpoint);
+            option.setBlobRelayServiceEndpoint(uri);
         }
     }
 }

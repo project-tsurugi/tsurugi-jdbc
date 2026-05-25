@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
@@ -206,6 +208,16 @@ public class ExpectedColumn {
             this.decimalDigits = 9;
             this.displaySize = (10 + 1 + 18) + 6;
             this.typeClass = OffsetDateTime.class;
+            break;
+        case "BLOB":
+            this.dataType = JDBCType.BLOB;
+            this.displaySize = 2147483647;
+            this.typeClass = Blob.class;
+            break;
+        case "CLOB":
+            this.dataType = JDBCType.CLOB;
+            this.displaySize = 2147483647;
+            this.typeClass = Clob.class;
             break;
         default:
             throw new AssertionError("not yet implements. type=" + typeName);

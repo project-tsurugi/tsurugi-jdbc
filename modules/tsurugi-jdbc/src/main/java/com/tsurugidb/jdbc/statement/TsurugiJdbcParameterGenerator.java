@@ -623,6 +623,10 @@ public class TsurugiJdbcParameterGenerator {
             return create(name, util.convertToOffsetTime(value));
         case TIME_POINT_WITH_TIME_ZONE:
             return create(name, util.convertToOffsetDateTime(value));
+        case BLOB:
+            return createBlob(name, util.convertToBinaryStream(value));
+        case CLOB:
+            return createClob(name, util.convertToCharacterStream(value));
         default:
             var e = new UnsupportedOperationException(MessageFormat.format("Unsupported AtomType.{0}", atomType));
             throw getExceptionHandler().dataException("Create parameter error", e);

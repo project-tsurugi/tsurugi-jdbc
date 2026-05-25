@@ -16,6 +16,7 @@
 package com.tsurugidb.jdbc.connection;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.sql.ConnectionBuilder;
 import java.sql.SQLException;
 import java.sql.ShardingKey;
@@ -24,6 +25,7 @@ import java.util.Objects;
 
 import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.TsurugiDriver;
+import com.tsurugidb.jdbc.TsurugiJdbcLobTransferType;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcCommitType;
 import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
@@ -140,7 +142,7 @@ public class TsurugiJdbcConnectionBuilder implements ConnectionBuilder {
      * @return this
      * @since 0.5.0
      */
-    public TsurugiJdbcConnectionBuilder lobPathMappingOnSend(String clientPath, String serverPath) {
+    public TsurugiJdbcConnectionBuilder lobPathMappingOnSend(Path clientPath, String serverPath) {
         config.addLobPathMappingOnSend(clientPath, serverPath);
         return this;
     }
@@ -153,7 +155,7 @@ public class TsurugiJdbcConnectionBuilder implements ConnectionBuilder {
      * @return this
      * @since 0.5.0
      */
-    public TsurugiJdbcConnectionBuilder lobPathMappingOnReceive(String clientPath, String serverPath) {
+    public TsurugiJdbcConnectionBuilder lobPathMappingOnReceive(Path clientPath, String serverPath) {
         config.addLobPathMappingOnReceive(clientPath, serverPath);
         return this;
     }
@@ -434,18 +436,6 @@ public class TsurugiJdbcConnectionBuilder implements ConnectionBuilder {
      */
     public TsurugiJdbcConnectionBuilder defaultTimeout(int seconds) {
         config.setDefaultTimeout(seconds);
-        return this;
-    }
-
-    /**
-     * Set temporary directory.
-     *
-     * @param tmpDir temporary directory
-     * @return this
-     * @since 0.5.0
-     */
-    public TsurugiJdbcConnectionBuilder tmpDir(String tmpDir) {
-        config.setTmpDir(tmpDir);
         return this;
     }
 

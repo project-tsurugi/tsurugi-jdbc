@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tsurugidb.jdbc.connection;
+package com.tsurugidb.jdbc;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
 import com.tsurugidb.tsubakuro.common.BlobTransferType;
@@ -27,7 +27,7 @@ public enum TsurugiJdbcLobTransferType {
     /** Default transfer type */
     DEFAULT(BlobTransferType.DEFAULT),
     /** Does not use transfer type */
-    DOES_NOT_USE(BlobTransferType.DOES_NOT_USE),
+    NOT_USE(BlobTransferType.DOES_NOT_USE),
     /** Privileged transfer type */
     PRIVILEGED(BlobTransferType.PRIVILEGED),
     /** Blob Relay transfer type */

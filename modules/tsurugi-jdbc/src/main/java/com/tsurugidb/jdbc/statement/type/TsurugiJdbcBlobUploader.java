@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
 import com.tsurugidb.tsubakuro.common.LargeObjectClient;
@@ -53,7 +54,7 @@ public class TsurugiJdbcBlobUploader extends TsurugiJdbcLobUploader<InputStream>
 
     @Override
     protected void writeFile(InputStream value, Path dstFile) throws IOException {
-        Files.copy(value, dstFile);
+        Files.copy(value, dstFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
     @Override

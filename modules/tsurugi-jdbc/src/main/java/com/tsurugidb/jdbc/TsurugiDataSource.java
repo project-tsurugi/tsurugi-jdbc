@@ -17,6 +17,7 @@ package com.tsurugidb.jdbc;
 
 import java.io.PrintWriter;
 import java.net.URI;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -29,9 +30,9 @@ import javax.sql.DataSource;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcNotSupported;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
-import com.tsurugidb.jdbc.connection.TsurugiJdbcLobTransferType;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcLobSettingSetter;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.HasFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
@@ -41,7 +42,7 @@ import com.tsurugidb.jdbc.transaction.TsurugiJdbcTransactionType;
 /**
  * Tsurugi JDBC DataSource.
  */
-public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCredentialSetter {
+public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCredentialSetter, TsurugiJdbcLobSettingSetter {
     private static final Logger PARENT_LOGGER = Logger.getLogger(TsurugiDataSource.class.getPackageName());
 
     private TsurugiJdbcFactory factory = TsurugiJdbcFactory.getDefaultFactory();
@@ -189,25 +190,12 @@ public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCre
         config.setSessionLabel(sessionLabel);
     }
 
-    /**
-     * Set large object transfer type.
-     *
-     * @param lobTransferType large object transfer type
-     * @since 0.5.0
-     */
+    @Override
     public void setLobTransferType(TsurugiJdbcLobTransferType lobTransferType) {
         config.setLobTransferType(lobTransferType);
     }
 
-    /**
-     * Set large object path mapping on send.
-     * <p>
-     * The format of path mapping is "client-path:server-path".
-     * </p>
-     *
-     * @param pathMapping large object path mapping on send
-     * @since 0.5.0
-     */
+    @Override
     public void setLobPathMappingOnSend(List<String> pathMapping) {
         config.setLobPathMappingOnSend(pathMapping);
     }
@@ -219,19 +207,11 @@ public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCre
      * @param serverPath server path
      * @since 0.5.0
      */
-    public void addLobPathMappingOnSend(String clientPath, String serverPath) {
+    public void addLobPathMappingOnSend(Path clientPath, String serverPath) {
         config.addLobPathMappingOnSend(clientPath, serverPath);
     }
 
-    /**
-     * Set large object path mapping on receive.
-     * <p>
-     * The format of path mapping is "client-path:server-path".
-     * </p>
-     *
-     * @param pathMapping large object path mapping on receive
-     * @since 0.5.0
-     */
+    @Override
     public void setLobPathMappingOnReceive(List<String> pathMapping) {
         config.setLobPathMappingOnReceive(pathMapping);
     }
@@ -243,16 +223,11 @@ public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCre
      * @param serverPath server path
      * @since 0.5.0
      */
-    public void addLobPathMappingOnReceive(String clientPath, String serverPath) {
+    public void addLobPathMappingOnReceive(Path clientPath, String serverPath) {
         config.addLobPathMappingOnReceive(clientPath, serverPath);
     }
 
-    /**
-     * Set blob relay service endpoint.
-     *
-     * @param endpoint blob relay service endpoint
-     * @since 0.5.0
-     */
+    @Override
     public void setBlobRelayServiceEndpoint(URI endpoint) {
         config.setBlobRelayServiceEndpoint(endpoint);
     }
@@ -443,15 +418,6 @@ public class TsurugiDataSource implements DataSource, HasFactory, TsurugiJdbcCre
      */
     public void setDefaultTimeout(int seconds) {
         config.setDefaultTimeout(seconds);
-    }
-
-    /**
-     * Set temporary directory.
-     *
-     * @param tmpDir temporary directory
-     */
-    public void setTmpDir(String tmpDir) {
-        config.setTmpDir(tmpDir);
     }
 
     // connect

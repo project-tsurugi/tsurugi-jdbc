@@ -33,11 +33,11 @@ import static com.tsurugidb.jdbc.TsurugiConfig.ROLLBACK_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.SCAN_PARALLEL;
 import static com.tsurugidb.jdbc.TsurugiConfig.SHUTDOWN_TIMEOUT;
 import static com.tsurugidb.jdbc.TsurugiConfig.SHUTDOWN_TYPE;
-import static com.tsurugidb.jdbc.TsurugiConfig.TMP_DIR;
 import static com.tsurugidb.jdbc.TsurugiConfig.TRANSACTION_LABEL;
 import static com.tsurugidb.jdbc.TsurugiConfig.TRANSACTION_TYPE;
 import static com.tsurugidb.jdbc.TsurugiConfig.WRITE_PRESERVE;
 
+import java.nio.file.Path;
 import java.sql.ClientInfoStatus;
 import java.sql.SQLException;
 import java.util.List;
@@ -49,6 +49,7 @@ import javax.annotation.Nullable;
 
 import com.tsurugidb.jdbc.TsurugiConfig;
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcLobPathMappingEntry;
 import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyBoolean;
 import com.tsurugidb.jdbc.property.TsurugiJdbcPropertyEnum;
@@ -76,7 +77,19 @@ public class TsurugiJdbcConnectionConfig {
     public static TsurugiJdbcConnectionConfig of(TsurugiConfig from) {
         var config = new TsurugiJdbcConnectionConfig(from.getEndpoint());
         config.properties.copyFrom(from.getInternalProperties());
+        config.lobTmpDir = getLobTmpDir(from);
         return config;
+    }
+
+    static Path getLobTmpDir(TsurugiConfig config) {
+        var list = config.getLobPathMappingOnSend();
+        if (list != null) {
+            for (String mapping : list) {
+                var entry = TsurugiJdbcLobPathMappingEntry.parse(mapping);
+                return entry.clientPath();
+            }
+        }
+        return Path.of(System.getProperty("java.io.tmpdir"));
     }
 
     private final String endpoint;
@@ -108,7 +121,6 @@ public class TsurugiJdbcConnectionConfig {
     private final TsurugiJdbcPropertyInt shutdownTimeout = new TsurugiJdbcPropertyInt(SHUTDOWN_TIMEOUT);
 
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT);
-    private final TsurugiJdbcPropertyString tmpDir = new TsurugiJdbcPropertyString(TMP_DIR);
 
     private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
             transactionType, transactionLabel, includeDdl, writePreserve, inclusiveReadArea, exclusiveReadArea, scanParallel, //
@@ -117,7 +129,9 @@ public class TsurugiJdbcConnectionConfig {
             lobUploadTimeout, executeTimeout, batchQueueSize, //
             queryTimeout, lobDownloadTimeout, //
             shutdownType, shutdownTimeout, //
-            defaultTimeout, tmpDir);
+            defaultTimeout);
+
+    private Path lobTmpDir = null;
 
     /**
      * Creates a new instance.
@@ -542,26 +556,12 @@ public class TsurugiJdbcConnectionConfig {
     }
 
     /**
-     * Set temporary directory.
+     * Get large object temporary directory.
      *
-     * @param tmpDir temporary directory
+     * @return large object temporary directory
      * @since 0.5.0
      */
-    public void setTmpDir(String tmpDir) {
-        this.tmpDir.setValue(tmpDir);
-    }
-
-    /**
-     * Get temporary directory.
-     *
-     * @return temporary directory
-     * @since 0.5.0
-     */
-    public String getTmpDir() {
-        String dir = tmpDir.value();
-        if (dir == null || dir.isEmpty()) {
-            dir = System.getProperty("java.io.tmpdir");
-        }
-        return dir;
+    public Path getLobTmpDir() {
+        return this.lobTmpDir;
     }
 }

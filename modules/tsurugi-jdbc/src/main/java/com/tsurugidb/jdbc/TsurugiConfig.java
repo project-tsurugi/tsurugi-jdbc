@@ -25,9 +25,9 @@ import java.util.OptionalInt;
 import java.util.Properties;
 
 import com.tsurugidb.jdbc.annotation.TsurugiJdbcInternal;
-import com.tsurugidb.jdbc.connection.TsurugiJdbcLobTransferType;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcShutdownType;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
+import com.tsurugidb.jdbc.driver.TsurugiJdbcLobSettingSetter;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcUrlParser;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
 import com.tsurugidb.jdbc.property.TsurugiJdbcProperties;
@@ -48,7 +48,7 @@ import com.tsurugidb.tsubakuro.channel.common.connection.UsernamePasswordCredent
 /**
  * Tsurugi JDBC Configuration.
  */
-public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
+public class TsurugiConfig implements TsurugiJdbcCredentialSetter, TsurugiJdbcLobSettingSetter {
 
     /**
      * Returns new configuration.
@@ -162,12 +162,6 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     // Common
     /** default timeout [seconds] */
     public static final String DEFAULT_TIMEOUT = "defaultTimeout";
-    /**
-     * temporary directory
-     *
-     * @since 0.5.0
-     */
-    public static final String TMP_DIR = "tmpDir";
 
     private String endpoint;
 
@@ -212,7 +206,6 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
     private final TsurugiJdbcPropertyInt lobDownloadTimeout = new TsurugiJdbcPropertyInt(LOB_DOWNLOAD_TIMEOUT).description("large object download timeout [seconds]");
 
     private final TsurugiJdbcPropertyInt defaultTimeout = new TsurugiJdbcPropertyInt(DEFAULT_TIMEOUT).description("default timeout [seconds]").defaultValue(0);
-    private final TsurugiJdbcPropertyString tmpDir = new TsurugiJdbcPropertyString(TMP_DIR).description("temporary directory");
 
     private final TsurugiJdbcProperties properties = TsurugiJdbcProperties.of(//
             user, password, authToken, credentials, //
@@ -224,7 +217,7 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
             beginTimeout, commitTimeout, rollbackTimeout, //
             lobUploadTimeout, executeTimeout, batchQueueSize, //
             queryTimeout, lobDownloadTimeout, //
-            defaultTimeout, tmpDir);
+            defaultTimeout);
 
     /**
      * Put property value.
@@ -450,12 +443,7 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
         return sessionLabel.value();
     }
 
-    /**
-     * Set large object transfer type.
-     *
-     * @param lobTransferType large object transfer type
-     * @since 0.5.0
-     */
+    @Override
     public void setLobTransferType(TsurugiJdbcLobTransferType lobTransferType) {
         this.lobTransferType.setValue(lobTransferType);
     }
@@ -470,15 +458,7 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
         return lobTransferType.value();
     }
 
-    /**
-     * Set large object path mapping on send.
-     * <p>
-     * The format of path mapping is "client-path:server-path".
-     * </p>
-     *
-     * @param pathMapping large object path mapping on send
-     * @since 0.5.0
-     */
+    @Override
     public void setLobPathMappingOnSend(List<String> pathMapping) {
         this.lobPathMappingOnSend.setValue(pathMapping);
     }
@@ -490,7 +470,7 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
      * @param serverPath server path
      * @since 0.5.0
      */
-    public void addLobPathMappingOnSend(String clientPath, String serverPath) {
+    public void addLobPathMappingOnSend(Path clientPath, String serverPath) {
         String pathMapping = clientPath + ":" + serverPath;
         this.lobPathMappingOnSend.addValue(pathMapping);
     }
@@ -505,15 +485,7 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
         return lobPathMappingOnSend.value();
     }
 
-    /**
-     * Set large object path mapping on receive.
-     * <p>
-     * The format of path mapping is "client-path:server-path".
-     * </p>
-     *
-     * @param pathMapping large object path mapping on receive
-     * @since 0.5.0
-     */
+    @Override
     public void setLobPathMappingOnReceive(List<String> pathMapping) {
         this.lobPathMappingOnReceive.setValue(pathMapping);
     }
@@ -525,7 +497,7 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
      * @param serverPath server path
      * @since 0.5.0
      */
-    public void addLobPathMappingOnReceive(String clientPath, String serverPath) {
+    public void addLobPathMappingOnReceive(Path clientPath, String serverPath) {
         String pathMapping = clientPath + ":" + serverPath;
         this.lobPathMappingOnReceive.addValue(pathMapping);
     }
@@ -540,12 +512,7 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
         return lobPathMappingOnReceive.value();
     }
 
-    /**
-     * Set blob relay service endpoint.
-     *
-     * @param endpoint blob relay service endpoint
-     * @since 0.5.0
-     */
+    @Override
     public void setBlobRelayServiceEndpoint(URI endpoint) {
         this.blobRelayServiceEndpoint.setValue(endpoint);
     }
@@ -964,25 +931,5 @@ public class TsurugiConfig implements TsurugiJdbcCredentialSetter {
      */
     public OptionalInt getDefaultTimeout() {
         return defaultTimeout.value();
-    }
-
-    /**
-     * Set temporary directory.
-     *
-     * @param tmpDir temporary directory
-     * @since 0.5.0
-     */
-    public void setTmpDir(String tmpDir) {
-        this.tmpDir.setValue(tmpDir);
-    }
-
-    /**
-     * Get temporary directory.
-     *
-     * @return temporary directory
-     * @since 0.5.0
-     */
-    public String getTmpDir() {
-        return tmpDir.value();
     }
 }

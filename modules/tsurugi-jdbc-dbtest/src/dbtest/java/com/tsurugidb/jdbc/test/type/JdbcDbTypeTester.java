@@ -137,7 +137,7 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
                     int pk = rs.getInt(1);
                     assertEquals(rowIndex, pk, "pk");
 
-                    T value = get(rs, 2);
+                    T value = getPersistence(rs, 2);
                     actual.add(value);
 
                     rowIndex++;
@@ -191,6 +191,8 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
         UNICODE_STREAM(ResultSet::getUnicodeStream), //
         BINARY_STREAM(ResultSet::getBinaryStream), //
         CHARACTER_STREAM(ResultSet::getCharacterStream), //
+        BLOB(ResultSet::getBlob), //
+        CLOB(ResultSet::getClob), //
         ;
 
         private final Getter getter;
@@ -360,6 +362,10 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
     protected abstract T get(TsurugiResultEntity entity, String name);
 
     protected abstract T get(ResultSet rs, int columnIndex) throws SQLException;
+
+    protected T getPersistence(ResultSet rs, int columnIndex) throws SQLException {
+        return get(rs, columnIndex);
+    }
 
     protected abstract void setParameter(PreparedStatement ps, int parameterIndex, T value) throws SQLException;
 

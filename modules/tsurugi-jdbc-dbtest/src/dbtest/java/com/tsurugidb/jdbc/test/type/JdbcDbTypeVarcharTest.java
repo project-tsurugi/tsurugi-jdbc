@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -401,19 +402,11 @@ public class JdbcDbTypeVarcharTest extends JdbcDbTypeTester<String> {
     }
 
     private String readAllString(Reader reader) {
-        var sb = new StringBuffer();
-        var buffer = new char[64];
-        try (reader) {
-            for (;;) {
-                int length = reader.read(buffer);
-                if (length < 0) {
-                    break;
-                }
-                sb.append(buffer, 0, length);
-            }
+        try (reader; var writer = new StringWriter()) {
+            reader.transferTo(writer);
+            return writer.toString();
         } catch (IOException e) {
             throw new UncheckedIOException(e.getMessage(), e);
         }
-        return sb.toString();
     }
 }
