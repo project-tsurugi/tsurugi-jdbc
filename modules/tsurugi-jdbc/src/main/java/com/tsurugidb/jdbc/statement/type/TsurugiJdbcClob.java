@@ -89,7 +89,7 @@ public class TsurugiJdbcClob implements Clob {
     public InputStream getAsciiStream() throws SQLException {
         checkValid();
 
-        byte[] bytes = buffer.toString().getBytes(StandardCharsets.UTF_8);
+        byte[] bytes = buffer.toString().getBytes(StandardCharsets.US_ASCII);
         return new ByteArrayInputStream(bytes);
     }
 
@@ -217,7 +217,7 @@ public class TsurugiJdbcClob implements Clob {
 
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
-            String s = new String(b, off, len, StandardCharsets.UTF_8);
+            String s = new String(b, off, len, StandardCharsets.US_ASCII);
             try {
                 setString(pos, s);
                 this.pos += s.length();

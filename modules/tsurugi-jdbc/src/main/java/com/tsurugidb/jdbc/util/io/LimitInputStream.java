@@ -70,6 +70,10 @@ public class LimitInputStream extends InputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
+        if (len == 0) {
+            return 0;
+        }
+
         if (this.readCount >= this.limit) {
             return -1;
         }

@@ -160,7 +160,7 @@ public class TsurugiJdbcBlob implements Blob {
 
         System.arraycopy(bytes, offset, this.buffer, index, len);
         this.length = Math.max(this.length, index + len);
-        return bytes.length;
+        return len;
     }
 
     private void ensureCapacity(int minCapacity) {

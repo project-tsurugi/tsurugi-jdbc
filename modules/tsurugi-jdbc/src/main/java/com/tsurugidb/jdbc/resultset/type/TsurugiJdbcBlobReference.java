@@ -100,8 +100,8 @@ public class TsurugiJdbcBlobReference implements Blob {
     private synchronized TsurugiJdbcBlob getCachedBlob() throws SQLException {
         if (this.cachedBlob == null) {
             byte[] data;
-            try {
-                data = openInputStream(timeout, TimeUnit.SECONDS).readAllBytes();
+            try (var is = openInputStream(timeout, TimeUnit.SECONDS)) {
+                data = is.readAllBytes();
             } catch (IOException e) {
                 throw getExceptionHandler().sqlException("BLOB read error", e);
             }

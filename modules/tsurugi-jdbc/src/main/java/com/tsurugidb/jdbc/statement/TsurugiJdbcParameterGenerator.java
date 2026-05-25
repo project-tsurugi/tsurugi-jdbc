@@ -15,6 +15,7 @@
  */
 package com.tsurugidb.jdbc.statement;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -430,7 +431,12 @@ public class TsurugiJdbcParameterGenerator {
         if (value == null) {
             return Parameters.ofNull(name);
         }
-        return createBlob(name, value.getBinaryStream());
+
+        try (var is = value.getBinaryStream()) {
+            return createBlob(name, is);
+        } catch (IOException e) {
+            throw getExceptionHandler().dataException("Create parameter of BinaryStream error", e);
+        }
     }
 
     /**
@@ -467,7 +473,12 @@ public class TsurugiJdbcParameterGenerator {
         if (value == null) {
             return Parameters.ofNull(name);
         }
-        return createClob(name, value.getCharacterStream());
+
+        try (var reader = value.getCharacterStream()) {
+            return createClob(name, reader);
+        } catch (IOException e) {
+            throw getExceptionHandler().dataException("Create parameter of CharacterStream error", e);
+        }
     }
 
     /**

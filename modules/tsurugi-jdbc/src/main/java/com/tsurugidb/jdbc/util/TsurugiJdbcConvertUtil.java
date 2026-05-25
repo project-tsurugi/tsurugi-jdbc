@@ -48,7 +48,6 @@ import javax.annotation.Nonnull;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.factory.GetFactory;
 import com.tsurugidb.jdbc.factory.TsurugiJdbcFactory;
-import com.tsurugidb.jdbc.util.io.StringBuilderWriter;
 
 /**
  * Tsurugi JDBC Convert Utility.
@@ -502,10 +501,27 @@ public class TsurugiJdbcConvertUtil {
      * @throws SQLException if data convert error occurs
      */
     public String convertToString(@Nonnull Reader reader, int length) throws SQLException {
-        try (var br = new BufferedReader(reader); //
-                var writer = new StringBuilderWriter(1024)) {
-            br.transferTo(writer);
-            return writer.getBuffer().toString();
+        try (var br = new BufferedReader(reader)) {
+            var sb = new StringBuilder(1024);
+            var buffer = new char[1024];
+            for (;;) {
+                int len = br.read(buffer);
+                if (len < 0) {
+                    break;
+                }
+                sb.append(buffer, 0, len);
+
+                if (length >= 0) {
+                    if (sb.length() >= length) {
+                        break;
+                    }
+                }
+            }
+
+            if (length >= 0 && sb.length() > length) {
+                sb.setLength(length);
+            }
+            return sb.toString();
         } catch (Exception e) {
             throw getExceptionHandler().dataException("convertToString error", e);
         }

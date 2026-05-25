@@ -87,12 +87,8 @@ public abstract class TsurugiJdbcLobUploader<T> {
     private LargeObjectInfo uploadForPrivileged(LargeObjectClient lowLargeObjectClient, TsurugiJdbcConnectionConfig config, T value)
             throws IOException, ServerException, InterruptedException, TimeoutException {
         Path tmpDir = config.getLobTmpDir();
+        Files.createDirectories(tmpDir);
         var tmpFile = Files.createTempFile(tmpDir, "tsurugiJDBC-" + getTmpFilePrefix(), getTmpFileSuffix());
-
-        var parentDir = tmpFile.getParent();
-        if (parentDir != null) {
-            Files.createDirectories(parentDir);
-        }
 
         ownerPreparedStatement.addCloseable(() -> Files.deleteIfExists(tmpFile));
         writeFile(value, tmpFile);

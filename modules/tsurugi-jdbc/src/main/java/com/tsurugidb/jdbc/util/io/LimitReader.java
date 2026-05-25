@@ -70,6 +70,10 @@ public class LimitReader extends Reader {
 
     @Override
     public int read(char[] cbuf, int off, int len) throws IOException {
+        if (len == 0) {
+            return 0;
+        }
+
         if (this.readCount >= this.limit) {
             return -1;
         }

@@ -197,10 +197,10 @@ public class TsurugiDriver implements Driver, HasFactory {
             builder.withBlobPathMapping(mapping.build());
         }
 
-        var blobRelayServbiceEndpoint = config.getBlobRelayServiceEndpoint();
-        LOG.config(() -> String.format("blobRelayServiceEndpoint=%s", blobRelayServbiceEndpoint));
-        if (blobRelayServbiceEndpoint != null) {
-            builder.withBlobRelayEndpoint(blobRelayServbiceEndpoint);
+        var blobRelayServiceEndpoint = config.getBlobRelayServiceEndpoint();
+        LOG.config(() -> String.format("blobRelayServiceEndpoint=%s", blobRelayServiceEndpoint));
+        if (blobRelayServiceEndpoint != null) {
+            builder.withBlobRelayEndpoint(blobRelayServiceEndpoint);
         }
 
         boolean keepAlive = config.getKeepAlive();
