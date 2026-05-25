@@ -109,6 +109,9 @@ public class TsurugiJdbcClob implements Clob {
     public long position(String searchstr, long start) throws SQLException {
         checkValid();
 
+        if (searchstr == null) {
+            throw new SQLException("searchstr must not be null");
+        }
         if (start < 1) {
             throw new SQLException("Invalid start position: " + start);
         }
@@ -132,6 +135,10 @@ public class TsurugiJdbcClob implements Clob {
     public long position(Clob searchstr, long start) throws SQLException {
         checkValid();
 
+        if (searchstr == null) {
+            throw new SQLException("searchstr must not be null");
+        }
+
         String s = searchstr.getSubString(1, (int) searchstr.length());
         return position(s, start);
     }
@@ -142,6 +149,9 @@ public class TsurugiJdbcClob implements Clob {
 
         if (pos < 1) {
             throw new SQLException("Invalid position: " + pos);
+        }
+        if (str == null) {
+            throw new SQLException("str must not be null");
         }
 
         int start = (int) pos - 1;

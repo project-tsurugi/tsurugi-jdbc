@@ -110,6 +110,9 @@ public class TsurugiJdbcBlob implements Blob {
     public long position(byte[] pattern, long start) throws SQLException {
         checkValid();
 
+        if (pattern == null) {
+            throw new SQLException("pattern must not be null");
+        }
         if (start < 1) {
             throw new SQLException("Invalid start position: " + start);
         }
@@ -139,6 +142,11 @@ public class TsurugiJdbcBlob implements Blob {
     @Override
     public long position(Blob pattern, long start) throws SQLException {
         checkValid();
+
+        if (pattern == null) {
+            throw new SQLException("pattern must not be null");
+        }
+
         return position(pattern.getBytes(1, (int) pattern.length()), start);
     }
 
@@ -155,6 +163,9 @@ public class TsurugiJdbcBlob implements Blob {
         int index = (int) pos - 1;
         if (index < 0) {
             throw new SQLException("Invalid position: " + pos);
+        }
+        if (bytes == null) {
+            throw new SQLException("bytes must not be null");
         }
 
         ensureCapacity(index + len);
