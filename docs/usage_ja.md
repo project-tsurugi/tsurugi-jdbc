@@ -97,7 +97,7 @@ Tsurugiに接続する際のオプション（セッション情報）です。
 
 - アプリケーション名（ `applicationName`）
 - セッションラベル（ `sessionLabel` ）
-- LOB転送関連
+- LOB転送関連（→[BLOB,CLOBの使用方法](blob_ja.md)）
   - LOB転送モード（ `lobTransferType` ）
     - `DEFAULT` - BLOB中継サービスを使用します。Tsurugi側でBLOB中継サービスが使用できなくても、セッション接続は成功します。（デフォルト）
     - `NOT_USE` - LOB転送を行いません。

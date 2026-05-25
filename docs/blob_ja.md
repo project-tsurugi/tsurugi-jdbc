@@ -1,6 +1,6 @@
 # Tsurugi JDBC BLOB, CLOB使用方法
 
-当文書では、Tsurugi JDBCでBLOB, CLOBを使用する際の前提条件を説明します。
+当文書では、Tsurugi JDBCでBLOB, CLOBを使用する方法を説明します。
 
 ## はじめに
 
@@ -125,3 +125,6 @@ var uri = URI.create("dns:///localhost:52345");
 config.setBlobRelayServiceEndpoint(uri);
 ```
 
+## BLOBの使用例
+
+BLOBを扱う例は [examples](https://github.com/project-tsurugi/tsurugi-jdbc/blob/master/modules/tsurugi-jdbc-examples/src/main/java/com/tsurugidb/jdbc/example/TsurugiJdbcExample51Blob.java) を参照してください。
