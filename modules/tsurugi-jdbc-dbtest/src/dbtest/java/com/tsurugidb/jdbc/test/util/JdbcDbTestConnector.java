@@ -28,6 +28,7 @@ import java.util.Properties;
 import com.tsurugidb.iceaxe.TsurugiConnector;
 import com.tsurugidb.iceaxe.exception.TsurugiIOException;
 import com.tsurugidb.iceaxe.session.TgSessionOption;
+import com.tsurugidb.iceaxe.sql.type.IceaxeObjectFactory;
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionBuilder;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcCredentialSetter;
 import com.tsurugidb.jdbc.driver.TsurugiJdbcLobPathMappingEntry;
@@ -240,6 +241,7 @@ public class JdbcDbTestConnector {
         if (lobSendPathMapping != null) {
             var entry = TsurugiJdbcLobPathMappingEntry.parse(lobSendPathMapping);
             option.addLargeObjectPathMappingOnSend(entry.clientPath(), entry.serverPath());
+            IceaxeObjectFactory.getDefaultInstance().setTempDirectory(entry.clientPath());
         }
         String lobRecvPathMapping = getSystemProperty(SYSPROP_DBTEST_LOB_RECV_PATH_MAPPING);
         if (lobRecvPathMapping != null) {

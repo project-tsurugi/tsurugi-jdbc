@@ -46,7 +46,7 @@ import com.tsurugidb.jdbc.statement.type.TsurugiJdbcBlob;
 /**
  * Tsurugi JDBC BLOB test.
  */
-public class JdbcDbTypeBlobTest extends JdbcDbTypeTester<Blob> {
+public abstract class JdbcDbTypeBlobTestBase extends JdbcDbTypeTester<Blob> {
 
     @Override
     protected String sqlType() {
@@ -202,6 +202,6 @@ public class JdbcDbTypeBlobTest extends JdbcDbTypeTester<Blob> {
     }
 
     private static String toString(List<Blob> list) {
-        return list.stream().map(JdbcDbTypeBlobTest::toBytes).map(Arrays::toString).collect(Collectors.joining(", ", "[", "]"));
+        return list.stream().map(JdbcDbTypeBlobTestBase::toBytes).map(Arrays::toString).collect(Collectors.joining(", ", "[", "]"));
     }
 }

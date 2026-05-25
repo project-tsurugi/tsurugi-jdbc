@@ -25,11 +25,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.jdbc.TsurugiDriver;
 import com.tsurugidb.jdbc.TsurugiJdbcLobTransferType;
@@ -43,32 +40,25 @@ public class JdbcDbBlobReferenceTest extends JdbcDbTester {
 
     private static int SIZE = 5;
 
-    @BeforeAll
-    static void beforeAll(TestInfo info) throws Exception {
-        var LOG = LoggerFactory.getLogger(JdbcDbBlobReferenceTest.class);
-        logInitStart(LOG, info);
-
-        try (var connection = createConnection()) {
-            try (var statement = connection.createStatement()) {
-                statement.executeUpdate("drop table if exists test");
-                statement.executeUpdate("create table test(" //
-                        + " pk int primary key," //
-                        + " value blob" //
-                        + ")" //
-                );
-            }
-            try (var ps = connection.prepareStatement("insert into test values(?, ?)")) {
-                connection.setAutoCommit(false);
-                for (int i = 0; i < SIZE; i++) {
-                    ps.setInt(1, i);
-                    ps.setBlob(2, new ByteArrayInputStream(data(i)));
-                    ps.executeUpdate();
-                }
-                connection.commit();
-            }
+    private void setup(Connection connection) throws SQLException {
+        try (var statement = connection.createStatement()) {
+            statement.executeUpdate("drop table if exists test");
+            statement.executeUpdate("create table test(" //
+                    + " pk int primary key," //
+                    + " value blob" //
+                    + ")" //
+            );
         }
-
-        logInitEnd(LOG, info);
+        try (var ps = connection.prepareStatement("insert into test values(?, ?)")) {
+            connection.setAutoCommit(false);
+            for (int i = 0; i < SIZE; i++) {
+                ps.setInt(1, i);
+                ps.setBlob(2, new ByteArrayInputStream(data(i)));
+                ps.executeUpdate();
+            }
+            connection.commit();
+        }
+        connection.setAutoCommit(true);
     }
 
     private static byte[] data(int pk) {
@@ -176,6 +166,7 @@ public class JdbcDbBlobReferenceTest extends JdbcDbTester {
     }
 
     private void assertSelect(Connection connection, BlobReferenceTester tester) throws SQLException, IOException {
+        setup(connection);
         try (var statement = connection.createStatement(); //
                 var rs = statement.executeQuery("select * from test order by pk")) {
             while (rs.next()) {

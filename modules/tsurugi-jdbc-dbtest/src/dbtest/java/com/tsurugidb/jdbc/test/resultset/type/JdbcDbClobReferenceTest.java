@@ -25,11 +25,8 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.jdbc.TsurugiDriver;
 import com.tsurugidb.jdbc.TsurugiJdbcLobTransferType;
@@ -43,32 +40,25 @@ public class JdbcDbClobReferenceTest extends JdbcDbTester {
 
     private static int SIZE = 5;
 
-    @BeforeAll
-    static void beforeAll(TestInfo info) throws Exception {
-        var LOG = LoggerFactory.getLogger(JdbcDbClobReferenceTest.class);
-        logInitStart(LOG, info);
-
-        try (var connection = createConnection()) {
-            try (var statement = connection.createStatement()) {
-                statement.executeUpdate("drop table if exists test");
-                statement.executeUpdate("create table test(" //
-                        + " pk int primary key," //
-                        + " value clob" //
-                        + ")" //
-                );
-            }
-            try (var ps = connection.prepareStatement("insert into test values(?, ?)")) {
-                connection.setAutoCommit(false);
-                for (int i = 0; i < SIZE; i++) {
-                    ps.setInt(1, i);
-                    ps.setClob(2, new StringReader(data(i)));
-                    ps.executeUpdate();
-                }
-                connection.commit();
-            }
+    private void setup(Connection connection) throws SQLException {
+        try (var statement = connection.createStatement()) {
+            statement.executeUpdate("drop table if exists test");
+            statement.executeUpdate("create table test(" //
+                    + " pk int primary key," //
+                    + " value clob" //
+                    + ")" //
+            );
         }
-
-        logInitEnd(LOG, info);
+        try (var ps = connection.prepareStatement("insert into test values(?, ?)")) {
+            connection.setAutoCommit(false);
+            for (int i = 0; i < SIZE; i++) {
+                ps.setInt(1, i);
+                ps.setClob(2, new StringReader(data(i)));
+                ps.executeUpdate();
+            }
+            connection.commit();
+        }
+        connection.setAutoCommit(true);
     }
 
     private static String data(int pk) {
@@ -200,6 +190,7 @@ public class JdbcDbClobReferenceTest extends JdbcDbTester {
     }
 
     private void assertSelect(Connection connection, ClobReferenceTester tester) throws SQLException, IOException {
+        setup(connection);
         try (var statement = connection.createStatement(); //
                 var rs = statement.executeQuery("select * from test order by pk")) {
             while (rs.next()) {

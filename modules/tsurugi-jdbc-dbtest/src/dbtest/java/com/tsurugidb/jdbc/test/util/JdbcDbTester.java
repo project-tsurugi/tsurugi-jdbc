@@ -138,7 +138,7 @@ public class JdbcDbTester {
         return builder;
     }
 
-    protected void assumeLobTest(String lobTransferType) throws Exception {
+    protected void assumeLobTest(String lobTransferType) {
         disabledIfEnvironmentVariable("JdbcDbLobTest_" + lobTransferType);
     }
 

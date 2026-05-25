@@ -23,11 +23,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.LoggerFactory;
 
 import com.tsurugidb.jdbc.TsurugiDriver;
 import com.tsurugidb.jdbc.TsurugiJdbcLobTransferType;
@@ -41,36 +38,29 @@ public class JdbcDbLobTransferTypeTest extends JdbcDbTester {
 
     private static int SIZE = 5;
 
-    @BeforeAll
-    static void beforeAll(TestInfo info) throws Exception {
-        var LOG = LoggerFactory.getLogger(JdbcDbLobTransferTypeTest.class);
-        logInitStart(LOG, info);
-
-        try (var connection = createConnection()) {
-            try (var statement = connection.createStatement()) {
-                statement.executeUpdate("drop table if exists test");
-                statement.executeUpdate("create table test(" //
-                        + " pk int primary key," //
-                        + " value blob" //
-                        + ")" //
-                );
-            }
-            try (var ps = connection.prepareStatement("insert into test values(?, ?)")) {
-                connection.setAutoCommit(false);
-                for (int i = 0; i < SIZE; i++) {
-                    ps.setInt(1, i);
-                    if (i == 0) {
-                        ps.setNull(2, java.sql.Types.BLOB);
-                    } else {
-                        ps.setBlob(2, new ByteArrayInputStream(new byte[i - 1]));
-                    }
-                    ps.executeUpdate();
-                }
-                connection.commit();
-            }
+    private void setup(Connection connection) throws SQLException {
+        try (var statement = connection.createStatement()) {
+            statement.executeUpdate("drop table if exists test");
+            statement.executeUpdate("create table test(" //
+                    + " pk int primary key," //
+                    + " value blob" //
+                    + ")" //
+            );
         }
-
-        logInitEnd(LOG, info);
+        try (var ps = connection.prepareStatement("insert into test values(?, ?)")) {
+            connection.setAutoCommit(false);
+            for (int i = 0; i < SIZE; i++) {
+                ps.setInt(1, i);
+                if (i == 0) {
+                    ps.setNull(2, java.sql.Types.BLOB);
+                } else {
+                    ps.setBlob(2, new ByteArrayInputStream(new byte[i - 1]));
+                }
+                ps.executeUpdate();
+            }
+            connection.commit();
+        }
+        connection.setAutoCommit(true);
     }
 
     @ParameterizedTest
@@ -131,6 +121,7 @@ public class JdbcDbLobTransferTypeTest extends JdbcDbTester {
     }
 
     private void assertSelect(Connection connection) throws SQLException {
+        setup(connection);
         try (var statement = connection.createStatement(); //
                 var rs = statement.executeQuery("select * from test order by pk")) {
             while (rs.next()) {

@@ -41,12 +41,17 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 import com.tsurugidb.iceaxe.TsurugiConnector;
+import com.tsurugidb.iceaxe.session.TgLobTransferType;
+import com.tsurugidb.iceaxe.session.TgSessionOption;
+import com.tsurugidb.iceaxe.session.TsurugiSession;
 import com.tsurugidb.iceaxe.sql.parameter.TgBindParameter;
 import com.tsurugidb.iceaxe.sql.parameter.TgBindParameters;
 import com.tsurugidb.iceaxe.sql.parameter.TgBindVariable;
 import com.tsurugidb.iceaxe.sql.parameter.TgParameterMapping;
 import com.tsurugidb.iceaxe.sql.result.TsurugiResultEntity;
 import com.tsurugidb.iceaxe.transaction.option.TgTxOption;
+import com.tsurugidb.jdbc.TsurugiJdbcLobTransferType;
+import com.tsurugidb.jdbc.connection.TsurugiJdbcConnection;
 import com.tsurugidb.jdbc.resultset.TsurugiJdbcResultSet;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
 import com.tsurugidb.jdbc.test.util.JdbcDbTestConnector;
@@ -57,8 +62,24 @@ import com.tsurugidb.jdbc.test.util.JdbcDbTester;
  */
 public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
 
+    private TsurugiJdbcConnection createTypeTestConnection() throws SQLException {
+        var lobTransferType = getLobTransferType();
+        if (lobTransferType == null) {
+            return JdbcDbTester.createConnection();
+        }
+
+        assumeLobTest(lobTransferType.name());
+        var dataSource = createDataSource();
+        dataSource.setLobTransferType(lobTransferType);
+        return dataSource.getConnection();
+    }
+
+    protected TsurugiJdbcLobTransferType getLobTransferType() {
+        return null;
+    }
+
     protected void createTable() throws SQLException {
-        try (var connection = createConnection(); //
+        try (var connection = createTypeTestConnection(); //
                 var statement = connection.createStatement()) {
             statement.executeUpdate("drop table if exists test");
             statement.executeUpdate(String.format("create table test(" //
@@ -76,7 +97,7 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
     }
 
     private void databaseMetaData() throws SQLException {
-        try (var connection = createConnection()) {
+        try (var connection = createTypeTestConnection()) {
             var metaData = connection.getMetaData();
             try (var rs = metaData.getColumns(null, null, "test", "%")) {
                 assertTrue(rs.next());
@@ -108,8 +129,7 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
         var sql = "insert into test values(:pk, :value)";
         var mapping = TgParameterMapping.of(TgBindVariable.ofInt("pk"), bindVariable("value"));
 
-        var connector = TsurugiConnector.of(JdbcDbTestConnector.getEndPoint(), JdbcDbTestConnector.getIceaxeCredential());
-        try (var session = connector.createSession(); //
+        try (var session = createIceaxeSession(); //
                 var ps = session.createStatement(sql, mapping)) {
             var manager = session.createTransactionManager(TgTxOption.ofOCC());
 
@@ -125,8 +145,22 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
         }
     }
 
+    private TsurugiSession createIceaxeSession() throws IOException {
+        var connector = TsurugiConnector.of(JdbcDbTestConnector.getEndPoint(), JdbcDbTestConnector.getIceaxeCredential());
+        var sessionOption = TgSessionOption.of();
+
+        var lobTransferType = getLobTransferType();
+        if (lobTransferType != null) {
+            JdbcDbTestConnector.setLobSettingTo(sessionOption);
+            var type = TgLobTransferType.valueOf(lobTransferType.name());
+            sessionOption.setLobTransferType(type);
+        }
+
+        return connector.createSession(sessionOption);
+    }
+
     private List<T> selectJdbc() throws SQLException {
-        try (var connection = createConnection(); //
+        try (var connection = createTypeTestConnection(); //
                 var statement = connection.createStatement()) {
             try (var rs = statement.executeQuery("select * from test order by pk")) {
                 resultSetMetaData(rs);
@@ -215,7 +249,7 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
         var values = values();
         insertJdbc(values);
 
-        try (var connection = createConnection(); //
+        try (var connection = createTypeTestConnection(); //
                 var statement = connection.createStatement()) {
             try (var rs = statement.executeQuery("select * from test order by pk")) {
                 int rowIndex = 0;
@@ -286,7 +320,7 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
     }
 
     protected void insertJdbc(List<T> values) throws SQLException {
-        try (var connection = createConnection(); //
+        try (var connection = createTypeTestConnection(); //
                 var ps = connection.prepareStatement("insert into test values(?, ?)")) {
             connection.setAutoCommit(false);
 
@@ -328,8 +362,7 @@ public abstract class JdbcDbTypeTester<T> extends JdbcDbTester {
     private List<T> selectIceaxe() throws IOException, InterruptedException {
         var actual = new ArrayList<T>();
 
-        var connector = TsurugiConnector.of(JdbcDbTestConnector.getEndPoint(), JdbcDbTestConnector.getIceaxeCredential());
-        try (var session = connector.createSession()) {
+        try (var session = createIceaxeSession()) {
             var manager = session.createTransactionManager(TgTxOption.ofOCC());
 
             var list = manager.executeAndGetList("select * from test order by pk");

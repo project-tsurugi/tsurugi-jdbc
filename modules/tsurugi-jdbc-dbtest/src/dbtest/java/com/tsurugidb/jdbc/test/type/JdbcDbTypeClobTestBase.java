@@ -45,7 +45,7 @@ import com.tsurugidb.jdbc.statement.type.TsurugiJdbcClob;
 /**
  * Tsurugi JDBC CLOB test.
  */
-public class JdbcDbTypeClobTest extends JdbcDbTypeTester<Clob> {
+public abstract class JdbcDbTypeClobTestBase extends JdbcDbTypeTester<Clob> {
 
     @Override
     protected String sqlType() {
@@ -75,7 +75,7 @@ public class JdbcDbTypeClobTest extends JdbcDbTypeTester<Clob> {
 
             @Override
             public TgBindParameter bind(@Nullable Clob value) {
-                String data = JdbcDbTypeClobTest.toString(value);
+                String data = JdbcDbTypeClobTestBase.toString(value);
                 try {
                     return TgBindParameter.ofClob(name(), data);
                 } catch (IOException e) {
@@ -203,6 +203,6 @@ public class JdbcDbTypeClobTest extends JdbcDbTypeTester<Clob> {
     }
 
     private static String toString(List<Clob> list) {
-        return list.stream().map(JdbcDbTypeClobTest::toString).collect(Collectors.joining(", ", "[", "]"));
+        return list.stream().map(JdbcDbTypeClobTestBase::toString).collect(Collectors.joining(", ", "[", "]"));
     }
 }
