@@ -173,6 +173,18 @@ public class TsurugiJdbcClob implements Clob {
         if (str == null) {
             throw new SQLException("str must not be null");
         }
+        if (offset < 0) {
+            throw new SQLException("Invalid offset: " + offset);
+        }
+
+        if (len < 0) {
+            throw new SQLException("Invalid length: " + len);
+        }
+
+        if (offset > str.length() || offset + len > str.length()) {
+            throw new SQLException("Invalid offset/length: offset=" + offset + ", len=" + len + ", str.length=" + str.length());
+        }
+
         return setString(pos, str.substring(offset, offset + len));
     }
 
