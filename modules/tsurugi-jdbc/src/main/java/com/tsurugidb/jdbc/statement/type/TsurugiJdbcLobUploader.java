@@ -19,13 +19,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.tsurugidb.jdbc.connection.TsurugiJdbcConnectionConfig;
 import com.tsurugidb.jdbc.exception.TsurugiJdbcExceptionHandler;
 import com.tsurugidb.jdbc.statement.TsurugiJdbcPreparedStatement;
-import com.tsurugidb.tsubakuro.common.BlobTransferType;
 import com.tsurugidb.tsubakuro.common.LargeObjectClient;
 import com.tsurugidb.tsubakuro.common.LargeObjectInfo;
 import com.tsurugidb.tsubakuro.exception.ServerException;
@@ -71,14 +72,19 @@ public abstract class TsurugiJdbcLobUploader<T> {
             var connection = ownerPreparedStatement.getConnection();
             var lowSession = connection.getLowSession();
             var lowLargeObjectClient = lowSession.getLargeObjectClient();
-            var config = connection.getConfig();
 
-            var lowTransferType = lowSession.getBlobTransferMedium().getBlobTransferType();
-            if (lowTransferType == BlobTransferType.PRIVILEGED) {
+            var lobTransferType = connection.getLobTransferType();
+            switch (lobTransferType) {
+            case PRIVILEGED:
+                var config = connection.getConfig();
                 return uploadForPrivileged(lowLargeObjectClient, config, value);
-            } else {
+            case RELAY:
                 return upload(lowLargeObjectClient, value);
+            default:
+                throw new SQLFeatureNotSupportedException(MessageFormat.format("lobTransferType={0} does not support LOB upload", lobTransferType));
             }
+        } catch (SQLException e) {
+            throw e;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw getExceptionHandler().dataException("Upload large object interrupted", e);
