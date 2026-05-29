@@ -7,13 +7,13 @@
 Tsurugiでは、（メモリーに載せるのが躊躇われるような）大きなサイズのデータをBLOB, CLOB型で扱います。
 BLOB（binary large object）はバイト列、CLOB（character large object）は文字列が対象です。
 
-TsurugiはインメモリーDBなので、基本的にデータは全てDBサーバーのメモリー上に置くのですが、BLOB, CLOBのデータはメモリー上には置かず、データごとに個別のファイルとして保存されます。
+以降、BLOB, CLOBを共通で扱う場合は large object（LOB）という用語を用います。
 
-クライアント（Tsurugi JDBC）とTsurugi DBの間でBLOB, CLOBデータを受け渡す方法はいくつかあり、どの方法を使うかはクライアントアプリケーション（Tsurugi JDBCを利用するアプリケーション）側で指定することができます。
+TsurugiはインメモリーDBなので、基本的にデータは全てDBサーバーのメモリー上に置くのですが、LOBデータはメモリー上には置かず、データごとに個別のファイルとして保存されます。
+
+クライアント（Tsurugi JDBC）とTsurugi DBの間でLOBデータを受け渡す方法はいくつかあり、どの方法を使うかはクライアントアプリケーション（Tsurugi JDBCを利用するアプリケーション）側で指定することができます。
 
 ## LOB転送モード
-
-Tsurugi JDBCでは、BLOB, CLOBを共通で扱う場合は large object（LOB）という用語を用います。
 
 クライアント（Tsurugi JDBC）とTsurugi DBの間でLOBデータを受け渡す方法（LOB転送を行う方法）は、LOB転送モードと呼びます。
 
@@ -63,7 +63,7 @@ try (var connection = TsurugiDriver.getTsurugiDriver().connect(config)) {
 ```
 
 - `DEFAULT`
-  - BLOB中継サービスを使用します。Tsurugi側でBLOB中継サービスが使用できなくても、コネクション生成は成功します。（デフォルト）
+  - BLOB中継サービスを使用します。Tsurugi側でBLOB中継サービスが使用できなくても、コネクション生成は成功します。
 - `NOT_USE`
   - LOB転送を行いません。
 - `PRIVILEGED`
@@ -80,14 +80,14 @@ TsurugiJdbcLobTransferType lobTransferType = connection.unwrap(TsurugiJdbcConnec
 
 ## 特権モードのパスマッピング
 
-特権モードでLOBファイルを扱う際にクライアント側のパスとサーバー側のパスを変換する機能があります。
+Tsurugi JDBCでは、特権モードでLOBファイルを扱う際にクライアント側のパスとサーバー側のパスを変換するパスマッピング機能を提供しています。
 
 特権モードでLOBファイルを扱う場合、クライアントとサーバーが同一ファイルシステムにアクセスできることを前提としていますが、環境によってはクライアントとサーバーのパスが一致しないことがあります。  
 このとき、パスマッピングを設定することで、LOBファイルのパスをクライアントからサーバーに送信する際にクライアント側のパスがサーバー側のパスに変換されます。同様に、サーバーからファイルのパスを受信した際にクライアント側のパスに変換されます。
 
 例えば以下のようにMS-Windows上のTsurugiのDockerでボリュームマウントしてTsurugi JDBCでパスマッピングを指定すると、`C:/tmp/client` に置かれたBLOBファイルをinsertすることができます。
 （Tsurugi JDBCは、そこにアップロード用の一時ファイルを作成します）  
-また、selectする際に、`C:/tmp/tsurugi` の下にあるBLOBファイルを読みます。
+また、selectする際に、Tsurugi JDBCは `C:/tmp/tsurugi` の下にあるBLOBファイルを読みます。
 
 ```bash
 docker run -d -p 12345:12345 -p 52345:52345 --name tsurugi -v C:/tmp/client:/mnt/client -v C:/tmp/tsurugi:/opt/tsurugi/var/data/log -e GLOG_v=30 ghcr.io/project-tsurugi/tsurugidb:latest
