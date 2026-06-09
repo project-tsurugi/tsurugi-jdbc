@@ -120,21 +120,22 @@ public class TsurugiJdbcExample51Blob {
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
         try (var statement = connection.createStatement()) {
-            var rs = statement.executeQuery("select * from test order by pk");
-            while (rs.next()) {
-                int pk = rs.getInt("pk");
-                byte[] value;
-                {
-                    Blob blob = rs.getBlob("value");
-                    if (blob == null) {
-                        value = null;
-                    } else {
-                        try (var is = blob.getBinaryStream()) {
-                            value = is.readAllBytes();
+            try (var rs = statement.executeQuery("select * from test order by pk")) {
+                while (rs.next()) {
+                    int pk = rs.getInt("pk");
+                    byte[] value;
+                    {
+                        Blob blob = rs.getBlob("value");
+                        if (blob == null) {
+                            value = null;
+                        } else {
+                            try (var is = blob.getBinaryStream()) {
+                                value = is.readAllBytes();
+                            }
                         }
                     }
+                    LOG.info("pk={}, value={}", pk, Arrays.toString(value));
                 }
-                LOG.info("pk={}, value={}", pk, Arrays.toString(value));
             }
         }
 
@@ -146,11 +147,12 @@ public class TsurugiJdbcExample51Blob {
         LOG.info("autoCommit={}", connection.getAutoCommit());
 
         try (var statement = connection.createStatement()) {
-            var rs = statement.executeQuery("select * from test order by pk");
-            while (rs.next()) {
-                int pk = rs.getInt("pk");
-                byte[] value = rs.getBytes("value");
-                LOG.info("pk={}, value={}", pk, Arrays.toString(value));
+            try (var rs = statement.executeQuery("select * from test order by pk")) {
+                while (rs.next()) {
+                    int pk = rs.getInt("pk");
+                    byte[] value = rs.getBytes("value");
+                    LOG.info("pk={}, value={}", pk, Arrays.toString(value));
+                }
             }
         }
 
