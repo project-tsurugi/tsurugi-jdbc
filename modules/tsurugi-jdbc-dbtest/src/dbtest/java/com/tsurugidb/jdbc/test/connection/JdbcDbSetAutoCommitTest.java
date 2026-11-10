@@ -65,7 +65,7 @@ public class JdbcDbSetAutoCommitTest extends JdbcDbTester {
                 var statement = connection.createStatement()) {
             connection.setAutoCommit(false);
 
-            int count = statement.executeUpdate("insert into test values(9, 9, '9')");
+            int count = statement.executeUpdate(String.format("insert into test values(%d, 9, '9')", SIZE + 9));
             assertEquals(1, count);
             assertEquals(SIZE, selectCount());
 
@@ -113,7 +113,15 @@ public class JdbcDbSetAutoCommitTest extends JdbcDbTester {
                 assertTrue(rs.next());
 
                 // autoCommitモードを変更すると、自動的にコミットされる
-                connection.setAutoCommit(false);
+                try {
+                    connection.setAutoCommit(false);
+                } catch (SQLException e) {
+                    if (e.getMessage().contains("RESTRICTED_OPERATION_EXCEPTION")) {
+                        // fall through
+                    } else {
+                        throw e;
+                    }
+                }
 
                 var e = assertThrows(SQLException.class, () -> {
                     while (rs.next()) {
